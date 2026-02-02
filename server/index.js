@@ -31,6 +31,32 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
+app.get('/api/debug-db', async (req, res) => {
+    try {
+        const state = mongoose.connection.readyState;
+        const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+
+        let error = null;
+        if (state !== 1) {
+            try {
+                await mongoose.connect(process.env.MONGODB_URI);
+            } catch (e) {
+                error = e.message;
+            }
+        }
+
+        res.json({
+            status: states[mongoose.connection.readyState],
+            db_name: mongoose.connection.name,
+            host: mongoose.connection.host,
+            env_uri_exists: !!process.env.MONGODB_URI,
+            connection_error: error
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
+});
+
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
