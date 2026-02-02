@@ -18,11 +18,16 @@ if (process.env.FRONTEND_URL) {
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     }
 });
 
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+}));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
