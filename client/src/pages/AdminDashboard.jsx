@@ -245,7 +245,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'banks' && <ClientManagement />}
-                {activeTab === 'inbox' && <SupportInbox />}
+                {activeTab === 'inbox' && <SupportInbox clients={clients} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
             </div>

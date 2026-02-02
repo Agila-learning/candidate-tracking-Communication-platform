@@ -4,10 +4,12 @@ import Chat from './Chat';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 
-const SupportInbox = () => {
+const SupportInbox = ({ clients = [] }) => {
     const { user } = useAuth();
     const [conversations, setConversations] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
+    const [filterType, setFilterType] = useState('all');
+    const [filterClientId, setFilterClientId] = useState('');
 
     useEffect(() => {
         fetchConversations();
@@ -34,13 +36,44 @@ const SupportInbox = () => {
         }
     };
 
+    const filteredConversations = conversations.filter(conv => {
+        if (filterType === 'internal' && conv.type !== 'candidate-admin') return false;
+        if (filterType === 'bank' && conv.type !== 'candidate-client') return false;
+        if (filterClientId && conv.clientId?._id !== filterClientId) return false;
+        return true;
+    });
+
     return (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 300px) 1fr', gap: '1px', background: 'var(--border)', height: '600px', borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
             <div style={{ background: 'var(--bg-card)', overflowY: 'auto' }}>
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-                    <h4 style={{ margin: 0 }}>Support Inbox</h4>
+                    <h4 style={{ margin: 0, marginBottom: '0.5rem' }}>Support Inbox</h4>
+                    {['ADMIN', 'SUPPORT_FIC'].includes(user?.role) && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <select
+                                value={filterType}
+                                onChange={e => setFilterType(e.target.value)}
+                                style={{ padding: '0.4rem', fontSize: '0.8rem', width: '100%' }}
+                            >
+                                <option value="all">All Conversations</option>
+                                <option value="internal">Internal (FIC)</option>
+                                <option value="bank">Bank Partners</option>
+                            </select>
+                            {filterType !== 'internal' && (
+                                <select
+                                    value={filterClientId}
+                                    onChange={e => setFilterClientId(e.target.value)}
+                                    style={{ padding: '0.4rem', fontSize: '0.8rem', width: '100%' }}
+                                    disabled={filterType === 'internal'}
+                                >
+                                    <option value="">All Banks</option>
+                                    {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                </select>
+                            )}
+                        </div>
+                    )}
                 </div>
-                {conversations.map(conv => {
+                {filteredConversations.map(conv => {
                     const unread = conv.unreadCounts?.[user?._id] || 0;
                     return (
                         <div
@@ -106,6 +139,11 @@ const SupportInbox = () => {
                         </div>
                     );
                 })}
+                {filteredConversations.length === 0 && (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        No conversations found
+                    </div>
+                )}
             </div>
             <div style={{ background: 'var(--bg-card)', display: 'flex', flexDirection: 'column' }}>
                 {selectedId ? (

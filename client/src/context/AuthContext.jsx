@@ -38,6 +38,18 @@ export const AuthProvider = ({ children }) => {
         return res.data.user;
     };
 
+    const sendOtp = async (phone) => {
+        await axios.post(config.endpoints.auth.sendOtp, { phone });
+    };
+
+    const verifyOtp = async (phone, otp) => {
+        const res = await axios.post(config.endpoints.auth.verifyOtp, { phone, otp });
+        localStorage.setItem('token', res.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+        setUser(res.data.user);
+        return res.data.user;
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         delete axios.defaults.headers.common['Authorization'];
@@ -45,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, sendOtp, verifyOtp, logout }}>
             {children}
         </AuthContext.Provider>
     );

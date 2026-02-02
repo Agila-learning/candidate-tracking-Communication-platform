@@ -1,52 +1,58 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { NavLink } from 'react-router-dom';
 
 const Layout = ({ children }) => {
     const { user, logout } = useAuth();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const closeSidebar = () => setIsSidebarOpen(false);
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
+            {/* Mobile Toggle */}
+            <button
+                className="mobile-nav-toggle"
+                onClick={toggleSidebar}
+                aria-label="Toggle navigation"
+            >
+                <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{isSidebarOpen ? '✕' : '☰'}</span>
+            </button>
+
+            {/* Overlay */}
+            {isSidebarOpen && (
+                <div className="sidebar-overlay" onClick={closeSidebar} />
+            )}
+
             {/* Sidebar */}
-            <aside style={{
-                width: '280px',
-                borderRight: '1px solid var(--border)',
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'sticky',
-                top: 0,
-                height: '100vh',
-                backgroundColor: 'var(--bg-card)',
-                boxShadow: 'var(--shadow-sm)'
-            }}>
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-logo-container">
                     <img src="/logo.jpg" alt="Forge India" className="sidebar-logo" />
                 </div>
 
                 <nav style={{ flex: 1 }}>
-                    <NavLink to="/" className="nav-link">
+                    <NavLink to="/" className="nav-link" onClick={closeSidebar}>
                         <span className="nav-icon">🏠</span>
                         Dashboard
                     </NavLink>
 
                     {user?.role === 'ADMIN' && (
-                        <>
-                            <NavLink to="/admin" className="nav-link">
-                                <span className="nav-icon">🛡️</span>
-                                Admin Center
-                            </NavLink>
-                        </>
+                        <NavLink to="/admin" className="nav-link" onClick={closeSidebar}>
+                            <span className="nav-icon">🛡️</span>
+                            Admin Center
+                        </NavLink>
                     )}
 
                     {user?.role === 'CLIENT_SUPPORT' && (
-                        <NavLink to="/client" className="nav-link">
+                        <NavLink to="/client" className="nav-link" onClick={closeSidebar}>
                             <span className="nav-icon">🏦</span>
                             Partner Portal
                         </NavLink>
                     )}
 
                     {user?.role === 'CANDIDATE' && (
-                        <NavLink to="/candidate" className="nav-link">
+                        <NavLink to="/candidate" className="nav-link" onClick={closeSidebar}>
                             <span className="nav-icon">🎓</span>
                             My Portal
                         </NavLink>
@@ -89,7 +95,7 @@ const Layout = ({ children }) => {
             </aside>
 
             {/* Main Content */}
-            <main style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+            <main className="main-content">
                 {children}
             </main>
         </div>

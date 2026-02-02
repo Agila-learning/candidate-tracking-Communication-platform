@@ -6,7 +6,9 @@ export const config = {
         auth: {
             login: `${API_URL}/api/auth/login`,
             register: `${API_URL}/api/auth/register`,
-            me: `${API_URL}/api/auth/me`
+            me: `${API_URL}/api/auth/me`,
+            sendOtp: `${API_URL}/api/auth/send-otp`,
+            verifyOtp: `${API_URL}/api/auth/verify-otp`
         },
         users: {
             list: `${API_URL}/api/users`,

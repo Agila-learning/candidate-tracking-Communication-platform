@@ -8,7 +8,11 @@ const UserManagement = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'CANDIDATE', clientId: '' });
+
+    // Added 'phone' and 'editingId'
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'CANDIDATE', clientId: '' });
+    const [editingId, setEditingId] = useState(null);
+
     const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive
     const { showToast } = useToast();
 
@@ -38,29 +42,43 @@ const UserManagement = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Note: server/routes/authRoutes.js register endpoint is at /api/auth/register, but here it was posting to /api/users which maps to create user?
-            // Checking server/index.js, app.use('/api/users', userRoutes). userRoutes has router.post('/', ...).
-            // But checking previous view_file of UserManagement.jsx locally it was POST http://localhost:5000/api/users.
-            // Let's check config.js endpoints.users.create doesn't exist?
-            // config.endpoints.auth.register is /api/auth/register.
-            // The original code used /api/users for creation?
-            // Wait, looking at UserManagement.jsx original: `await axios.post('http://localhost:5000/api/users', formData);`
-            // Looking at server/routes/userRoutes.js snippet in memory... usually user creation is auth/register.
-            // But admins creating users might use /api/users.
-            // Let's assume /api/users is correct if the original code used it.
-            // config.endpoints.users.list is /api/users. So post to that list endpoint = create.
-            // Ensure clientId is null if not provided, to avoid ObjectId casting errors
             const payload = { ...formData };
             if (!payload.clientId) delete payload.clientId;
 
-            await axios.post(config.endpoints.users.list, payload);
-            showToast('User created successfully!');
-            setFormData({ name: '', email: '', password: '', role: 'CANDIDATE', clientId: '' });
+            // If editing, remove password if empty (keep existing)
+            if (editingId && !payload.password) delete payload.password;
+
+            if (editingId) {
+                // Update Existing User
+                await axios.patch(`${config.endpoints.users.list}/${editingId}`, payload);
+                showToast('User updated successfully!');
+            } else {
+                // Create New User
+                await axios.post(config.endpoints.users.list, payload);
+                showToast('User created successfully!');
+            }
+
+            // Reset Form
+            setFormData({ name: '', email: '', phone: '', password: '', role: 'CANDIDATE', clientId: '' });
+            setEditingId(null);
             setShowForm(false);
             fetchUsers();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to create user', 'error');
+            showToast(err.response?.data?.error || 'Operation failed', 'error');
         }
+    };
+
+    const handleEdit = (user) => {
+        setFormData({
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            password: '', // Blank implies no change
+            role: user.role,
+            clientId: user.clientId?._id || ''
+        });
+        setEditingId(user._id);
+        setShowForm(true);
     };
 
     const handleDelete = async (id) => {
@@ -129,32 +147,61 @@ const UserManagement = () => {
                         <option value="inactive">Inactive ({users.filter(u => !u.isActive).length})</option>
                     </select>
                 </div>
-                <button onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                    onClick={() => {
+                        setEditingId(null);
+                        setFormData({ name: '', email: '', phone: '', password: '', role: 'CANDIDATE', clientId: '' });
+                        setShowForm(!showForm);
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
                     {showForm ? '✕ Cancel' : '+ Add User'}
                 </button>
             </div>
 
             {showForm && (
                 <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--primary)' }}>
+                    <h4 style={{ marginTop: 0 }}>{editingId ? 'Edit User' : 'Create New User'}</h4>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                            <input placeholder="Full Name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                            <input type="email" placeholder="Email Address" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                            <input type="password" placeholder="Password (min 8 chars)" required minLength={8} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-                            <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                <option value="CANDIDATE">Candidate</option>
-                                <option value="CLIENT_SUPPORT">Bank Support</option>
-                                <option value="SUPPORT_FIC">FIC Support</option>
-                                <option value="ADMIN">Admin</option>
-                            </select>
-                            {formData.role === 'CLIENT_SUPPORT' && (
-                                <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })}>
-                                    <option value="">Select Bank...</option>
-                                    {clients.filter(c => c.isActive).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Full Name</label>
+                                <input placeholder="Full Name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Email</label>
+                                <input type="email" placeholder="Email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Phone</label>
+                                <input type="tel" placeholder="Mobile Number" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} style={{ width: '100%' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Password {editingId && '(Leave blank to keep)'}</label>
+                                <input type="password" placeholder={editingId ? "New Password (Optional)" : "Password"} required={!editingId} minLength={8} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} style={{ width: '100%' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Role</label>
+                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} style={{ width: '100%' }}>
+                                    <option value="CANDIDATE">Candidate</option>
+                                    <option value="CLIENT_SUPPORT">Bank Support</option>
+                                    <option value="SUPPORT_FIC">FIC Support</option>
+                                    <option value="ADMIN">Admin</option>
                                 </select>
+                            </div>
+                            {formData.role === 'CLIENT_SUPPORT' && (
+                                <div>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Bank</label>
+                                    <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} style={{ width: '100%' }}>
+                                        <option value="">Select Bank...</option>
+                                        {clients.filter(c => c.isActive).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                    </select>
+                                </div>
                             )}
                         </div>
-                        <button type="submit" style={{ justifySelf: 'start' }}>Create User</button>
+                        <button type="submit" style={{ justifySelf: 'start' }}>
+                            {editingId ? 'Save Changes' : 'Create User'}
+                        </button>
                     </form>
                 </div>
             )}
@@ -165,10 +212,10 @@ const UserManagement = () => {
                         <tr style={{ backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border)' }}>
                             <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
                             <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Name</th>
+                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Phone</th>
                             <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Email</th>
                             <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Role</th>
                             <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Bank</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Last Login</th>
                             <th style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                         </tr>
                     </thead>
@@ -195,6 +242,7 @@ const UserManagement = () => {
                                     </button>
                                 </td>
                                 <td style={{ padding: '1rem', fontWeight: 600 }}>{user.name}</td>
+                                <td style={{ padding: '1rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{user.phone || '-'}</td>
                                 <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user.email}</td>
                                 <td style={{ padding: '1rem' }}>
                                     <span style={{
@@ -209,19 +257,31 @@ const UserManagement = () => {
                                     </span>
                                 </td>
                                 <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{user.clientId?.name || '-'}</td>
-                                <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                                </td>
                                 <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                    <button onClick={() => handleDelete(user._id)} style={{
-                                        padding: '0.25rem 0.5rem',
-                                        fontSize: '0.75rem',
-                                        backgroundColor: 'transparent',
-                                        color: 'var(--danger)',
-                                        border: '1px solid var(--danger)'
-                                    }}>
-                                        Delete
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                        <button onClick={() => handleEdit(user)} style={{
+                                            padding: '0.25rem 0.5rem',
+                                            fontSize: '0.75rem',
+                                            backgroundColor: 'transparent',
+                                            color: 'var(--primary)',
+                                            border: '1px solid var(--primary)',
+                                            cursor: 'pointer',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Edit
+                                        </button>
+                                        <button onClick={() => handleDelete(user._id)} style={{
+                                            padding: '0.25rem 0.5rem',
+                                            fontSize: '0.75rem',
+                                            backgroundColor: 'transparent',
+                                            color: 'var(--danger)',
+                                            border: '1px solid var(--danger)',
+                                            cursor: 'pointer',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
