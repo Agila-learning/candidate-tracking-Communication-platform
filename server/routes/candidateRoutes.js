@@ -9,8 +9,16 @@ const upload = require('../middleware/upload');
 const router = express.Router();
 
 // Create Candidate
-router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) => {
+router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
     try {
+        // Enforce Client ID for Bank Support Users
+        if (req.user.role === 'CLIENT_SUPPORT') {
+            if (!req.user.clientId) {
+                return res.status(403).json({ error: 'No client assigned to your account' });
+            }
+            req.body.clientId = req.user.clientId;
+        }
+
         const candidate = new Candidate(req.body);
         await candidate.save();
         res.status(201).send(candidate);

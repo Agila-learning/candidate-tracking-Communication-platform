@@ -12,6 +12,8 @@ const leadSchema = new mongoose.Schema({
     },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    phase: { type: String, default: 'Phase 1' },
+    targetBank: { type: String },
     notes: { type: String },
     followUpDate: { type: Date },
     tags: [String],
