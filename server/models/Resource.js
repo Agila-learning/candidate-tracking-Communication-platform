@@ -1,0 +1,13 @@
+const mongoose = require('mongoose');
+
+const resourceSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    description: { type: String },
+    type: { type: String, enum: ['Document', 'Link', 'Announcement'], required: true },
+    url: { type: String }, // For Links or Document paths
+    programName: { type: String }, // Optional: Link to a specific program
+    postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('Resource', resourceSchema);

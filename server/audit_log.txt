@@ -1,0 +1,3 @@
+Total: 2
+TYPE: candidate-admin | CAND: Alice Johnson | BANK: undefined | ID: 697b3601f15d67e9bb7b6d23
+TYPE: candidate-client | CAND: Alice Johnson | BANK: HDFC Bank | ID: 697b3601f15d67e9bb7b6d32
