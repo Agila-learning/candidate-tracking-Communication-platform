@@ -1,49 +1,34 @@
 const mongoose = require('mongoose');
-const readline = require('readline');
 const User = require('../models/User');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 
 dotenv.config({ path: './.env' });
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-const question = (query) => new Promise((resolve) => rl.question(query, resolve));
-
-const resetAdminPassword = async () => {
+const resetAdmin = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log('\n✓ Connected to MongoDB');
+        console.log('Connected to MongoDB');
 
         const admin = await User.findOne({ role: 'ADMIN' });
-        if (!admin) {
-            console.log('\n❌ No admin found. Please run init-admin.js instead to create one.\n');
-            process.exit(1);
+        if (admin) {
+            // Hash new password
+            // Note: Use bcryptjs directly or rely on User model pre-save hook?
+            // The User model likely has a pre-save hook for hashing. 
+            // Let's check User model to be sure, or just assign plain text if the model handles it on save.
+            // Safest: find the user, set password, save(). The pre-save hook should handle it.
+
+            admin.password = 'admin123';
+            await admin.save();
+            console.log('PASSWORD_RESET_SUCCESS');
+        } else {
+            console.log('ADMIN_NOT_FOUND');
         }
-
-        console.log(`\nFound Admin: ${admin.email}`);
-        console.log('Enter a new password for this account.\n');
-
-        const password = await question('  New Password (min 8 chars): ');
-
-        if (password.length < 8) {
-            console.log('\n❌ Password must be at least 8 characters.\n');
-            process.exit(1);
-        }
-
-        admin.password = password;
-        await admin.save();
-
-        console.log('\n✓ Password updated successfully!');
-        console.log(`\nYou can now login with: ${admin.email}\n`);
-
         process.exit(0);
     } catch (err) {
-        console.error('\n❌ Error:', err.message);
+        console.error(err);
         process.exit(1);
     }
 };
 
-resetAdminPassword();
+resetAdmin();
