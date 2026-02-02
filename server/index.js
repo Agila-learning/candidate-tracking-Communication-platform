@@ -41,17 +41,10 @@ app.use('/api/resources', require('./routes/resourceRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
 
 // Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../client/dist', 'index.html'));
-    });
-} else {
-    app.get('/', (req, res) => {
-        res.send('FIC Banking Chat Forum API is running...');
-    });
-}
+// Basic route
+app.get('/', (req, res) => {
+    res.send('FIC Banking Chat Forum API is running...');
+});
 
 // Socket.IO Logic
 io.on('connection', (socket) => {
