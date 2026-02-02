@@ -14,7 +14,7 @@ router.post('/register', auth, validateRegistration, async (req, res) => {
             return res.status(403).json({ error: 'Only administrators can create new users' });
         }
 
-        const { name, email, password, role, clientId } = req.body;
+        const { name, email, phone, password, role, clientId } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -22,12 +22,20 @@ router.post('/register', auth, validateRegistration, async (req, res) => {
             return res.status(400).json({ error: 'User with this email already exists' });
         }
 
+        // Check phone uniqueness if provided
+        if (phone) {
+            const existingPhone = await User.findOne({ phone });
+            if (existingPhone) {
+                return res.status(400).json({ error: 'User with this phone number already exists' });
+            }
+        }
+
         // Validate role-specific requirements
         if (role === 'CLIENT_SUPPORT' && !clientId) {
             return res.status(400).json({ error: 'Client ID is required for CLIENT_SUPPORT role' });
         }
 
-        const user = new User({ name, email, password, role: role || 'CANDIDATE', clientId });
+        const user = new User({ name, email, phone, password, role: role || 'CANDIDATE', clientId });
         await user.save();
 
         res.status(201).json({
@@ -88,6 +96,76 @@ router.post('/login', validateLogin, async (req, res) => {
     } catch (e) {
         console.error('Login error:', e);
         res.status(500).json({ error: 'Login failed', details: e.message });
+    }
+});
+
+// Send OTP (Simulation Mode)
+router.post('/send-otp', async (req, res) => {
+    try {
+        const { phone } = req.body;
+
+        // Basic validation
+        if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.status(404).json({ error: 'Phone number not registered. Please contact your Admin/Bank.' });
+        }
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+        await user.save();
+
+        // LOGGING OTP FOR SIMULATION
+        console.log(`\n=== SIMULATED SMS ===\nTo: ${phone}\nOTP: ${otp}\n=====================\n`);
+
+        res.json({ message: 'OTP sent successfully' });
+    } catch (e) {
+        console.error('OTP Send Error:', e);
+        res.status(500).json({ error: 'Failed to send OTP' });
+    }
+});
+
+// Verify OTP
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { phone, otp } = req.body;
+        const user = await User.findOne({ phone }).populate('clientId');
+
+        if (!user) {
+            return res.status(400).json({ error: 'User not found' });
+        }
+
+        if (!user.otp || user.otp !== otp || user.otpExpires < Date.now()) {
+            return res.status(400).json({ error: 'Invalid or expired OTP' });
+        }
+
+        // Clear OTP after successful login
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        user.lastLogin = new Date();
+        await user.save();
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                clientId: user.clientId
+            },
+            token
+        });
+    } catch (e) {
+        console.error('OTP Verify Error:', e);
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
