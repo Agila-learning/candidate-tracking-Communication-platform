@@ -82,7 +82,8 @@ const Login = () => {
             <div className="card fade-in" style={{ width: '100%', maxWidth: '400px' }}>
                 <h1 style={{ marginBottom: '0.5rem', textAlign: 'center' }}>FIC Connect</h1>
                 <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>
-                    Lead & Candidate Tracking System
+                    Lead & Candidate Tracking System <br />
+                    <small style={{ fontSize: '0.7em', color: 'var(--primary)' }}>v2.0 (Mobile Auth)</small>
                 </p>
 
                 {/* Toggle Method */}
