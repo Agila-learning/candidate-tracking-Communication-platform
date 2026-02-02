@@ -239,7 +239,7 @@ const AdminDashboard = () => {
                             </div>
                         )}
 
-                        <LeadPipeline />
+                        <LeadPipeline clients={clients} />
                     </div>
                 )}
 

@@ -132,12 +132,15 @@ router.post('/from-lead/:leadId', auth, authorize('ADMIN', 'SUPPORT_FIC'), async
         const lead = await Lead.findById(req.params.leadId);
         if (!lead) return res.status(404).send({ error: 'Lead not found' });
 
+        const { clientId, programName } = req.body;
+
         const candidate = new Candidate({
             name: lead.name,
             email: lead.email,
             phone: lead.phone,
             location: lead.location,
-            clientId: lead.clientId,
+            clientId: clientId || lead.clientId,
+            programName: programName,
             currentStatus: 'Registered'
         });
 
