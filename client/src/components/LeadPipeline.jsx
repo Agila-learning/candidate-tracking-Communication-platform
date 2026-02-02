@@ -3,11 +3,17 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 
-const LeadPipeline = () => {
+const LeadPipeline = ({ clients = [] }) => {
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingLead, setEditingLead] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
+
+    // Conversion State
+    const [showConvertModal, setShowConvertModal] = useState(false);
+    const [convertingLead, setConvertingLead] = useState(null);
+    const [conversionData, setConversionData] = useState({ clientId: '', programName: '' });
+
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -37,10 +43,22 @@ const LeadPipeline = () => {
         }
     };
 
-    const handleConvert = async (leadId) => {
+    const handleConvertClick = (lead) => {
+        setConvertingLead(lead);
+        setConversionData({
+            clientId: lead.assignedTo || '',
+            programName: ''
+        });
+        setShowConvertModal(true);
+    };
+
+    const confirmConvert = async (e) => {
+        e.preventDefault();
         try {
-            await axios.post(`${config.endpoints.candidates.create}/from-lead/${leadId}`);
+            await axios.post(`${config.endpoints.candidates.create}/from-lead/${convertingLead._id}`, conversionData);
             showToast('Lead converted to candidate successfully!');
+            setShowConvertModal(false);
+            setConvertingLead(null);
             fetchLeads();
         } catch (e) {
             showToast('Conversion failed. Ensure candidate is unique.', 'error');
@@ -121,6 +139,51 @@ const LeadPipeline = () => {
                 </div>
             )}
 
+            {/* Conversion Modal */}
+            {showConvertModal && convertingLead && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div className="card fade-in" style={{ width: '90%', maxWidth: '400px', backgroundColor: 'var(--bg-card)', padding: '2rem' }}>
+                        <h3 style={{ marginTop: 0 }}>Convert to Candidate</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            Assign a Bank and Program to <strong>{convertingLead.name}</strong>.
+                        </p>
+                        <form onSubmit={confirmConvert} style={{ display: 'grid', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Assign Bank</label>
+                                <select
+                                    value={conversionData.clientId}
+                                    onChange={e => setConversionData({ ...conversionData, clientId: e.target.value })}
+                                    style={{ width: '100%' }}
+                                    required
+                                >
+                                    <option value="">Select Bank / Client</option>
+                                    {clients.map(c => (
+                                        <option key={c._id} value={c._id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Program Name</label>
+                                <input
+                                    placeholder="e.g. Retail Banking P1"
+                                    value={conversionData.programName}
+                                    onChange={e => setConversionData({ ...conversionData, programName: e.target.value })}
+                                    style={{ width: '100%' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                <button type="button" onClick={() => setShowConvertModal(false)} style={{ background: 'transparent', border: '1px solid var(--text-muted)', color: 'var(--text-muted)', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                                <button type="submit" className="primary">Confirm Conversion</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
                 {stages.map(stage => (
                     <div key={stage} style={{ minWidth: 0 }}>
@@ -180,7 +243,7 @@ const LeadPipeline = () => {
                                                         Next &rarr;
                                                     </button>
                                                     <button
-                                                        onClick={() => handleConvert(lead._id)}
+                                                        onClick={() => handleConvertClick(lead)}
                                                         style={{
                                                             padding: '0.25rem 0.5rem',
                                                             fontSize: '0.65rem',
@@ -199,19 +262,6 @@ const LeadPipeline = () => {
                                     </div>
                                 </div>
                             ))}
-                            {leads.filter(l => l.stage === stage).length === 0 && (
-                                <div style={{
-                                    border: '2px dashed var(--border)',
-                                    borderRadius: 'var(--radius)',
-                                    padding: '2rem',
-                                    textAlign: 'center',
-                                    color: 'var(--text-muted)',
-                                    fontSize: '0.85rem',
-                                    marginTop: '1rem'
-                                }}>
-                                    No leads in {stage}
-                                </div>
-                            )}
                         </div>
                     </div>
                 ))}
