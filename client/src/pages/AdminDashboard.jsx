@@ -78,7 +78,7 @@ const AdminDashboard = () => {
 
         try {
             const endpoint = type === 'candidate'
-                ? `${config.endpoints.candidates.create}/${id}` // Assuming DELETE route matches base + id
+                ? config.endpoints.candidates.delete(id)
                 : `${config.endpoints.leads}/${id}`;
 
             await axios.delete(endpoint);
@@ -87,7 +87,8 @@ const AdminDashboard = () => {
             if (type === 'candidate') fetchCandidates();
             // Leads are handled in LeadPipeline, we might need a refresh trigger or simple callback if complex
         } catch (e) {
-            showToast('Failed to delete record', 'error');
+            console.error('Delete error:', e);
+            showToast(e.response?.data?.error || 'Failed to delete record', 'error');
         }
     };
 

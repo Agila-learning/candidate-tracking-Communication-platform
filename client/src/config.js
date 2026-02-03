@@ -25,7 +25,8 @@ export const config = {
             list: `${API_URL}/api/candidates`,
             create: `${API_URL}/api/candidates`,
             toggleStatus: (id) => `${API_URL}/api/candidates/${id}/toggle-status`,
-            details: (id) => `${API_URL}/api/candidates/${id}`
+            details: (id) => `${API_URL}/api/candidates/${id}`,
+            delete: (id) => `${API_URL}/api/candidates/${id}`
         },
         leads: `${API_URL}/api/leads`,
         chat: `${API_URL}/api/chat`,
