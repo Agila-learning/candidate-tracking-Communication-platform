@@ -41,14 +41,9 @@ const candidateSchema = new mongoose.Schema({
         uploadedAt: { type: Date, default: Date.now }
     }],
     statusHistory: [statusHistorySchema],
-    isActive: { type: Boolean, default: true }, // Admin can enable/disable candidate access
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
+    isActive: { type: Boolean, default: true } // Admin can enable/disable candidate access
+}, { timestamps: true });
 
-candidateSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
-});
+module.exports = mongoose.model('Candidate', candidateSchema);
 
 module.exports = mongoose.model('Candidate', candidateSchema);

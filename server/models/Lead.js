@@ -17,13 +17,7 @@ const leadSchema = new mongoose.Schema({
     notes: { type: String },
     followUpDate: { type: Date },
     tags: [String],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-leadSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
-});
+    tags: [String]
+}, { timestamps: true });
 
 module.exports = mongoose.model('Lead', leadSchema);
