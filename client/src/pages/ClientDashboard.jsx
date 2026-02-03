@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import SupportInbox from '../components/SupportInbox';
+import Resources from '../components/Resources';
 import CandidateDetail from '../components/CandidateDetail';
 import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
@@ -142,7 +143,7 @@ const ClientDashboard = () => {
                     marginTop: '2rem',
                     marginBottom: '2rem'
                 }}>
-                    {['candidates', 'inbox', 'announcements'].map(tab => (
+                    {['candidates', 'inbox', 'announcements', 'resources'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -155,7 +156,7 @@ const ClientDashboard = () => {
                                 textTransform: 'capitalize'
                             }}
                         >
-                            {tab === 'inbox' ? 'Bank Support Inbox' : tab === 'candidates' ? 'My Candidates' : 'Announcements'}
+                            {tab === 'inbox' ? 'Bank Support Inbox' : tab === 'candidates' ? 'My Candidates' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
                 </div>
@@ -269,6 +270,7 @@ const ClientDashboard = () => {
 
                 {activeTab === 'inbox' && <SupportInbox />}
                 {activeTab === 'announcements' && <Announcements />}
+                {activeTab === 'resources' && <Resources />}
             </div>
         </Layout>
     );

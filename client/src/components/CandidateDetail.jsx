@@ -80,6 +80,25 @@ const CandidateDetail = ({ candidateId, onBack }) => {
         }
     };
 
+    const handleFileUpload = async (e, docName) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('document', file);
+        formData.append('name', docName);
+
+        try {
+            await axios.post(`${config.endpoints.candidates.details(candidate._id)}/documents`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            showToast(`${docName} uploaded successfully!`);
+            fetchDetail();
+        } catch (err) {
+            showToast('Upload failed', 'error');
+        }
+    };
+
     if (!candidate) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading profile...</div>;
 
     return (
