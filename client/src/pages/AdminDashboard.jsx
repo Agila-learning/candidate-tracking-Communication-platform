@@ -162,7 +162,7 @@ const AdminDashboard = () => {
                                 <input
                                     placeholder="Search by name..."
                                     style={{ maxWidth: '250px', padding: '0.6rem 1rem' }}
-                                    value={searchTerm}
+                                    // Replaced by search tool
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
                                 <select
@@ -206,8 +206,8 @@ const AdminDashboard = () => {
                             </div>
                         )}
 
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                            <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>

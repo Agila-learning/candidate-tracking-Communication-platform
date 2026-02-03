@@ -1,5 +1,6 @@
 const express = require('express');
 const Client = require('../models/Client');
+const User = require('../models/User');
 const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -17,11 +18,25 @@ router.get('/', auth, async (req, res) => {
 // Create Client
 router.post('/', auth, authorize('ADMIN'), async (req, res) => {
     try {
-        const { name, pocName, pocEmail } = req.body;
+        const { name, pocName, pocEmail, password } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });
 
         const client = new Client({ name, pocName, pocEmail });
         await client.save();
+
+        // Auto-create User for Bank POC
+        if (pocEmail && password) {
+            const user = new User({
+                name: pocName || name,
+                email: pocEmail,
+                role: 'CLIENT_SUPPORT',
+                password: password,
+                clientId: client._id,
+                isActive: true
+            });
+            await user.save();
+        }
+
         res.status(201).json(client);
     } catch (e) {
         res.status(400).json({ error: 'Failed to create client' });

@@ -80,14 +80,7 @@ const Reports = () => {
                 <div className="card">
                     <h3>Lead Activity</h3>
                     <div style={{ marginTop: '1.5rem' }}>
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '1rem', padding: '0.75rem 0', borderBottom: '1px solid var(--border)' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)', marginTop: '6px' }} />
-                                <div style={{ fontSize: '0.85rem' }}>
-                                    <strong>Lead System:</strong> Automated import triggered at {new Date().toLocaleTimeString()}
-                                </div>
-                            </div>
-                        ))}
+                        {/* The previous hardcoded "Automated import triggered" activity log has been removed. */}
                     </div>
                 </div>
             </div>

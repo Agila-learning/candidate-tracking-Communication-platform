@@ -7,7 +7,7 @@ const ClientManagement = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '' });
+    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '' });
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -31,7 +31,7 @@ const ClientManagement = () => {
         try {
             await axios.post(config.endpoints.clients.create, formData);
             showToast('Bank partner added successfully!');
-            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '' });
+            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '' });
             setShowForm(false);
             fetchClients();
         } catch (err) {
@@ -111,6 +111,7 @@ const ClientManagement = () => {
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value })} />
+                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
                         </div>
                         <button type="submit" style={{ justifySelf: 'start' }}>Add Bank Partner</button>
                     </form>
@@ -146,6 +147,27 @@ const ClientManagement = () => {
                                 title={client.isActive ? 'Click to deactivate' : 'Click to activate'}
                             >
                                 {client.isActive ? '● Active' : '○ Inactive'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    // Navigate to inbox with this client selected (Mock logic for now, or just switch tab)
+                                    // In real app: router.push(`/admin?tab=inbox&clientId=${client._id}`)
+                                    // Here we just show a toast as "Chat feature coming" or rely on the Inbox being global
+                                    window.location.href = `/admin?tab=inbox`;
+                                }}
+                                style={{
+                                    marginLeft: '0.5rem',
+                                    padding: '0.35rem 0.75rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    backgroundColor: 'var(--bg-main)',
+                                    color: 'var(--primary)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '20px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                💬 Chat
                             </button>
                         </div>
                         {client.pocName && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>👤 {client.pocName}</div>}
