@@ -19,6 +19,9 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLI
             req.body.clientId = req.user.clientId;
         }
 
+        // Sanitize clientId
+        if (req.body.clientId === '') delete req.body.clientId;
+
         const candidate = new Candidate(req.body);
         await candidate.save();
 
@@ -37,6 +40,12 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLI
                 isActive: true
             });
             await user.save();
+        } else {
+            // If user exists but has no phone (e.g. created in Users tab), update it
+            if (!user.phone && candidate.phone) {
+                user.phone = candidate.phone;
+                await user.save();
+            }
         }
 
         // Link candidate to user
