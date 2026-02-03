@@ -188,7 +188,7 @@ const Login = () => {
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
                                         required
-                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white' }}
+                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
                                     />
                                 </div>
                                 <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
@@ -213,7 +213,7 @@ const Login = () => {
                                         onChange={(e) => setOtp(e.target.value)}
                                         required
                                         maxLength={6}
-                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center', background: 'white' }}
+                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center', background: 'white', color: '#1e293b' }}
                                     />
                                     <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem' }}>
                                         Enter code sent to {phone}
@@ -244,7 +244,7 @@ const Login = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white' }}
+                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
                                 />
                             </div>
                             <div style={{ marginBottom: '2rem' }}>
@@ -256,7 +256,7 @@ const Login = () => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white' }}
+                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
                                 />
                             </div>
                             <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} disabled={loading}>

@@ -282,6 +282,7 @@ input:focus {
   z-index: 60;
   padding: 0.5rem;
   background: var(--bg-card);
+  color: var(--primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
