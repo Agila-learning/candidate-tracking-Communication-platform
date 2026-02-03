@@ -188,6 +188,12 @@ const Login = () => {
                                 <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
                                     {loading ? 'Sending...' : 'Send OTP'}
                                 </button>
+                                {loading && (
+                                    <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
+                                        Connecting to server...<br />
+                                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
+                                    </p>
+                                )}
                             </form>
                         ) : (
                             <form onSubmit={handleVerifyOtp}>
@@ -210,6 +216,12 @@ const Login = () => {
                                 <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} disabled={loading}>
                                     {loading ? 'Verifying...' : 'Verify & Sign In'}
                                 </button>
+                                {loading && (
+                                    <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
+                                        Verifying...<br />
+                                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
+                                    </p>
+                                )}
                                 <button type="button" onClick={() => setStep(1)} style={{ width: '100%', marginTop: '1rem', background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline' }}>
                                     Change Mobile Number
                                 </button>
@@ -244,13 +256,19 @@ const Login = () => {
                             <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} disabled={loading}>
                                 {loading ? 'Signing In...' : 'Sign In'}
                             </button>
+                            {loading && (
+                                <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
+                                    Connecting to server...<br />
+                                    <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
+                                </p>
+                            )}
                         </form>
                     )}
                 </div>
 
                 {/* Footer fixed at bottom of the form side */}
                 <div style={{ position: 'absolute', bottom: '1rem', color: '#94a3b8', fontSize: '0.75rem' }}>
-                    &copy; 2026 FIC Banking Connect. v2.4 (Latest).
+                    &copy; 2026 FIC Banking Connect. v2.5.
                 </div>
             </div>
         </div>
