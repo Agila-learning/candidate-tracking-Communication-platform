@@ -90,11 +90,17 @@ io.on('connection', (socket) => {
 app.get('/api/debug-check', async (req, res) => {
     try {
         const email = req.query.email;
-        if (!email) return res.send('Provide email query param');
+        const phone = req.query.phone;
+        if (!email && !phone) return res.send('Provide email or phone query param');
         const Candidate = require('./models/Candidate');
         const User = require('./models/User');
-        const candidates = await Candidate.find({ email });
-        const users = await User.find({ email });
+
+        let query = {};
+        if (email) query.email = email;
+        else if (phone) query.phone = phone;
+
+        const candidates = await Candidate.find(query);
+        const users = await User.find(query);
         res.json({
             candidates,
             users,

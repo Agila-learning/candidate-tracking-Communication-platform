@@ -57,6 +57,10 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLI
         res.status(201).send(candidate);
     } catch (e) {
         console.error('Create Candidate Error:', e);
+        if (e.code === 11000) {
+            const field = Object.keys(e.keyPattern)[0];
+            return res.status(400).json({ error: `Duplicate detected: This ${field} is already registered.` });
+        }
         res.status(400).json({
             error: e.message || 'Creation failed',
             details: e
