@@ -121,8 +121,8 @@ router.post('/send-otp', async (req, res) => {
         user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
         await user.save();
 
-        // LOGGING OTP FOR SIMULATION
-        console.log(`\n=== SIMULATED SMS ===\nTo: ${phone}\nOTP: ${otp}\n=====================\n`);
+        // Send OTP via Service
+        await sendOTP(phone, otp);
 
         res.json({ message: 'OTP sent successfully' });
     } catch (e) {
