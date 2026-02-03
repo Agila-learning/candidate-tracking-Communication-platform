@@ -43,6 +43,17 @@ const LeadPipeline = ({ clients = [] }) => {
         }
     };
 
+    const handleDelete = async (leadId) => {
+        if (!window.confirm('Are you sure you want to delete this lead?')) return;
+        try {
+            await axios.delete(`${config.endpoints.leads}/${leadId}`);
+            showToast('Lead deleted successfully');
+            fetchLeads();
+        } catch (e) {
+            showToast('Failed to delete lead', 'error');
+        }
+    };
+
     const handleConvertClick = (lead) => {
         setConvertingLead(lead);
         setConversionData({
@@ -205,12 +216,23 @@ const LeadPipeline = ({ clients = [] }) => {
                                     <button
                                         onClick={() => handleEditClick(lead)}
                                         style={{
-                                            position: 'absolute', top: '0.5rem', right: '0.5rem',
+                                            position: 'absolute', top: '0.5rem', right: '2rem', // Moved left slightly
                                             background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5
                                         }}
                                         title="Edit Lead"
                                     >
                                         ✏️
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(lead._id)}
+                                        style={{
+                                            position: 'absolute', top: '0.5rem', right: '0.5rem',
+                                            background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5,
+                                            color: 'var(--danger)'
+                                        }}
+                                        title="Delete Lead"
+                                    >
+                                        🗑️
                                     </button>
 
                                     <div style={{ fontWeight: 600, marginBottom: '0.25rem', paddingRight: '1.5rem' }}>{lead.name}</div>

@@ -21,6 +21,30 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLI
 
         const candidate = new Candidate(req.body);
         await candidate.save();
+
+        // Sync: Ensure a User account exists for this candidate (for OTP Login)
+        // Check by phone or email
+        let user = await User.findOne({ $or: [{ phone: candidate.phone }, { email: candidate.email }] });
+
+        if (!user) {
+            // Auto-create user
+            user = new User({
+                name: candidate.name,
+                email: candidate.email,
+                phone: candidate.phone,
+                role: 'CANDIDATE',
+                password: Math.random().toString(36).slice(-8), // Random password, they will use OTP
+                isActive: true
+            });
+            await user.save();
+        }
+
+        // Link candidate to user
+        if (!candidate.userId || candidate.userId.toString() !== user._id.toString()) {
+            candidate.userId = user._id;
+            await candidate.save();
+        }
+
         res.status(201).send(candidate);
     } catch (e) {
         res.status(400).send(e);
@@ -145,6 +169,27 @@ router.post('/from-lead/:leadId', auth, authorize('ADMIN', 'SUPPORT_FIC'), async
         });
 
         await candidate.save();
+
+        // Sync: Ensure a User account exists for this candidate (for OTP Login)
+        let user = await User.findOne({ $or: [{ phone: candidate.phone }, { email: candidate.email }] });
+
+        if (!user) {
+            // Auto-create user
+            user = new User({
+                name: candidate.name,
+                email: candidate.email,
+                phone: candidate.phone,
+                role: 'CANDIDATE',
+                password: Math.random().toString(36).slice(-8), // Random password
+                isActive: true
+            });
+            await user.save();
+        }
+
+        // Link candidate to user
+        candidate.userId = user._id;
+        await candidate.save();
+
         lead.stage = 'Converted';
         await lead.save();
 

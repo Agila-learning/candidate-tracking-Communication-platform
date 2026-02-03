@@ -32,24 +32,33 @@ const CandidateDashboard = () => {
                 // Check if candidate account is active
                 if (cand.isActive === false) {
                     setCandidate({ ...cand, accessDenied: true });
-                    return;
+                } else {
+                    setCandidate(cand);
+
+                    // Fetch Chat Info
+                    try {
+                        const ficRes = await axios.post(`${config.endpoints.chat}/candidate/${cand._id}/admin`);
+                        setFicConversationId(ficRes.data._id);
+                        setFicUnread(ficRes.data.unreadCounts?.[user?._id] || 0);
+
+                        if (cand.clientId) {
+                            const bankRes = await axios.post(`${config.endpoints.chat}/candidate/${cand._id}/client`);
+                            setBankConversationId(bankRes.data._id);
+                            setBankUnread(bankRes.data.unreadCounts?.[user?._id] || 0);
+                        }
+                    } catch (chatErr) {
+                        console.error('Chat init error', chatErr);
+                    }
                 }
-
-                setCandidate(cand);
-
-                const ficRes = await axios.post(`${config.endpoints.chat}/candidate/${cand._id}/admin`);
-                setFicConversationId(ficRes.data._id);
-                setFicUnread(ficRes.data.unreadCounts?.[user?._id] || 0);
-
-                if (cand.clientId) {
-                    const bankRes = await axios.post(`${config.endpoints.chat}/candidate/${cand._id}/client`);
-                    setBankConversationId(bankRes.data._id);
-                    setBankUnread(bankRes.data.unreadCounts?.[user?._id] || 0);
-                }
+            } else {
+                // No candidate profile found for this user
+                setCandidate({ notFound: true });
             }
         } catch (err) {
             console.error('Error fetching profile:', err);
             showToast('Failed to load profile', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -83,6 +92,20 @@ const CandidateDashboard = () => {
             showToast('Upload failed. Please try a smaller file.', 'error');
         }
     };
+
+    if (loading) return <Layout><div style={{ textAlign: 'center', padding: '3rem' }}>Loading profile...</div></Layout>;
+
+    if (candidate?.notFound) {
+        return (
+            <Layout>
+                <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+                    <h2>Profile Not Linked</h2>
+                    <p>Your mobile number is registered, but we couldn't find a Candidate Profile linked to it.</p>
+                    <p>Please contact the Admin to link your profile.</p>
+                </div>
+            </Layout>
+        );
+    }
 
     if (!candidate) return <Layout><div style={{ textAlign: 'center', padding: '3rem' }}>Loading profile...</div></Layout>;
 

@@ -73,6 +73,24 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDelete = async (type, id) => {
+        if (!window.confirm('Are you sure you want to delete this record? This cannot be undone.')) return;
+
+        try {
+            const endpoint = type === 'candidate'
+                ? `${config.endpoints.candidates.create}/${id}` // Assuming DELETE route matches base + id
+                : `${config.endpoints.leads}/${id}`;
+
+            await axios.delete(endpoint);
+            showToast(`${type} deleted successfully`);
+
+            if (type === 'candidate') fetchCandidates();
+            // Leads are handled in LeadPipeline, we might need a refresh trigger or simple callback if complex
+        } catch (e) {
+            showToast('Failed to delete record', 'error');
+        }
+    };
+
     const filteredCandidates = candidates.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -219,6 +237,12 @@ const AdminDashboard = () => {
                                                     style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
                                                 >
                                                     Chat
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete('candidate', c._id)}
+                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--danger)', color: 'white', border: 'none' }}
+                                                >
+                                                    Delete
                                                 </button>
                                             </td>
                                         </tr>

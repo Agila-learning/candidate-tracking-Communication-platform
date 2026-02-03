@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { config } from '../config';
 
 const CandidateDetail = ({ candidateId, onBack }) => {
     const [candidate, setCandidate] = useState(null);
@@ -25,7 +26,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const fetchDetail = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/candidates/${candidateId}`);
+            const res = await axios.get(`${config.endpoints.candidates.list}/${candidateId}`);
             setCandidate(res.data);
             setNewStatus(res.data.currentStatus);
             setSelectedClientId(res.data.clientId?._id || '');
@@ -36,7 +37,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const fetchClients = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/clients');
+            const res = await axios.get(config.endpoints.clients.list);
             setClients(res.data);
         } catch (e) {
             console.error(e);
@@ -45,7 +46,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const handleUpdateStatus = async () => {
         try {
-            await axios.patch(`http://localhost:5000/api/candidates/${candidateId}/status`, {
+            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}/status`, {
                 newStatus,
                 remark
             });
@@ -59,7 +60,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const handleAssignClient = async () => {
         try {
-            await axios.patch(`http://localhost:5000/api/candidates/${candidateId}`, { clientId: selectedClientId });
+            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}`, { clientId: selectedClientId });
             fetchDetail();
             showToast('Bank partner associated successfully!');
         } catch (e) {
@@ -70,7 +71,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
     const handleScheduleInterview = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:5000/api/candidates/${candidateId}/interview`, interviewData);
+            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}/interview`, interviewData);
             setIsScheduling(false);
             fetchDetail();
             showToast('Interview scheduled successfully!');

@@ -52,4 +52,15 @@ router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) =
     }
 });
 
+// Delete Lead
+router.delete('/:id', auth, authorize('ADMIN'), async (req, res) => {
+    try {
+        const lead = await Lead.findByIdAndDelete(req.params.id);
+        if (!lead) return res.status(404).send({ error: 'Lead not found' });
+        res.send(lead);
+    } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
 module.exports = router;
