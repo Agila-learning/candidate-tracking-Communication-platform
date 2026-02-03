@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     const [candidates, setCandidates] = useState([]);
     const [selectedCandidateId, setSelectedCandidateId] = useState(null);
     const [showAddLead, setShowAddLead] = useState(false);
-    const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', location: '' });
+    const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', location: '', targetBank: '', phase: 'Phase 1' });
     const [showAddCandidate, setShowAddCandidate] = useState(false);
     const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '' });
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +51,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             await axios.post(config.endpoints.leads, newLead);
-            setNewLead({ name: '', phone: '', email: '', location: '' });
+            setNewLead({ name: '', phone: '', email: '', location: '', targetBank: '', phase: 'Phase 1' });
             setShowAddLead(false);
             setActiveTab('leads');
             showToast('New lead captured successfully!');
@@ -209,6 +209,17 @@ const AdminDashboard = () => {
                                                 >
                                                     View Details
                                                 </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setActiveTab('inbox');
+                                                        // In a real implementation, you would set the selected conversation here
+                                                        // But SupportInbox needs to handle that. For now, switching tabs is a start.
+                                                        // Ideally: navigate(`/admin?tab=inbox&userId=${c.userId?._id}`)
+                                                    }}
+                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
+                                                >
+                                                    Chat
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -234,6 +245,12 @@ const AdminDashboard = () => {
                                     <input placeholder="Phone" value={newLead.phone} onChange={e => setNewLead({ ...newLead, phone: e.target.value })} required />
                                     <input placeholder="Email" value={newLead.email} onChange={e => setNewLead({ ...newLead, email: e.target.value })} />
                                     <input placeholder="Location" value={newLead.location} onChange={e => setNewLead({ ...newLead, location: e.target.value })} />
+                                    <input placeholder="Target Bank" value={newLead.targetBank} onChange={e => setNewLead({ ...newLead, targetBank: e.target.value })} />
+                                    <select value={newLead.phase} onChange={e => setNewLead({ ...newLead, phase: e.target.value })}>
+                                        <option value="Phase 1">Phase 1 (Learning)</option>
+                                        <option value="Phase 2">Phase 2 (Interview Prep)</option>
+                                        <option value="Phase 3">Phase 3 (Placement)</option>
+                                    </select>
                                     <button type="submit" className="primary">Create Lead</button>
                                 </form>
                             </div>
