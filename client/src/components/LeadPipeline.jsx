@@ -215,31 +215,33 @@ const LeadPipeline = ({ clients = [] }) => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minHeight: '400px', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius)', padding: '0.5rem' }}>
                             {leads.filter(l => l.stage === stage).map(lead => (
                                 <div key={lead._id} className="card" style={{ padding: '1rem', borderTop: `4px solid ${stage === 'Dropped' ? 'var(--danger)' : 'var(--primary)'}`, position: 'relative' }}>
-                                    <button
-                                        onClick={() => handleEditClick(lead)}
-                                        style={{
-                                            position: 'absolute', top: '0.5rem', right: '2.5rem', // Moved left to prevent misclick
-                                            background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5
-                                        }}
-                                        title="Edit Lead"
-                                    >
-                                        ✏️
-                                    </button>
-                                    {user?.role === 'ADMIN' && (
-                                        <button
-                                            onClick={() => handleDelete(lead._id)}
-                                            style={{
-                                                position: 'absolute', top: '0.5rem', right: '0.5rem',
-                                                background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5,
-                                                color: 'var(--danger)'
-                                            }}
-                                            title="Delete Lead"
-                                        >
-                                            🗑️
-                                        </button>
-                                    )}
-
-                                    <div style={{ fontWeight: 600, marginBottom: '0.25rem', paddingRight: '1.5rem' }}>{lead.name}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                        <div style={{ fontWeight: 600, paddingRight: '0.5rem' }}>{lead.name}</div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => handleEditClick(lead)}
+                                                style={{
+                                                    background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.6,
+                                                    padding: '4px'
+                                                }}
+                                                title="Edit Lead"
+                                            >
+                                                ✏️
+                                            </button>
+                                            {user?.role === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => handleDelete(lead._id)}
+                                                    style={{
+                                                        background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.6,
+                                                        color: 'var(--danger)', padding: '4px'
+                                                    }}
+                                                    title="Delete Lead"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
                                         {lead.phone}
                                     </div>
