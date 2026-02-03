@@ -56,7 +56,11 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLI
 
         res.status(201).send(candidate);
     } catch (e) {
-        res.status(400).send(e);
+        console.error('Create Candidate Error:', e);
+        res.status(400).json({
+            error: e.message || 'Creation failed',
+            details: e
+        });
     }
 });
 

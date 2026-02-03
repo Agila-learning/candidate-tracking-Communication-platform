@@ -87,6 +87,24 @@ io.on('connection', (socket) => {
     });
 });
 
+app.get('/api/debug-check', async (req, res) => {
+    try {
+        const email = req.query.email;
+        if (!email) return res.send('Provide email query param');
+        const Candidate = require('./models/Candidate');
+        const User = require('./models/User');
+        const candidates = await Candidate.find({ email });
+        const users = await User.find({ email });
+        res.json({
+            candidates,
+            users,
+            mongoConnection: mongoose.connection.readyState
+        });
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fic_banking';
 
