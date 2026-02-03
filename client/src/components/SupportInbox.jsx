@@ -4,12 +4,18 @@ import Chat from './Chat';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 
-const SupportInbox = ({ clients = [] }) => {
+const SupportInbox = ({ clients = [], initialConversationId = null }) => {
     const { user } = useAuth();
     const [conversations, setConversations] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const [filterType, setFilterType] = useState('all');
     const [filterClientId, setFilterClientId] = useState('');
+
+    useEffect(() => {
+        if (initialConversationId) {
+            setSelectedId(initialConversationId);
+        }
+    }, [initialConversationId]);
 
     useEffect(() => {
         fetchConversations();

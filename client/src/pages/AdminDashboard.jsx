@@ -75,6 +75,22 @@ const AdminDashboard = () => {
         }
     };
 
+    const [targetConversationId, setTargetConversationId] = useState(null);
+
+
+
+    const handleStartChat = async (candidateId) => {
+        try {
+            // Create or Get conversation
+            const res = await axios.post(`${config.endpoints.chat}/candidate/${candidateId}/admin`);
+            setTargetConversationId(res.data._id);
+            setActiveTab('inbox');
+        } catch (e) {
+            console.error('Chat start error:', e);
+            showToast('Failed to start chat', 'error');
+        }
+    };
+
     const handleDelete = async (type, id) => {
         if (!window.confirm('Are you sure you want to delete this record? This cannot be undone.')) return;
 
@@ -93,6 +109,35 @@ const AdminDashboard = () => {
             showToast(e.response?.data?.error || 'Failed to delete record', 'error');
         }
     };
+
+
+
+
+    {/* ... (Header) ... */ }
+
+    {/* ... (Tabs) ... */ }
+
+    {/* Candidate List Render Block - Update the Chat Button */ }
+    {
+        activeTab === 'candidates' && (
+            <div>
+                {/* ... (Search/Filter) ... */}
+
+                {/* ... (Table) ... */}
+                {/* 
+                            NOTE: I cannot easily replace just the button inside the loop with simple search/replace logic 
+                            unless I target the whole block. 
+                            I will rely on the user to use the 'handleStartChat' function I am adding below 
+                            and I will update the button onClick separately if I can't match it easily.
+                            
+                            Actually, I will just add the function definition here and update the button in a separate replace call 
+                            to be safe, OR I will include the Render part in this block if I can match the return statement.
+                        */}
+            </div>
+        )
+    }
+
+
 
     const handleSyncLogin = async (candidateId) => {
         try {
@@ -261,9 +306,7 @@ const AdminDashboard = () => {
                                                     </button>
                                                 )}
                                                 <button
-                                                    onClick={() => {
-                                                        setActiveTab('inbox');
-                                                    }}
+                                                    onClick={() => handleStartChat(c._id)}
                                                     style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
                                                 >
                                                     Chat
@@ -310,7 +353,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'banks' && <ClientManagement />}
-                {activeTab === 'inbox' && <SupportInbox clients={clients} />}
+                {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
             </div>
