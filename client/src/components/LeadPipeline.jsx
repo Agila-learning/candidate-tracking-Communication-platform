@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 
 const LeadPipeline = ({ clients = [] }) => {
+    const { user } = useAuth();
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingLead, setEditingLead] = useState(null);
@@ -216,24 +218,26 @@ const LeadPipeline = ({ clients = [] }) => {
                                     <button
                                         onClick={() => handleEditClick(lead)}
                                         style={{
-                                            position: 'absolute', top: '0.5rem', right: '2rem', // Moved left slightly
+                                            position: 'absolute', top: '0.5rem', right: '2.5rem', // Moved left to prevent misclick
                                             background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5
                                         }}
                                         title="Edit Lead"
                                     >
                                         ✏️
                                     </button>
-                                    <button
-                                        onClick={() => handleDelete(lead._id)}
-                                        style={{
-                                            position: 'absolute', top: '0.5rem', right: '0.5rem',
-                                            background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5,
-                                            color: 'var(--danger)'
-                                        }}
-                                        title="Delete Lead"
-                                    >
-                                        🗑️
-                                    </button>
+                                    {user?.role === 'ADMIN' && (
+                                        <button
+                                            onClick={() => handleDelete(lead._id)}
+                                            style={{
+                                                position: 'absolute', top: '0.5rem', right: '0.5rem',
+                                                background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5,
+                                                color: 'var(--danger)'
+                                            }}
+                                            title="Delete Lead"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
 
                                     <div style={{ fontWeight: 600, marginBottom: '0.25rem', paddingRight: '1.5rem' }}>{lead.name}</div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>

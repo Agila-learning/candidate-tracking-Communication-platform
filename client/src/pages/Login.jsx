@@ -73,48 +73,91 @@ const Login = () => {
 
     return (
         <div style={{
-            height: '100vh',
+            minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, var(--primary) 0%, #6366f1 100%)'
+            background: 'linear-gradient(45deg, #1a1c20, #0f172a, #312e81)',
+            backgroundSize: '400% 400%',
+            animation: 'gradientBG 15s ease infinite',
+            padding: '1rem'
         }}>
-            <div className="card fade-in" style={{ width: '100%', maxWidth: '400px' }}>
-                <h1 style={{ marginBottom: '0.5rem', textAlign: 'center' }}>FIC Connect</h1>
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>
-                    Lead & Candidate Tracking System <br />
-                    <small style={{ fontSize: '0.7em', color: 'var(--primary)' }}>v2.0 (Mobile Auth)</small>
-                </p>
+            <style>{`
+                @keyframes gradientBG {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+                .glass-card {
+                    background: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                }
+                .login-input {
+                    background: rgba(0, 0, 0, 0.2) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    color: white !important;
+                    transition: all 0.3s ease;
+                }
+                .login-input:focus {
+                    background: rgba(0, 0, 0, 0.4) !important;
+                    border-color: var(--primary) !important;
+                    outline: none;
+                }
+            `}</style>
+
+            <div className="glass-card fade-in" style={{ width: '100%', maxWidth: '420px', padding: '3rem', borderRadius: '24px', color: 'white' }}>
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <div style={{
+                        width: '60px', height: '60px', margin: '0 auto 1.5rem',
+                        background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+                        borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '2rem', boxShadow: '0 0 20px rgba(99, 102, 241, 0.5)'
+                    }}>
+                        🚀
+                    </div>
+                    <h1 style={{ marginBottom: '0.5rem', fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.5px' }}>FIC Connect</h1>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+                        Premier Banking Career Portal
+                    </p>
+                </div>
 
                 {/* Toggle Method */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem', gap: '1rem' }}>
+                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '12px', marginBottom: '2.5rem' }}>
                     <button
                         type="button"
                         onClick={() => setLoginMethod('mobile')}
                         style={{
+                            flex: 1,
                             background: loginMethod === 'mobile' ? 'var(--primary)' : 'transparent',
-                            color: loginMethod === 'mobile' ? 'white' : 'var(--text-muted)',
-                            border: '1px solid var(--primary)',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '20px',
-                            cursor: 'pointer'
+                            color: loginMethod === 'mobile' ? 'white' : 'rgba(255,255,255,0.6)',
+                            border: 'none',
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease'
                         }}
                     >
-                        Mobile / OTP
+                        Mobile One-Time Password
                     </button>
                     <button
                         type="button"
                         onClick={() => setLoginMethod('email')}
                         style={{
+                            flex: 1,
                             background: loginMethod === 'email' ? 'var(--primary)' : 'transparent',
-                            color: loginMethod === 'email' ? 'white' : 'var(--text-muted)',
-                            border: '1px solid var(--primary)',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '20px',
-                            cursor: 'pointer'
+                            color: loginMethod === 'email' ? 'white' : 'rgba(255,255,255,0.6)',
+                            border: 'none',
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease'
                         }}
                     >
-                        Email / Password
+                        Admin Email
                     </button>
                 </div>
 
@@ -123,76 +166,87 @@ const Login = () => {
                     step === 1 ? (
                         <form onSubmit={handleSendOtp}>
                             <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Mobile Number</label>
+                                <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Mobile Number</label>
                                 <input
+                                    className="login-input"
                                     type="tel"
                                     placeholder="Enter 10 digit number"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid var(--border)' }}
+                                    style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
                                 />
                             </div>
-                            <button type="submit" className="primary" style={{ width: '100%' }} disabled={loading}>
-                                {loading ? 'Sending...' : 'Send OTP'}
+                            <button type="submit" className="primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: 'linear-gradient(90deg, var(--primary) 0%, #8b5cf6 100%)', border: 'none' }} disabled={loading}>
+                                {loading ? 'Sending...' : 'Send Secure OTP'}
                             </button>
                         </form>
                     ) : (
                         <form onSubmit={handleVerifyOtp}>
                             <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Enter OTP</label>
+                                <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Enter Verification Code</label>
                                 <input
+                                    className="login-input"
                                     type="text"
-                                    placeholder="XXXX"
+                                    placeholder="• • • •"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid var(--border)', textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem' }}
+                                    maxLength={6}
+                                    style={{ width: '100%', padding: '1rem', borderRadius: '12px', textAlign: 'center', letterSpacing: '8px', fontSize: '1.5rem', fontWeight: 700 }}
                                 />
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', textAlign: 'center' }}>
-                                    (Check server console for Simulated OTP)
+                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '1rem', textAlign: 'center' }}>
+                                    (Enter the code sent to {phone})
                                 </p>
                             </div>
-                            <button type="submit" className="primary" style={{ width: '100%' }} disabled={loading}>
+                            <button type="submit" className="primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: 'linear-gradient(90deg, var(--primary) 0%, #8b5cf6 100%)', border: 'none' }} disabled={loading}>
                                 {loading ? 'Verifying...' : 'Verify & Login'}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setStep(1)}
-                                style={{ width: '100%', marginTop: '1rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                                style={{ width: '100%', marginTop: '1.5rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', textDecoration: 'underline' }}
                             >
-                                Change Number
+                                Use a different number
                             </button>
                         </form>
                     )
                 ) : (
                     /* Email Flow */
                     <form onSubmit={handleEmailLogin}>
-                        <div style={{ marginBottom: '1.25rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Email Address</label>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Email Address</label>
                             <input
+                                className="login-input"
                                 type="email"
-                                placeholder="admin@fic.com"
+                                placeholder="name@fic-banking.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
                             />
                         </div>
-                        <div style={{ marginBottom: '2rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Password</label>
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Password</label>
                             <input
+                                className="login-input"
                                 type="password"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                style={{ width: '100%', padding: '1rem', borderRadius: '12px' }}
                             />
                         </div>
-                        <button type="submit" className="primary" style={{ width: '100%' }} disabled={loading}>
-                            {loading ? 'Signing In...' : 'Sign In'}
+                        <button type="submit" className="primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: 'linear-gradient(90deg, var(--primary) 0%, #8b5cf6 100%)', border: 'none' }} disabled={loading}>
+                            {loading ? 'Authenticating...' : 'Sign In'}
                         </button>
                     </form>
                 )}
+            </div>
+
+            <div style={{ position: 'absolute', bottom: '2rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
+                © 2026 FIC Banking Connect. Secure Transaction System.
             </div>
         </div>
     );
