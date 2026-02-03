@@ -30,7 +30,8 @@ export const config = {
         },
         leads: `${API_URL}/api/leads`,
         chat: `${API_URL}/api/chat`,
-        resources: `${API_URL}/api/resources`
+        resources: `${API_URL}/api/resources`,
+        announcements: `${API_URL}/api/announcements`
     }
 };
 

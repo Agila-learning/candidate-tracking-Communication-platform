@@ -65,6 +65,7 @@ app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
 
 // Serve static assets in production
 // Basic route

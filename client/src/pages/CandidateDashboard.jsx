@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Chat from '../components/Chat';
 import Resources from '../components/Resources';
+import Announcements from '../components/Announcements';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -142,7 +143,7 @@ const CandidateDashboard = () => {
                     borderBottom: '1px solid var(--border)',
                     marginBottom: '2rem'
                 }}>
-                    {['status', 'resources'].map(tab => (
+                    {['status', 'resources', 'announcements'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -307,6 +308,7 @@ const CandidateDashboard = () => {
                 )}
 
                 {activeTab === 'resources' && <Resources />}
+                {activeTab === 'announcements' && <Announcements />}
             </div>
         </Layout>
     );

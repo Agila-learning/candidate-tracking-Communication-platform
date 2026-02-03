@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import axios from 'axios';
 import SupportInbox from '../components/SupportInbox';
 import CandidateDetail from '../components/CandidateDetail';
+import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
@@ -141,7 +142,7 @@ const ClientDashboard = () => {
                     marginTop: '2rem',
                     marginBottom: '2rem'
                 }}>
-                    {['candidates', 'inbox'].map(tab => (
+                    {['candidates', 'inbox', 'announcements'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -154,7 +155,7 @@ const ClientDashboard = () => {
                                 textTransform: 'capitalize'
                             }}
                         >
-                            {tab === 'inbox' ? 'Bank Support Inbox' : 'My Candidates'}
+                            {tab === 'inbox' ? 'Bank Support Inbox' : tab === 'candidates' ? 'My Candidates' : 'Announcements'}
                         </button>
                     ))}
                 </div>
@@ -267,6 +268,7 @@ const ClientDashboard = () => {
                 )}
 
                 {activeTab === 'inbox' && <SupportInbox />}
+                {activeTab === 'announcements' && <Announcements />}
             </div>
         </Layout>
     );

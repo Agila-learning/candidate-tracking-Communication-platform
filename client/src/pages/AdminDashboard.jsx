@@ -8,6 +8,7 @@ import Reports from '../components/Reports';
 import Resources from '../components/Resources';
 import UserManagement from '../components/UserManagement';
 import ClientManagement from '../components/ClientManagement';
+import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 
@@ -193,7 +194,7 @@ const AdminDashboard = () => {
                     borderBottom: '1px solid var(--border)',
                     marginBottom: '2rem'
                 }}>
-                    {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources'].map(tab => (
+                    {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources', 'announcements'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -367,6 +368,7 @@ const AdminDashboard = () => {
                 {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
+                {activeTab === 'announcements' && <Announcements />}
             </div>
         </Layout >
     );
