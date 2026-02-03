@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendOTP } = require('../services/otpService');
 const { auth } = require('../middleware/auth');
 const { validateRegistration, validateLogin } = require('../middleware/validators');
 

@@ -10,6 +10,7 @@ import { config } from '../config';
 const CandidateDashboard = () => {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const [loading, setLoading] = useState(true);
     const [candidate, setCandidate] = useState(null);
     const [activeTab, setActiveTab] = useState('status');
     const [chatTab, setChatTab] = useState('FIC Support');
@@ -162,8 +163,16 @@ const CandidateDashboard = () => {
 
             <div className="fade-in">
                 {activeTab === 'status' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '2rem' }}>
-                        <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="responsive-grid">
+                        <style>{`
+                            @media (min-width: 900px) {
+                                .responsive-grid {
+                                    display: grid !important;
+                                    grid-template-columns: minmax(0, 1fr) 350px;
+                                }
+                            }
+                        `}</style>
+                        <div style={{ minWidth: 0 }}>
                             <div className="card" style={{ marginBottom: '2rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h3>Application Progress</h3>
