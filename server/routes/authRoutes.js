@@ -124,7 +124,8 @@ router.post('/send-otp', async (req, res) => {
         // Send OTP via Service
         await sendOTP(phone, otp);
 
-        res.json({ message: 'OTP sent successfully' });
+        // DEV ONLY: Return OTP in response for testing
+        res.json({ message: 'OTP sent successfully', debugOtp: otp });
     } catch (e) {
         console.error('OTP Send Error:', e);
         res.status(500).json({ error: 'Failed to send OTP' });

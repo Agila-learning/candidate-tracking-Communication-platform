@@ -39,7 +39,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     const sendOtp = async (phone) => {
-        await axios.post(config.endpoints.auth.sendOtp, { phone });
+        const res = await axios.post(config.endpoints.auth.sendOtp, { phone });
+        return res.data;
     };
 
     const verifyOtp = async (phone, otp) => {

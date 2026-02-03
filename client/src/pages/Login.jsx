@@ -26,8 +26,14 @@ const Login = () => {
 
         setLoading(true);
         try {
-            await sendOtp(phone);
-            showToast(`OTP sent to ${phone}`);
+            const res = await sendOtp(phone);
+            if (res.debugOtp) {
+                alert(`TESTING ONLY: Your OTP is ${res.debugOtp}`);
+                showToast(`OTP Sent! (Use ${res.debugOtp})`);
+                console.log('OTP:', res.debugOtp);
+            } else {
+                showToast(`OTP sent to ${phone}`);
+            }
             // Check console for simulated OTP
             console.log('Check server console for OTP');
             setStep(2);
