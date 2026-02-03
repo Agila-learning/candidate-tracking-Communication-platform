@@ -69,7 +69,9 @@ const AdminDashboard = () => {
             fetchCandidates();
             showToast('Candidate onboarded successfully!');
         } catch (e) {
-            showToast('Failed to create candidate. Ensure email is unique.', 'error');
+            console.error('Creation error:', e);
+            const errorMsg = e.response?.data?.error || 'Failed to create candidate.';
+            showToast(errorMsg, 'error');
         }
     };
 
