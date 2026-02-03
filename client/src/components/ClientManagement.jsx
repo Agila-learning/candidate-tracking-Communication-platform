@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 
-const ClientManagement = () => {
+const ClientManagement = ({ onStartChat }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -150,10 +150,8 @@ const ClientManagement = () => {
                             </button>
                             <button
                                 onClick={() => {
-                                    // Navigate to inbox with this client selected (Mock logic for now, or just switch tab)
-                                    // In real app: router.push(`/admin?tab=inbox&clientId=${client._id}`)
-                                    // Here we just show a toast as "Chat feature coming" or rely on the Inbox being global
-                                    window.location.href = `/admin?tab=inbox`;
+                                    if (onStartChat) onStartChat(client._id);
+                                    else window.location.href = `/admin?tab=inbox`;
                                 }}
                                 style={{
                                     marginLeft: '0.5rem',
@@ -173,7 +171,7 @@ const ClientManagement = () => {
                         {client.pocName && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>👤 {client.pocName}</div>}
                         {client.pocEmail && <div style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '0.25rem' }}>✉️ {client.pocEmail}</div>}
                         {client.pocPhone && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {client.pocPhone}</div>}
-                        <button
+                        < button
                             onClick={() => handleDelete(client._id, client.name)}
                             style={{
                                 position: 'absolute',
@@ -189,15 +187,18 @@ const ClientManagement = () => {
                             Remove
                         </button>
                     </div>
-                ))}
-            </div>
+                ))
+                }
+            </div >
 
-            {filteredClients.length === 0 && (
-                <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    {statusFilter === 'all' ? 'No bank partners yet. Add your first bank above.' : `No ${statusFilter} bank partners.`}
-                </div>
-            )}
-        </div>
+            {
+                filteredClients.length === 0 && (
+                    <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                        {statusFilter === 'all' ? 'No bank partners yet. Add your first bank above.' : `No ${statusFilter} bank partners.`}
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

@@ -91,6 +91,17 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleStartBankChat = async (clientId) => {
+        try {
+            const res = await axios.post(`${config.endpoints.chat}/client/${clientId}/admin`);
+            setTargetConversationId(res.data._id);
+            setActiveTab('inbox');
+        } catch (e) {
+            console.error('Chat start bank error:', e);
+            showToast('Failed to start chat with bank', 'error');
+        }
+    };
+
     const handleDelete = async (type, id) => {
         if (!window.confirm('Are you sure you want to delete this record? This cannot be undone.')) return;
 
@@ -352,7 +363,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'users' && <UserManagement />}
-                {activeTab === 'banks' && <ClientManagement />}
+                {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} />}
                 {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}

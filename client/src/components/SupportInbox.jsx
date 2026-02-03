@@ -44,7 +44,7 @@ const SupportInbox = ({ clients = [], initialConversationId = null }) => {
 
     const filteredConversations = conversations.filter(conv => {
         if (filterType === 'internal' && conv.type !== 'candidate-admin') return false;
-        if (filterType === 'bank' && conv.type !== 'candidate-client') return false;
+        if (filterType === 'bank' && !['candidate-client', 'admin-client'].includes(conv.type)) return false;
         if (filterClientId && conv.clientId?._id !== filterClientId) return false;
         return true;
     });
@@ -97,7 +97,7 @@ const SupportInbox = ({ clients = [], initialConversationId = null }) => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                                    {conv.candidateId?.name || 'Unknown Candidate'}
+                                    {conv.candidateId?.name || conv.clientId?.name || 'Unknown User'}
                                 </div>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                                     {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -140,7 +140,7 @@ const SupportInbox = ({ clients = [], initialConversationId = null }) => {
                                 alignItems: 'center',
                                 gap: '0.4rem'
                             }}>
-                                {conv.type === 'candidate-admin' ? 'Internal: FIC' : `External: ${conv.clientId?.name || 'Bank'}`}
+                                {conv.type === 'candidate-admin' ? 'Internal: FIC' : conv.type === 'admin-client' ? 'Direct: Bank' : `External: ${conv.clientId?.name || 'Bank'}`}
                             </div>
                         </div>
                     );

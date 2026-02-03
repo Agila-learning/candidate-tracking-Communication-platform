@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 const conversationSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ['candidate-admin', 'candidate-client'],
+        enum: ['candidate-admin', 'candidate-client', 'admin-client'],
         required: true
     },
-    candidateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate', required: true },
-    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // Only for candidate-client
+    candidateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' }, // Optional for admin-client
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // For candidate-client AND admin-client
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     unreadCounts: {
         type: Map,

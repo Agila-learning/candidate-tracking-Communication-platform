@@ -12,8 +12,9 @@ router.get('/my', auth, async (req, res) => {
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC') {
             // No type filter needed for admins, they see all
         } else if (req.user.role === 'CLIENT_SUPPORT') {
-            query.type = 'candidate-client';
+            // Client sees candidate chats AND admin chats
             query.clientId = req.user.clientId;
+            // No type restriction (or restrict to exclude others if needed, but client only has these two types anyway)
         } else if (req.user.role === 'CANDIDATE') {
             const Candidate = require('../models/Candidate');
             const candidate = await Candidate.findOne({ userId: req.user._id });
@@ -31,7 +32,29 @@ router.get('/my', auth, async (req, res) => {
     }
 });
 
-// Get or Create Channel (Generic)
+// Create/Get Admin-Client Chat
+router.post('/client/:clientId/admin', auth, async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const type = 'admin-client';
+
+        let conversation = await Conversation.findOne({ type, clientId });
+
+        if (!conversation) {
+            conversation = new Conversation({
+                type,
+                clientId,
+                participants: [req.user._id] // Admin starts it
+            });
+            await conversation.save();
+        }
+        res.send(conversation);
+    } catch (e) {
+        res.status(400).send(e);
+    }
+});
+
+// Get or Create Channel (Generic Candidate)
 router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
     try {
         const { candidateId, target } = req.params; // target: 'admin' or 'client'
