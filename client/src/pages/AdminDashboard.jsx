@@ -244,28 +244,27 @@ const AdminDashboard = () => {
                                                     View Details
                                                 </button>
                                                 <button
+                                                    onClick={() => handleDelete('candidate', c._id)}
+                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                                                >
+                                                    Delete
+                                                </button>
+                                                {!c.userId && (
+                                                    <button
+                                                        onClick={() => handleSyncLogin(c._id)}
+                                                        style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
+                                                        title="Create missing login account"
+                                                    >
+                                                        Fix Login
+                                                    </button>
+                                                )}
+                                                <button
                                                     onClick={() => {
                                                         setActiveTab('inbox');
-                                                        // In a real implementation, you would set the selected conversation here
-                                                        // But SupportInbox needs to handle that. For now, switching tabs is a start.
-                                                        // Ideally: navigate(`/admin?tab=inbox&userId=${c.userId?._id}`)
                                                     }}
                                                     style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
                                                 >
                                                     Chat
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete('candidate', c._id)}
-                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--danger)', color: 'white', border: 'none' }}
-                                                >
-                                                    Delete
-                                                </button>
-                                                <button
-                                                    onClick={() => handleSyncLogin(c._id)}
-                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--warning)', color: 'white', border: 'none' }}
-                                                    title="Fix Login/OTP issues"
-                                                >
-                                                    Fix Login
                                                 </button>
                                             </td>
                                         </tr>
@@ -313,7 +312,7 @@ const AdminDashboard = () => {
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
             </div>
-        </Layout>
+        </Layout >
     );
 };
 
