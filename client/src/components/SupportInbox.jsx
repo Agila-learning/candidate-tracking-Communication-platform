@@ -50,8 +50,8 @@ const SupportInbox = ({ clients = [], initialConversationId = null }) => {
     });
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 300px) 1fr', gap: '1px', background: 'var(--border)', height: '600px', borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
-            <div style={{ background: 'var(--bg-card)', overflowY: 'auto' }}>
+        <div className={`support-inbox-grid ${selectedId ? 'chat-active' : ''}`}>
+            <div className="inbox-sidebar">
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <h4 style={{ margin: 0, marginBottom: '0.5rem' }}>Support Inbox</h4>
                     {['ADMIN', 'SUPPORT_FIC'].includes(user?.role) && (
@@ -151,9 +151,17 @@ const SupportInbox = ({ clients = [], initialConversationId = null }) => {
                     </div>
                 )}
             </div>
-            <div style={{ background: 'var(--bg-card)', display: 'flex', flexDirection: 'column' }}>
+            <div className="inbox-main">
                 {selectedId ? (
-                    <Chat conversationId={selectedId} />
+                    <>
+                        <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', background: 'var(--bg-main)' }} className="mobile-header">
+                            <button className="mobile-back-btn" onClick={() => setSelectedId(null)}>
+                                ← Back
+                            </button>
+                            {/* Optional: Add active chat info header here */}
+                        </div>
+                        <Chat conversationId={selectedId} />
+                    </>
                 ) : (
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                         Select a conversation to start chatting

@@ -136,13 +136,7 @@ const ClientDashboard = () => {
                 <h1 style={{ marginBottom: '0.5rem' }}>Bank Partner Portal</h1>
                 <p style={{ color: 'var(--text-muted)' }}>Manage your assigned candidates and support queries.</p>
 
-                <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    borderBottom: '1px solid var(--border)',
-                    marginTop: '2rem',
-                    marginBottom: '2rem'
-                }}>
+                <div className="scrollable-tabs">
                     {['candidates', 'inbox', 'announcements', 'resources'].map(tab => (
                         <button
                             key={tab}

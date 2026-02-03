@@ -188,12 +188,7 @@ const AdminDashboard = () => {
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
-                <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    borderBottom: '1px solid var(--border)',
-                    marginBottom: '2rem'
-                }}>
+                <div className="scrollable-tabs">
                     {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources', 'announcements'].map(tab => (
                         <button
                             key={tab}

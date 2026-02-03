@@ -137,12 +137,7 @@ const CandidateDashboard = () => {
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ marginBottom: '1.5rem' }}>Candidate Portal</h1>
 
-                <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    borderBottom: '1px solid var(--border)',
-                    marginBottom: '2rem'
-                }}>
+                <div className="scrollable-tabs">
                     {['status', 'resources', 'announcements'].map(tab => (
                         <button
                             key={tab}
