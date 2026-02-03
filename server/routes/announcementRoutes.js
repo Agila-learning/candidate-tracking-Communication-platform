@@ -44,14 +44,8 @@ router.get('/', auth, async (req, res) => {
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC') {
             // Admin sees all
         } else if (req.user.role === 'CLIENT_SUPPORT') {
-            // Client sees Global + Their Own
-            // Using OR query
-            query = {
-                $or: [
-                    { isGlobal: true },
-                    { clientId: req.user.clientId }
-                ]
-            };
+            // Client sees ONLY Their Own
+            query = { clientId: req.user.clientId };
         } else if (req.user.role === 'CANDIDATE') {
             const Candidate = require('../models/Candidate');
             const candidate = await Candidate.findOne({ userId: req.user._id });
