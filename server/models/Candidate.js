@@ -46,8 +46,9 @@ const candidateSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-candidateSchema.pre('save', function () {
+candidateSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
+    next();
 });
 
 module.exports = mongoose.model('Candidate', candidateSchema);

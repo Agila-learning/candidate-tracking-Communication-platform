@@ -309,7 +309,11 @@ router.delete('/:id', auth, authorize('ADMIN'), async (req, res) => {
 
         // Optionally delete linked User
         if (candidate.userId) {
-            await User.findByIdAndDelete(candidate.userId);
+            try {
+                await User.findByIdAndDelete(candidate.userId);
+            } catch (userErr) {
+                console.error('Failed to delete linked user:', userErr);
+            }
         }
 
         res.send(candidate);
