@@ -41,10 +41,15 @@ router.post('/client/:clientId/admin', auth, async (req, res) => {
         let conversation = await Conversation.findOne({ type, clientId });
 
         if (!conversation) {
+            // Find Bank Users to add as participants
+            const User = require('../models/User');
+            const bankUsers = await User.find({ clientId, role: 'CLIENT_SUPPORT' });
+            const participantIds = [req.user._id, ...bankUsers.map(u => u._id)];
+
             conversation = new Conversation({
                 type,
                 clientId,
-                participants: [req.user._id] // Admin starts it
+                participants: participantIds
             });
             await conversation.save();
         }
