@@ -18,7 +18,7 @@ const AdminDashboard = () => {
     const [showAddLead, setShowAddLead] = useState(false);
     const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', location: '', targetBank: '', phase: 'Phase 1' });
     const [showAddCandidate, setShowAddCandidate] = useState(false);
-    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '' });
+    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate' });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClient, setFilterClient] = useState('');
     const [clients, setClients] = useState([]);
@@ -88,6 +88,15 @@ const AdminDashboard = () => {
             // Leads are handled in LeadPipeline, we might need a refresh trigger or simple callback if complex
         } catch (e) {
             showToast('Failed to delete record', 'error');
+        }
+    };
+
+    const handleSyncLogin = async (candidateId) => {
+        try {
+            await axios.post(`${config.endpoints.candidates.create}/${candidateId}/sync-user`);
+            showToast('Login created/synced for candidate');
+        } catch (e) {
+            showToast('Failed to sync login', 'error');
         }
     };
 
@@ -178,6 +187,12 @@ const AdminDashboard = () => {
                                     <input placeholder="Phone" value={newCandidate.phone} onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} required />
                                     <input placeholder="Program Name" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
                                     <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
+                                    <select value={newCandidate.qualification} onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })}>
+                                        <option value="Graduate">Graduate</option>
+                                        <option value="Post Graduate">Post Graduate</option>
+                                        <option value="Under Graduate">Under Graduate</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                     <select
                                         value={newCandidate.clientId}
                                         onChange={e => setNewCandidate({ ...newCandidate, clientId: e.target.value })}
@@ -243,6 +258,13 @@ const AdminDashboard = () => {
                                                     style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--danger)', color: 'white', border: 'none' }}
                                                 >
                                                     Delete
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSyncLogin(c._id)}
+                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--warning)', color: 'white', border: 'none' }}
+                                                    title="Fix Login/OTP issues"
+                                                >
+                                                    Fix Login
                                                 </button>
                                             </td>
                                         </tr>

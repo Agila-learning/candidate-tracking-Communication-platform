@@ -270,4 +270,52 @@ router.patch('/:id/toggle-status', auth, authorize('ADMIN'), async (req, res) =>
     }
 });
 
+// Sync User for Candidate (Fix Login)
+router.post('/:id/sync-user', auth, authorize('ADMIN'), async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id);
+        if (!candidate) return res.status(404).send({ error: 'Candidate not found' });
+
+        // Check if user exists
+        let user = await User.findOne({ $or: [{ phone: candidate.phone }, { email: candidate.email }] });
+
+        if (!user) {
+            user = new User({
+                name: candidate.name,
+                email: candidate.email,
+                phone: candidate.phone,
+                role: 'CANDIDATE',
+                password: 'cand123', // Set logic for reset
+                isActive: true
+            });
+            await user.save();
+        }
+
+        // Link
+        candidate.userId = user._id;
+        await candidate.save();
+
+        res.send({ message: 'User synced', user });
+    } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
+// Delete Candidate
+router.delete('/:id', auth, authorize('ADMIN'), async (req, res) => {
+    try {
+        const candidate = await Candidate.findByIdAndDelete(req.params.id);
+        if (!candidate) return res.status(404).send({ error: 'Candidate not found' });
+
+        // Optionally delete linked User
+        if (candidate.userId) {
+            await User.findByIdAndDelete(candidate.userId);
+        }
+
+        res.send(candidate);
+    } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
 module.exports = router;

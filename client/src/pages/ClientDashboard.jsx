@@ -17,7 +17,7 @@ const ClientDashboard = () => {
 
     // Add Candidate State
     const [showAddModal, setShowAddModal] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', programName: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', programName: '', qualification: 'Graduate' });
 
     const { showToast } = useToast();
 
@@ -51,7 +51,7 @@ const ClientDashboard = () => {
             });
             showToast('Candidate added successfully!');
             setShowAddModal(false);
-            setFormData({ name: '', email: '', phone: '', programName: '' });
+            setFormData({ name: '', email: '', phone: '', programName: '', qualification: 'Graduate' });
             fetchCandidates();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to add candidate', 'error');
@@ -111,6 +111,15 @@ const ClientDashboard = () => {
                             <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Program (Optional)</label>
                                 <input placeholder="e.g. Banking Operations" value={formData.programName} onChange={e => setFormData({ ...formData, programName: e.target.value })} style={{ width: '100%' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Highest Qualification</label>
+                                <select value={formData.qualification} onChange={e => setFormData({ ...formData, qualification: e.target.value })} style={{ width: '100%' }}>
+                                    <option value="Graduate">Graduate</option>
+                                    <option value="Post Graduate">Post Graduate</option>
+                                    <option value="Under Graduate">Under Graduate</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                                 <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}>Cancel</button>
@@ -228,7 +237,17 @@ const ClientDashboard = () => {
                                                         onClick={() => setSelectedCandidateId(c._id)}
                                                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border)' }}
                                                     >
-                                                        Update Remarks
+                                                        Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setActiveTab('inbox');
+                                                            // Logic to select conversation would go here in full impl
+                                                            // For now, it just goes to inbox
+                                                        }}
+                                                        style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
+                                                    >
+                                                        Chat
                                                     </button>
                                                 </td>
                                             </tr>

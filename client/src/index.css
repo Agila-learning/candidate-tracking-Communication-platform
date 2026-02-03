@@ -102,6 +102,22 @@ button:active {
   transform: translateY(0);
 }
 
+/* Button Group / Row Spacing */
+td button+button,
+div>button+button {
+  margin-left: 0.5rem;
+  /* Ensure specific spacing if flex gap isn't used */
+}
+
+@media (max-width: 768px) {
+  td button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    /* Stack on mobile if needed */
+  }
+}
+
 input,
 select,
 textarea {
