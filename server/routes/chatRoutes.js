@@ -75,11 +75,22 @@ router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
         let conversation = await Conversation.findOne(query);
 
         if (!conversation) {
+            let participantIds = [req.user._id];
+
+            // If chat is with Bank/Client, add all their support users to participants so they get notifications
+            if (target === 'client' && candidateDoc.clientId) {
+                const User = require('../models/User');
+                const bankUsers = await User.find({ clientId: candidateDoc.clientId, role: 'CLIENT_SUPPORT' });
+                const bankUserIds = bankUsers.map(u => u._id);
+                // Merge and dedupe
+                participantIds = [...new Set([...participantIds, ...bankUserIds])];
+            }
+
             conversation = new Conversation({
                 type,
                 candidateId,
                 clientId: target === 'client' ? candidateDoc.clientId : undefined,
-                participants: [req.user._id]
+                participants: participantIds
             });
             await conversation.save();
         }
