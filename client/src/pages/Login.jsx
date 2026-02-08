@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
 const Login = () => {
@@ -116,13 +116,20 @@ const Login = () => {
                                 required
                                 style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
                             />
-                            <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
-                                Default Admin: Mobile and Password are <code>6369406416</code>
-                            </p>
                         </div>
                         <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
                             {loading ? 'Signing In...' : 'Sign In'}
                         </button>
+
+                        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                            <p style={{ color: '#64748b' }}>
+                                Don't have an account?{' '}
+                                <Link to="/register" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
+                                    Create Account
+                                </Link>
+                            </p>
+                        </div>
+
                         {loading && (
                             <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
                                 Connecting to server...<br />

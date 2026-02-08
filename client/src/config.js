@@ -5,6 +5,7 @@ export const config = {
     endpoints: {
         auth: {
             login: `${API_URL}/api/auth/login`,
+            signup: `${API_URL}/api/auth/signup`,
             register: `${API_URL}/api/auth/register`,
             me: `${API_URL}/api/auth/me`,
             sendOtp: `${API_URL}/api/auth/send-otp`,

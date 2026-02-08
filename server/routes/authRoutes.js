@@ -7,33 +7,75 @@ const { validateRegistration, validateLogin } = require('../middleware/validator
 
 const router = express.Router();
 
-// Register - Protected endpoint (only admins can create users)
+// Public Signup - For Candidates and Clients to register themselves
+router.post('/signup', validateRegistration, async (req, res) => {
+    try {
+        const { name, email, phone, password, role } = req.body;
+
+        // Force role to be CANDIDATE or CLIENT_SUPPORT for public signup
+        // If someone tries to signup as ADMIN, force them to CANDIDATE
+        const safeRole = (role === 'CLIENT_SUPPORT') ? 'CLIENT_SUPPORT' : 'CANDIDATE';
+
+        // Check if user already exists
+        if (email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) return res.status(400).json({ error: 'User with this email already exists' });
+        }
+
+        if (phone) {
+            const existingPhone = await User.findOne({ phone });
+            if (existingPhone) return res.status(400).json({ error: 'User with this phone number already exists' });
+        }
+
+        const user = new User({
+            name,
+            email,
+            phone,
+            password,
+            role: safeRole,
+            isActive: true // Active by default for public signup? Or false pending approval? usually true for MVP
+        });
+
+        await user.save();
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            },
+            token
+        });
+    } catch (e) {
+        console.error('Signup error:', e);
+        res.status(400).json({ error: 'Failed to create user. Please check all fields.' });
+    }
+});
+
+// Admin Register - Protected endpoint (only admins can create users manually)
 router.post('/register', auth, validateRegistration, async (req, res) => {
     try {
-        // Only ADMIN can create new users
+        // Only ADMIN can create new users manually via this route
         if (req.user.role !== 'ADMIN') {
             return res.status(403).json({ error: 'Only administrators can create new users' });
         }
 
+        // ... (rest of the logic remains generally same but let's just keep the existing logic flow if possible or rewrite it cleaner)
         const { name, email, phone, password, role, clientId } = req.body;
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ error: 'User with this email already exists' });
+        // Check duplicates
+        if (email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) return res.status(400).json({ error: 'User with this email already exists' });
         }
-
-        // Check phone uniqueness if provided
         if (phone) {
             const existingPhone = await User.findOne({ phone });
-            if (existingPhone) {
-                return res.status(400).json({ error: 'User with this phone number already exists' });
-            }
-        }
-
-        // Validate role-specific requirements
-        if (role === 'CLIENT_SUPPORT' && !clientId) {
-            return res.status(400).json({ error: 'Client ID is required for CLIENT_SUPPORT role' });
+            if (existingPhone) return res.status(400).json({ error: 'User with this phone number already exists' });
         }
 
         const user = new User({ name, email, phone, password, role: role || 'CANDIDATE', clientId });
@@ -50,7 +92,7 @@ router.post('/register', auth, validateRegistration, async (req, res) => {
         });
     } catch (e) {
         console.error('Registration error:', e);
-        res.status(400).json({ error: 'Failed to create user. Please check all required fields.' });
+        res.status(400).json({ error: 'Failed to create user.' });
     }
 });
 

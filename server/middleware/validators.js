@@ -19,14 +19,22 @@ const validateRole = (role) => {
 };
 
 const validateRegistration = (req, res, next) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
 
     if (!name || name.trim().length < 2) {
         return res.status(400).json({ error: 'Name must be at least 2 characters long' });
     }
 
-    if (!validateEmail(email)) {
+    if (!email && !phone) {
+        return res.status(400).json({ error: 'Either Email or Phone is required' });
+    }
+
+    if (email && !validateEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    if (phone && !validatePhone(phone)) {
+        return res.status(400).json({ error: 'Invalid phone number' });
     }
 
     if (!validatePassword(password)) {
@@ -41,14 +49,18 @@ const validateRegistration = (req, res, next) => {
 };
 
 const validateLogin = (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, phone, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
+    if ((!email && !phone) || !password) {
+        return res.status(400).json({ error: 'Email/Phone and password are required' });
     }
 
-    if (!validateEmail(email)) {
+    if (email && !validateEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    if (phone && !validatePhone(phone)) {
+        return res.status(400).json({ error: 'Invalid phone number' });
     }
 
     next();
