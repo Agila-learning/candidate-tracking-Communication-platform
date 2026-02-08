@@ -18,18 +18,23 @@ router.get('/', auth, authorize('ADMIN'), async (req, res) => {
 // Create user (Admin only)
 router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res) => {
     try {
-        const { name, email, password, role, clientId } = req.body;
+        const { name, email, phone, password, role, clientId } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: 'Email already exists' });
         }
 
+        const existingPhone = await User.findOne({ phone });
+        if (existingPhone) {
+            return res.status(400).json({ error: 'Phone number already exists' });
+        }
+
         if (role === 'CLIENT_SUPPORT' && !clientId) {
             return res.status(400).json({ error: 'Client ID required for bank support users' });
         }
 
-        const user = new User({ name, email, password, role, clientId });
+        const user = new User({ name, email, phone, password, role, clientId });
         await user.save();
 
         // Auto-link candidate profile if exists

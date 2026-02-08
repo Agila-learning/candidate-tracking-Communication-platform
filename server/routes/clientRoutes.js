@@ -28,17 +28,18 @@ router.get('/', auth, async (req, res) => {
 // Create Client
 router.post('/', auth, authorize('ADMIN'), async (req, res) => {
     try {
-        const { name, pocName, pocEmail, password } = req.body;
+        const { name, pocName, pocEmail, pocPhone, password } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });
 
-        const client = new Client({ name, pocName, pocEmail });
+        const client = new Client({ name, pocName, pocEmail, pocPhone });
         await client.save();
 
         // Auto-create User for Bank POC
-        if (pocEmail && password) {
+        if (pocEmail && password && pocPhone) {
             const user = new User({
                 name: pocName || name,
                 email: pocEmail,
+                phone: pocPhone,
                 role: 'CLIENT_SUPPORT',
                 password: password,
                 clientId: client._id,
@@ -49,7 +50,8 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
 
         res.status(201).json(client);
     } catch (e) {
-        res.status(400).json({ error: 'Failed to create client' });
+        console.error('Client creation error:', e);
+        res.status(400).json({ error: e.message || 'Failed to create client' });
     }
 });
 
