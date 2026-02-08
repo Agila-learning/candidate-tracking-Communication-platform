@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import axios from 'axios';
+import { config } from '../config';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -9,13 +11,27 @@ const Register = () => {
         email: '',
         phone: '',
         password: '',
-        role: 'CANDIDATE' // Default role
+        role: 'CANDIDATE', // Default role
+        clientId: ''
     });
 
+    const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(false);
     const { signup } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchClients = async () => {
+            try {
+                const res = await axios.get(`${config.apiUrl}/api/clients/public-list`);
+                setClients(res.data);
+            } catch (e) {
+                console.error('Failed to fetch banks', e);
+            }
+        };
+        fetchClients();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,11 +45,16 @@ const Register = () => {
             return showToast('Please fill in Name, Phone, and Password', 'error');
         }
 
+        if (formData.role === 'CLIENT_SUPPORT' && !formData.clientId) {
+            return showToast('Please select your Bank Partner', 'error');
+        }
+
         setLoading(true);
         try {
             // Send only non-empty fields to backend to avoid empty string validation issues
             const payload = { ...formData };
             if (!payload.email) delete payload.email;
+            if (payload.role !== 'CLIENT_SUPPORT') delete payload.clientId;
 
             const user = await signup(payload);
             showToast(`Welcome, ${user.user.name}! Account created successfully.`);
@@ -52,7 +73,7 @@ const Register = () => {
             display: 'flex',
             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
         }}>
-            {/* Left Side - Brand/Image (Same as Login) */}
+            {/* Left Side - Brand/Image */}
             <div style={{
                 flex: 1,
                 background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
@@ -98,7 +119,7 @@ const Register = () => {
                 background: '#f8fafc',
                 padding: '4rem',
                 position: 'relative',
-                overflowY: 'auto' // Allow scrolling if form is long
+                overflowY: 'auto'
             }}>
                 <div style={{ width: '100%', maxWidth: '400px' }}>
                     <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
@@ -186,6 +207,29 @@ const Register = () => {
                                 <option value="CLIENT_SUPPORT">Bank/Client Partner</option>
                             </select>
                         </div>
+
+                        {formData.role === 'CLIENT_SUPPORT' && (
+                            <div style={{ marginBottom: '2rem' }} className="fade-in">
+                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
+                                    Select Your Bank <span style={{ color: 'red' }}>*</span>
+                                </label>
+                                <select
+                                    name="clientId"
+                                    value={formData.clientId}
+                                    onChange={handleChange}
+                                    className="modern-input"
+                                    required
+                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b', cursor: 'pointer' }}
+                                >
+                                    <option value="">-- Choose Bank --</option>
+                                    {clients.map(client => (
+                                        <option key={client._id} value={client._id}>
+                                            {client.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
                             {loading ? 'Creating Account...' : 'Create Account'}

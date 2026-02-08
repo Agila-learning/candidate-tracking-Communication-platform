@@ -206,87 +206,95 @@ const UserManagement = () => {
                 </div>
             )}
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Name</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Phone</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Email</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Role</th>
-                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Bank</th>
-                            <th style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredUsers.map(user => (
-                            <tr key={user._id} style={{ borderBottom: '1px solid var(--border)', opacity: user.isActive ? 1 : 0.6, transition: 'opacity 0.2s' }} className="table-row-hover">
-                                <td style={{ padding: '1rem' }}>
-                                    <button
-                                        onClick={() => handleToggleStatus(user)}
-                                        style={{
-                                            padding: '0.35rem 0.75rem',
-                                            fontSize: '0.7rem',
-                                            fontWeight: 600,
-                                            backgroundColor: user.isActive ? 'hsla(150, 100%, 35%, 0.1)' : 'hsla(0, 100%, 50%, 0.1)',
-                                            color: user.isActive ? 'var(--success)' : 'var(--danger)',
-                                            border: 'none',
-                                            borderRadius: '20px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        title={user.isActive ? 'Click to disable' : 'Click to enable'}
-                                    >
-                                        {user.isActive ? '● Active' : '○ Inactive'}
-                                    </button>
-                                </td>
-                                <td style={{ padding: '1rem', fontWeight: 600 }}>{user.name}</td>
-                                <td style={{ padding: '1rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{user.phone || '-'}</td>
-                                <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user.email}</td>
-                                <td style={{ padding: '1rem' }}>
-                                    <span style={{
-                                        padding: '0.25rem 0.75rem',
-                                        borderRadius: '20px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600,
-                                        backgroundColor: `${roleColors[user.role]}20`,
-                                        color: roleColors[user.role]
-                                    }}>
-                                        {user.role.replace('_', ' ')}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{user.clientId?.name || '-'}</td>
-                                <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                        <button onClick={() => handleEdit(user)} style={{
-                                            padding: '0.25rem 0.5rem',
-                                            fontSize: '0.75rem',
-                                            backgroundColor: 'transparent',
-                                            color: 'var(--primary)',
-                                            border: '1px solid var(--primary)',
-                                            cursor: 'pointer',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Edit
-                                        </button>
-                                        <button onClick={() => handleDelete(user._id)} style={{
-                                            padding: '0.25rem 0.5rem',
-                                            fontSize: '0.75rem',
-                                            backgroundColor: 'transparent',
-                                            color: 'var(--danger)',
-                                            border: '1px solid var(--danger)',
-                                            cursor: 'pointer',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
+            <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, overflow: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+                        <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                            <tr style={{ backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border)' }}>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Name</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Phone</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Email</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Role</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Bank</th>
+                                <th style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredUsers.map(user => (
+                                <tr key={user._id} style={{ borderBottom: '1px solid var(--border)', opacity: user.isActive ? 1 : 0.6, transition: 'opacity 0.2s' }} className="table-row-hover">
+                                    <td style={{ padding: '1rem' }}>
+                                        <button
+                                            onClick={() => handleToggleStatus(user)}
+                                            style={{
+                                                padding: '0.35rem 0.75rem',
+                                                fontSize: '0.7rem',
+                                                fontWeight: 600,
+                                                backgroundColor: user.isActive ? 'hsla(150, 100%, 35%, 0.1)' : 'hsla(0, 100%, 50%, 0.1)',
+                                                color: user.isActive ? 'var(--success)' : 'var(--danger)',
+                                                border: 'none',
+                                                borderRadius: '20px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                            title={user.isActive ? 'Click to disable' : 'Click to enable'}
+                                        >
+                                            {user.isActive ? '● Active' : '○ Inactive'}
+                                        </button>
+                                    </td>
+                                    <td style={{ padding: '1rem', fontWeight: 600 }}>{user.name}</td>
+                                    <td style={{ padding: '1rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{user.phone || '-'}</td>
+                                    <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user.email}</td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span style={{
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600,
+                                            backgroundColor: `${roleColors[user.role]}20`,
+                                            color: roleColors[user.role],
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            {user.role.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                        {user.clientId?.name || (
+                                            user.role === 'CLIENT_SUPPORT' ? <span style={{ color: 'var(--danger)', fontWeight: 'bold' }}>⚠️ No Bank</span> : '-'
+                                        )}
+                                    </td>
+                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                            <button onClick={() => handleEdit(user)} style={{
+                                                padding: '0.25rem 0.5rem',
+                                                fontSize: '0.75rem',
+                                                backgroundColor: 'transparent',
+                                                color: 'var(--primary)',
+                                                border: '1px solid var(--primary)',
+                                                cursor: 'pointer',
+                                                borderRadius: '4px'
+                                            }}>
+                                                Edit
+                                            </button>
+                                            <button onClick={() => handleDelete(user._id)} style={{
+                                                padding: '0.25rem 0.5rem',
+                                                fontSize: '0.75rem',
+                                                backgroundColor: 'transparent',
+                                                color: 'var(--danger)',
+                                                border: '1px solid var(--danger)',
+                                                cursor: 'pointer',
+                                                borderRadius: '4px'
+                                            }}>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 {filteredUsers.length === 0 && (
                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                         {statusFilter === 'all' ? 'No users found. Create your first user above.' : `No ${statusFilter} users.`}

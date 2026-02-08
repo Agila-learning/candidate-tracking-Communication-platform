@@ -3,9 +3,9 @@
 Last updated: 2026-02-03 16:12 IST
 
 ## Recent Changes:
-- Fixed API_URL Configuration for Production (pointing to Render)
-- Added "Create Profile" button for new Candidates to self-link profile
-- Improved Mobile Responsiveness (Horizontal scrolling for cards, reduced padding)
-- Admin Login Auto-Reset on server startup
+- Added "Select Bank" dropdown for Client Support registration
+- Fixed Admin Dashboard "Users" table scrolling (Horizontal & Vertical)
+- Added public API for fetching bank list
+- Improved error handling for unassigned support users
 
 Render should auto-deploy on push to main branch.

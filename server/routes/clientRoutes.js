@@ -5,6 +5,16 @@ const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Public List of Clients (for Registration)
+router.get('/public-list', async (req, res) => {
+    try {
+        const clients = await Client.find({ isActive: true }).select('name _id').sort({ name: 1 });
+        res.json(clients);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch bank list' });
+    }
+});
+
 // List Clients
 router.get('/', auth, async (req, res) => {
     try {

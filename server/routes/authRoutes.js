@@ -10,7 +10,7 @@ const router = express.Router();
 // Public Signup - For Candidates and Clients to register themselves
 router.post('/signup', validateRegistration, async (req, res) => {
     try {
-        const { name, email, phone, password, role } = req.body;
+        const { name, email, phone, password, role, clientId } = req.body;
 
         // Force role to be CANDIDATE or CLIENT_SUPPORT for public signup
         // If someone tries to signup as ADMIN, force them to CANDIDATE
@@ -27,12 +27,18 @@ router.post('/signup', validateRegistration, async (req, res) => {
             if (existingPhone) return res.status(400).json({ error: 'User with this phone number already exists' });
         }
 
+        // Validate Client ID if role is CLIENT_SUPPORT
+        if (safeRole === 'CLIENT_SUPPORT' && !clientId) {
+            return res.status(400).json({ error: 'Please select your Bank/Client Partner' });
+        }
+
         const user = new User({
             name,
             email,
             phone,
             password,
             role: safeRole,
+            clientId: (safeRole === 'CLIENT_SUPPORT') ? clientId : undefined,
             isActive: true // Active by default for public signup? Or false pending approval? usually true for MVP
         });
 
