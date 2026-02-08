@@ -25,16 +25,16 @@ const validateRegistration = (req, res, next) => {
         return res.status(400).json({ error: 'Name must be at least 2 characters long' });
     }
 
-    if (!email && !phone) {
-        return res.status(400).json({ error: 'Either Email or Phone is required' });
+    if (!phone) {
+        return res.status(400).json({ error: 'Phone number is required' });
+    }
+
+    if (!validatePhone(phone)) {
+        return res.status(400).json({ error: 'Invalid phone number (10 digits starting with 6-9)' });
     }
 
     if (email && !validateEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    if (phone && !validatePhone(phone)) {
-        return res.status(400).json({ error: 'Invalid phone number' });
     }
 
     if (!validatePassword(password)) {

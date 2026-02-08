@@ -25,16 +25,17 @@ const Register = () => {
         e.preventDefault();
 
         // Basic Client-Side Validation
-        if (!formData.name || !formData.password) {
-            return showToast('Please fill in all required fields', 'error');
-        }
-        if (!formData.email && !formData.phone) {
-            return showToast('Please provide either Email or Phone', 'error');
+        if (!formData.name || !formData.password || !formData.phone) {
+            return showToast('Please fill in Name, Phone, and Password', 'error');
         }
 
         setLoading(true);
         try {
-            const user = await signup(formData);
+            // Send only non-empty fields to backend to avoid empty string validation issues
+            const payload = { ...formData };
+            if (!payload.email) delete payload.email;
+
+            const user = await signup(payload);
             showToast(`Welcome, ${user.user.name}! Account created successfully.`);
             navigate('/');
         } catch (err) {
@@ -124,7 +125,7 @@ const Register = () => {
 
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
-                                Email Address
+                                Email Address <span style={{ color: '#64748b', fontWeight: 'normal' }}>(Optional)</span>
                             </label>
                             <input
                                 className="modern-input"
@@ -139,7 +140,7 @@ const Register = () => {
 
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
-                                Mobile Number
+                                Mobile Number <span style={{ color: 'red' }}>*</span>
                             </label>
                             <input
                                 className="modern-input"
@@ -148,6 +149,7 @@ const Register = () => {
                                 placeholder="10 digit number"
                                 value={formData.phone}
                                 onChange={handleChange}
+                                required
                                 style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
                             />
                         </div>
