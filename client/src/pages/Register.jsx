@@ -213,21 +213,27 @@ const Register = () => {
                                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
                                     Select Your Bank <span style={{ color: 'red' }}>*</span>
                                 </label>
-                                <select
-                                    name="clientId"
-                                    value={formData.clientId}
-                                    onChange={handleChange}
-                                    className="modern-input"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b', cursor: 'pointer' }}
-                                >
-                                    <option value="">-- Choose Bank --</option>
-                                    {clients.map(client => (
-                                        <option key={client._id} value={client._id}>
-                                            {client.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                {clients.length > 0 ? (
+                                    <select
+                                        name="clientId"
+                                        value={formData.clientId}
+                                        onChange={handleChange}
+                                        className="modern-input"
+                                        required
+                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b', cursor: 'pointer' }}
+                                    >
+                                        <option value="">-- Choose Bank --</option>
+                                        {clients.map(client => (
+                                            <option key={client._id} value={client._id}>
+                                                {client.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div style={{ padding: '0.75rem', background: '#fee2e2', color: '#991b1b', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid #fecaca' }}>
+                                        No active Bank Partners found. Please contact the Administrator.
+                                    </div>
+                                )}
                             </div>
                         )}
 
