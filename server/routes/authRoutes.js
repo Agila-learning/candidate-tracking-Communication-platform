@@ -57,11 +57,19 @@ router.post('/register', auth, validateRegistration, async (req, res) => {
 // Login
 router.post('/login', validateLogin, async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email }).populate('clientId');
+        const { email, phone, password } = req.body;
+
+        let user;
+        if (email) {
+            user = await User.findOne({ email }).populate('clientId');
+        } else if (phone) {
+            user = await User.findOne({ phone }).populate('clientId');
+        } else {
+            return res.status(400).json({ error: 'Email or Phone is required' });
+        }
 
         if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ error: 'Invalid email or password' });
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         // Check if user account is active

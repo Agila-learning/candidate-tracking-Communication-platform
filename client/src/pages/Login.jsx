@@ -4,69 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
 const Login = () => {
-    const [loginMethod, setLoginMethod] = useState('mobile'); // 'mobile' | 'email'
-    const [step, setStep] = useState(1); // 1: Phone Input, 2: OTP Input
-
-    // Mobile State
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
-
-    // Email State
-    const [email, setEmail] = useState('');
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
-
     const [loading, setLoading] = useState(false);
-    const { login, sendOtp, verifyOtp } = useAuth();
+    const { login } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
-    const handleSendOtp = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (!phone) return showToast('Please enter your mobile number', 'error');
+        if (!identifier) return showToast('Please enter your mobile number', 'error');
+        if (!password) return showToast('Please enter your password', 'error');
 
         setLoading(true);
         try {
-            const res = await sendOtp(phone);
-            if (res.debugOtp) {
-                alert(`TESTING ONLY: Your OTP is ${res.debugOtp}`);
-                showToast(`OTP Sent! (Use ${res.debugOtp})`);
-                console.log('OTP:', res.debugOtp);
-            } else {
-                showToast(`OTP sent to ${phone}`);
-            }
-            // Check console for simulated OTP
-            console.log('Check server console for OTP');
-            setStep(2);
-        } catch (err) {
-            const errorMsg = err.response?.data?.error || 'Failed to send OTP';
-            showToast(errorMsg, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        if (!otp) return showToast('Please enter the OTP', 'error');
-
-        setLoading(true);
-        try {
-            const user = await verifyOtp(phone, otp);
-            showToast(`Welcome back, ${user.name}!`);
-            navigate('/');
-        } catch (err) {
-            const errorMsg = err.response?.data?.error || 'Invalid OTP';
-            showToast(errorMsg, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleEmailLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const user = await login(email, password);
+            const user = await login(identifier, password);
             showToast(`Welcome back, ${user.name}!`);
             navigate('/');
         } catch (err) {
@@ -136,140 +88,48 @@ const Login = () => {
                         <p style={{ color: '#64748b' }}>Please enter your details to sign in.</p>
                     </div>
 
-                    {/* Method Toggle */}
-                    <div style={{ display: 'flex', background: '#e2e8f0', padding: '4px', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <button
-                            type="button"
-                            onClick={() => setLoginMethod('mobile')}
-                            style={{
-                                flex: 1,
-                                padding: '0.75rem',
-                                border: 'none',
-                                borderRadius: '6px',
-                                background: loginMethod === 'mobile' ? 'white' : 'transparent',
-                                color: loginMethod === 'mobile' ? '#1e293b' : '#64748b',
-                                fontWeight: 600,
-                                boxShadow: loginMethod === 'mobile' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            Mobile OTP
+                    <form onSubmit={handleLogin}>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
+                                Mobile Number
+                            </label>
+                            <input
+                                className="modern-input"
+                                type="text"
+                                placeholder="Enter mobile number"
+                                value={identifier}
+                                onChange={(e) => setIdentifier(e.target.value)}
+                                required
+                                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
+                            />
+                        </div>
+                        <div style={{ marginBottom: '2rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
+                                Password
+                            </label>
+                            <input
+                                className="modern-input"
+                                type="password"
+                                placeholder="Enter password (or mobile number)"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
+                            />
+                            <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+                                Default Admin: Mobile and Password are <code>6369406416</code>
+                            </p>
+                        </div>
+                        <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
+                            {loading ? 'Signing In...' : 'Sign In'}
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setLoginMethod('email')}
-                            style={{
-                                flex: 1,
-                                padding: '0.75rem',
-                                border: 'none',
-                                borderRadius: '6px',
-                                background: loginMethod === 'email' ? 'white' : 'transparent',
-                                color: loginMethod === 'email' ? '#1e293b' : '#64748b',
-                                fontWeight: 600,
-                                boxShadow: loginMethod === 'email' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            Email
-                        </button>
-                    </div>
-
-                    {loginMethod === 'mobile' ? (
-                        step === 1 ? (
-                            <form onSubmit={handleSendOtp}>
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>Mobile Number</label>
-                                    <input
-                                        className="modern-input"
-                                        type="tel"
-                                        placeholder="Enter 10 digit number"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        required
-                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
-                                    />
-                                </div>
-                                <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
-                                    {loading ? 'Sending...' : 'Send OTP'}
-                                </button>
-                                {loading && (
-                                    <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
-                                        Connecting to server...<br />
-                                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
-                                    </p>
-                                )}
-                            </form>
-                        ) : (
-                            <form onSubmit={handleVerifyOtp}>
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>One-Time Password</label>
-                                    <input
-                                        className="modern-input"
-                                        type="text"
-                                        placeholder="• • • • • •"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        required
-                                        maxLength={6}
-                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center', background: 'white', color: '#1e293b' }}
-                                    />
-                                    <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem' }}>
-                                        Enter code sent to {phone}
-                                    </p>
-                                </div>
-                                <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} disabled={loading}>
-                                    {loading ? 'Verifying...' : 'Verify & Sign In'}
-                                </button>
-                                {loading && (
-                                    <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
-                                        Verifying...<br />
-                                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
-                                    </p>
-                                )}
-                                <button type="button" onClick={() => setStep(1)} style={{ width: '100%', marginTop: '1rem', background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline' }}>
-                                    Change Mobile Number
-                                </button>
-                            </form>
-                        )
-                    ) : (
-                        <form onSubmit={handleEmailLogin}>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>Email Address</label>
-                                <input
-                                    className="modern-input"
-                                    type="email"
-                                    placeholder="name@company.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
-                                />
-                            </div>
-                            <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>Password</label>
-                                <input
-                                    className="modern-input"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b' }}
-                                />
-                            </div>
-                            <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} disabled={loading}>
-                                {loading ? 'Signing In...' : 'Sign In'}
-                            </button>
-                            {loading && (
-                                <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
-                                    Connecting to server...<br />
-                                    <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
-                                </p>
-                            )}
-                        </form>
-                    )}
+                        {loading && (
+                            <p className="fade-in" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
+                                Connecting to server...<br />
+                                <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>(Server may take ~60s to wake up)</span>
+                            </p>
+                        )}
+                    </form>
                 </div>
 
                 {/* Footer fixed at bottom of the form side */}

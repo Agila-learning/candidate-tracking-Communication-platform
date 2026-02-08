@@ -30,8 +30,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = async (email, password) => {
-        const res = await axios.post(config.endpoints.auth.login, { email, password });
+    const login = async (identifier, password) => {
+        // specific check for phone vs email
+        const isEmail = identifier.includes('@');
+        const payload = isEmail ? { email: identifier, password } : { phone: identifier, password };
+        const res = await axios.post(config.endpoints.auth.login, payload);
         localStorage.setItem('token', res.data.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
         setUser(res.data.user);

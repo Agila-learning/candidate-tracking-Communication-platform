@@ -3,31 +3,25 @@ const axios = require('axios');
 // Placeholder for Twilio - In production, use 'twilio' package
 // const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const fs = require('fs');
+const path = require('path');
+
 const sendOTP = async (phone, otp) => {
-    const provider = process.env.OTP_PROVIDER || 'SIMULATED'; // 'TWILIO' or 'SIMULATED'
+    // FORCE LOCAL / SIMULATED MODE
+    // We are strictly not using any third party website as per requirements.
 
-    if (provider === 'TWILIO') {
-        if (!process.env.TWILIO_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE) {
-            console.error('Twilio credentials missing');
-            throw new Error('Twilio configuration error');
-        }
+    const otpMessage = `[OTP SERVICE] Your One-Time Password for Login: ${otp}\nSentinel ID: ${Date.now()}\nPhone: ${phone}\n------------------------\n`;
 
-        try {
-            // Real Twilio Code Implementation
-            // await client.messages.create({
-            //     body: `Your FIC Banking OTP is: ${otp}`,
-            //     from: process.env.TWILIO_PHONE,
-            //     to: phone
-            // });
-            console.log(`[Twilio] OTP sent to ${phone}`);
-        } catch (e) {
-            console.error('Twilio Send Error', e);
-            throw new Error('Failed to send OTP via Twilio');
-        }
-    } else {
-        // Simulated
-        console.log(`[SIMULATED OTP] To: ${phone} | Code: ${otp}`);
-        // In a real app, maybe send via email fallback or just log for dev
+    // Log to console
+    console.log(otpMessage);
+
+    // Write to a file for easy access (simulating receiving an SMS on a device)
+    const filePath = path.join(__dirname, '../otp_log.txt');
+    try {
+        fs.appendFileSync(filePath, otpMessage);
+        console.log(`OTP written to ${filePath}`);
+    } catch (err) {
+        console.error('Failed to write OTP to file:', err);
     }
 };
 
