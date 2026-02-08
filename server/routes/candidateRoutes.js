@@ -25,6 +25,7 @@ router.post('/create-profile', auth, async (req, res) => {
             programName: programName || 'General Banking',
             currentStatus: 'Registered',
             userId: req.user._id,
+            clientId: req.user.clientId, // Inherit Bank Selection from User Account
             isActive: true
         });
 
