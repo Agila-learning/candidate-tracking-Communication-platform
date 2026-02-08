@@ -49,6 +49,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll on body */
 }
 
 .glass {
@@ -65,6 +67,17 @@ body {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
+  max-width: 100%;
+  /* Ensure card doesn't overflow container */
+  overflow-x: auto;
+  /* Allow internal scroll if content is too wide */
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+    /* Reduce padding on mobile */
+  }
 }
 
 .card:hover {

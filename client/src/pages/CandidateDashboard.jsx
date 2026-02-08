@@ -95,15 +95,43 @@ const CandidateDashboard = () => {
         }
     };
 
+    const handleCreateProfile = async () => {
+        setLoading(true);
+        try {
+            await axios.post(`${config.apiUrl}/api/candidates/create-profile`, {
+                location: 'India', // Default, can be updated later
+                programName: 'General Banking'
+            });
+            showToast('Profile created successfully!', 'success');
+            fetchProfile(); // Reload to show dashboard
+        } catch (err) {
+            const errorMsg = err.response?.data?.error || 'Failed to create profile';
+            showToast(errorMsg, 'error');
+            setLoading(false);
+        }
+    };
+
     if (loading) return <Layout><div style={{ textAlign: 'center', padding: '3rem' }}>Loading profile...</div></Layout>;
 
     if (candidate?.notFound) {
         return (
             <Layout>
-                <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-                    <h2>Profile Not Linked</h2>
-                    <p>Your mobile number is registered, but we couldn't find a Candidate Profile linked to it.</p>
-                    <p>Please contact the Admin to link your profile.</p>
+                <div className="card" style={{ textAlign: 'center', padding: '3rem', maxWidth: '600px', margin: '2rem auto' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>👋</div>
+                    <h2>Welcome to FIC Banking Connect!</h2>
+                    <p style={{ color: 'var(--text-muted)', margin: '1rem 0 2rem' }}>
+                        You have successfully registered. To start tracking your application and access resources, please complete your profile setup.
+                    </p>
+                    <button
+                        onClick={handleCreateProfile}
+                        className="primary"
+                        style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                    >
+                        Create My Profile
+                    </button>
+                    <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        This will link your account and initialize your dashboard.
+                    </p>
                 </div>
             </Layout>
         );

@@ -8,7 +8,35 @@ const upload = require('../middleware/upload');
 
 const router = express.Router();
 
-// Create Candidate
+// Candidate Self-Registration (Create Profile)
+router.post('/create-profile', auth, async (req, res) => {
+    try {
+        // Check if profile already exists
+        const existing = await Candidate.findOne({ userId: req.user._id });
+        if (existing) return res.status(400).json({ error: 'Profile already exists' });
+
+        const { location, programName } = req.body;
+
+        const candidate = new Candidate({
+            name: req.user.name,
+            email: req.user.email,
+            phone: req.user.phone, // Phone is now mandatory in User, so it's safe
+            location: location || 'Not Specified',
+            programName: programName || 'General Banking',
+            currentStatus: 'Registered',
+            userId: req.user._id,
+            isActive: true
+        });
+
+        await candidate.save();
+        res.status(201).json(candidate);
+    } catch (e) {
+        console.error('Self-Create Profile Error:', e);
+        res.status(400).json({ error: 'Failed to create profile' });
+    }
+});
+
+// Create Candidate (Admin/Support)
 router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users

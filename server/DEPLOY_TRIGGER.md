@@ -3,9 +3,9 @@
 Last updated: 2026-02-03 16:12 IST
 
 ## Recent Changes:
-- Added auto-recovery for Admin User on server startup
-- Forces Admin password reset to 6369406416 on boot
-- Ensures Admin role and active status are correct
-- Fixed database connection logic to run seed after connect
+- Fixed API_URL Configuration for Production (pointing to Render)
+- Added "Create Profile" button for new Candidates to self-link profile
+- Improved Mobile Responsiveness (Horizontal scrolling for cards, reduced padding)
+- Admin Login Auto-Reset on server startup
 
 Render should auto-deploy on push to main branch.
