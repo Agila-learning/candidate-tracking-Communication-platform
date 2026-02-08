@@ -14,7 +14,8 @@ const Resources = () => {
         url: ''
     });
 
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPPORT_FIC' || user?.role === 'CLIENT_SUPPORT';
+    const userRole = user?.role || '';
+    const isAdmin = ['ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'].includes(userRole);
 
     useEffect(() => {
         fetchResources();
@@ -40,7 +41,7 @@ const Resources = () => {
     return (
         <div className="fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h3>Training Resources & Announcements</h3>
+                <h3>Training Resources ({userRole})</h3>
                 {isAdmin && (
                     <button className="primary" onClick={() => setIsAdding(!isAdding)}>
                         {isAdding ? 'Cancel' : '+ New Resource'}
