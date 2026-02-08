@@ -4,23 +4,43 @@ const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all resources (accessible by everyone authenticated)
+// Get all resources
 router.get('/', auth, async (req, res) => {
     try {
-        const resources = await Resource.find().sort({ createdAt: -1 });
+        let query = {};
+        // If user belongs to a specific client (Bank Support or Candidate), show Global + Client specific resources
+        if (req.user.clientId) {
+            query = {
+                $or: [
+                    { clientId: req.user.clientId }, // Specific to their bank
+                    { clientId: null }, // Global resources
+                    { clientId: { $exists: false } } // Legacy global resources
+                ]
+            };
+        }
+        // Admin and Support FIC see all resources by default
+
+        const resources = await Resource.find(query).sort({ createdAt: -1 }).populate('postedBy', 'name');
         res.send(resources);
     } catch (e) {
         res.status(500).send(e);
     }
 });
 
-// Create a resource (Admin only)
-router.post('/', auth, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) => {
+// Create a resource
+router.post('/', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
     try {
-        const resource = new Resource({
+        const resourceData = {
             ...req.body,
             postedBy: req.user._id
-        });
+        };
+
+        // If posted by Bank Support, link to their Client ID
+        if (req.user.role === 'CLIENT_SUPPORT') {
+            resourceData.clientId = req.user.clientId;
+        }
+
+        const resource = new Resource(resourceData);
         await resource.save();
         res.status(201).send(resource);
     } catch (e) {
@@ -29,10 +49,19 @@ router.post('/', auth, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) => {
 });
 
 // Delete a resource
-router.delete('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) => {
+router.delete('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
     try {
-        const resource = await Resource.findByIdAndDelete(req.params.id);
+        const resource = await Resource.findById(req.params.id);
         if (!resource) return res.status(404).send();
+
+        // Check permission: Client Support can only delete their own bank's resources
+        if (req.user.role === 'CLIENT_SUPPORT') {
+            if (!resource.clientId || resource.clientId.toString() !== req.user.clientId.toString()) {
+                return res.status(403).json({ error: 'Unauthorized to delete this resource' });
+            }
+        }
+
+        await Resource.findByIdAndDelete(req.params.id);
         res.send(resource);
     } catch (e) {
         res.status(500).send(e);

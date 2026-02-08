@@ -14,7 +14,7 @@ const Resources = () => {
         url: ''
     });
 
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPPORT_FIC';
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPPORT_FIC' || user?.role === 'CLIENT_SUPPORT';
 
     useEffect(() => {
         fetchResources();

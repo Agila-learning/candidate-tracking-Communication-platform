@@ -3,6 +3,8 @@
 Last updated: 2026-02-03 16:12 IST
 
 ## Recent Changes:
+- Enabled "Select Bank" for CANDIDATE signup (Enables Chat instantly)
+- Added "Training Resources" management for Bank Partners
 - Fixed CRITICAL bug in Client/Bank creation (Missing phone number for user)
 - Fixed CRITICAL bug in User creation (Missing phone number)
 - Relaxed phone validation for easier testing

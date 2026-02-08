@@ -7,6 +7,7 @@ const resourceSchema = new mongoose.Schema({
     url: { type: String }, // For Links or Document paths
     programName: { type: String }, // Optional: Link to a specific program
     postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // Links to a specific bank
     createdAt: { type: Date, default: Date.now }
 });
 

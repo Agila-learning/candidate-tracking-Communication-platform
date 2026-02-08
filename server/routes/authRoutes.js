@@ -38,7 +38,7 @@ router.post('/signup', validateRegistration, async (req, res) => {
             phone,
             password,
             role: safeRole,
-            clientId: (safeRole === 'CLIENT_SUPPORT') ? clientId : undefined,
+            clientId: clientId || undefined, // Allow clientId for both roles
             isActive: true // Active by default for public signup? Or false pending approval? usually true for MVP
         });
 

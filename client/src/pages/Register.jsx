@@ -45,16 +45,17 @@ const Register = () => {
             return showToast('Please fill in Name, Phone, and Password', 'error');
         }
 
-        if (formData.role === 'CLIENT_SUPPORT' && !formData.clientId) {
+        if ((formData.role === 'CLIENT_SUPPORT' || formData.role === 'CANDIDATE') && !formData.clientId) {
             return showToast('Please select your Bank Partner', 'error');
         }
 
         setLoading(true);
         try {
-            // Send only non-empty fields to backend to avoid empty string validation issues
+            // Send only non-empty fields to backend
             const payload = { ...formData };
             if (!payload.email) delete payload.email;
-            if (payload.role !== 'CLIENT_SUPPORT') delete payload.clientId;
+
+            // clientId is now relevant for both roles
 
             const user = await signup(payload);
             showToast(`Welcome, ${user.user.name}! Account created successfully.`);
@@ -208,34 +209,38 @@ const Register = () => {
                             </select>
                         </div>
 
-                        {formData.role === 'CLIENT_SUPPORT' && (
-                            <div style={{ marginBottom: '2rem' }} className="fade-in">
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
-                                    Select Your Bank <span style={{ color: 'red' }}>*</span>
-                                </label>
-                                {clients.length > 0 ? (
-                                    <select
-                                        name="clientId"
-                                        value={formData.clientId}
-                                        onChange={handleChange}
-                                        className="modern-input"
-                                        required
-                                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b', cursor: 'pointer' }}
-                                    >
-                                        <option value="">-- Choose Bank --</option>
-                                        {clients.map(client => (
-                                            <option key={client._id} value={client._id}>
-                                                {client.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <div style={{ padding: '0.75rem', background: '#fee2e2', color: '#991b1b', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid #fecaca' }}>
-                                        No active Bank Partners found. Please contact the Administrator.
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* Show Bank Selection for BOTH Candidate and Client Support */}
+                        <div style={{ marginBottom: '2rem' }} className="fade-in">
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
+                                Select Your Preferred Bank <span style={{ color: 'red' }}>*</span>
+                            </label>
+                            {clients.length > 0 ? (
+                                <select
+                                    name="clientId"
+                                    value={formData.clientId}
+                                    onChange={handleChange}
+                                    className="modern-input"
+                                    required
+                                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', background: 'white', color: '#1e293b', cursor: 'pointer' }}
+                                >
+                                    <option value="">-- Choose Bank --</option>
+                                    {clients.map(client => (
+                                        <option key={client._id} value={client._id}>
+                                            {client.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div style={{ padding: '0.75rem', background: '#fee2e2', color: '#991b1b', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid #fecaca' }}>
+                                    No active Bank Partners found. Please contact the Administrator.
+                                </div>
+                            )}
+                            {formData.role === 'CANDIDATE' && (
+                                <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                    * Selecting a bank allows you to chat with their support team immediately.
+                                </p>
+                            )}
+                        </div>
 
                         <button type="submit" style={{ width: '100%', padding: '0.875rem', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }} disabled={loading}>
                             {loading ? 'Creating Account...' : 'Create Account'}
