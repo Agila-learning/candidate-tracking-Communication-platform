@@ -123,9 +123,8 @@ mongoose.connect(MONGODB_URI)
         const User = require('./models/User');
         const ensureAdminUser = async () => {
             try {
-                const adminPhone = '6369406416';
-                const adminPassword = '6369406416'; // Will be hashed by pre-save hook if we use .save(), but for upsert we might need manual hash or rely on save.
-                // Better approach: Find, if not exists or password/role mismatch, Update.
+                const adminPhone = '6381091552';
+                const adminPassword = '6381091552';
 
                 let admin = await User.findOne({ phone: adminPhone });
 
@@ -141,16 +140,11 @@ mongoose.connect(MONGODB_URI)
                     await admin.save();
                     console.log('Admin user created successfully.');
                 } else {
-                    // Check if we need to update anything (e.g. if role was changed or password reset needed)
-                    // Since we can't easily check hashed password, let's just forcefully update strictly if requested, 
-                    // but for now let's assume if it exists it might be correct.
-                    // HOWEVER, user reported 401. So likely the password is wrong.
-                    // Let's FORCE update the password.
                     console.log('Admin user found. Updating credentials to ensure access...');
                     admin.password = adminPassword;
                     admin.role = 'ADMIN';
                     admin.isActive = true;
-                    await admin.save(); // This triggers the pre-save hook to hash the password
+                    await admin.save();
                     console.log('Admin user credentials updated successfully.');
                 }
             } catch (err) {
