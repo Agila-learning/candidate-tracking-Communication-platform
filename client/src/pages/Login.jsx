@@ -18,7 +18,7 @@ const Login = () => {
 
         setLoading(true);
         try {
-            const user = await login(identifier, password);
+            const user = await login(identifier.trim(), password.trim());
             showToast(`Welcome back, ${user.name}!`);
             navigate('/');
         } catch (err) {
