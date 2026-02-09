@@ -38,7 +38,7 @@ router.post('/create-profile', auth, async (req, res) => {
 });
 
 // Create Candidate (Admin/Support)
-router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
+router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -125,11 +125,11 @@ router.get('/', auth, async (req, res) => {
             }
             return res.send(candidates);
         }
-        // ADMIN and SUPPORT_FIC can see all candidates
+        // ADMIN and SUPPORT_FIC and SUB_ADMIN can see all candidates
 
         // Apply additional filters from query params
         if (req.query.status) query.currentStatus = req.query.status;
-        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC')) {
+        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUB_ADMIN' || req.user.role === 'SUPPORT_FIC')) {
             query.clientId = req.query.clientId;
         }
 

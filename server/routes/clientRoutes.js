@@ -18,6 +18,7 @@ router.get('/public-list', async (req, res) => {
 // List Clients
 router.get('/', auth, async (req, res) => {
     try {
+        // If SUB_ADMIN, maybe we should restrict? But for now let them see list to avoid creating duplicates.
         const clients = await Client.find().sort({ createdAt: -1 });
         res.json(clients);
     } catch (e) {
@@ -26,7 +27,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create Client
-router.post('/', auth, authorize('ADMIN'), async (req, res) => {
+router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN'), async (req, res) => {
     try {
         const { name, pocName, pocEmail, pocPhone, password } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });

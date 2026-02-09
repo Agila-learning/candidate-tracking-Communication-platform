@@ -16,6 +16,9 @@ Last updated: 2026-02-03 16:12 IST
 - Added "No Banks Found" feedback message in registration
 - Fixed "Select Bank" dropdown visibility issues
 
-Render should auto-deploy on push to main branch.
+- Updated Super Admin password to 6381091552
+- Implemented SUB_ADMIN role with restricted access (Bank/Candidate management only)
+- Fixed "Please authenticate" error on Bank Partner creation
+- Updated Admin Dashboard to hide sensitive actions for SUB_ADMIN
 
 Render should auto-deploy on push to main branch.

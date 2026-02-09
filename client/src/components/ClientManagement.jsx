@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 
-const ClientManagement = ({ onStartChat }) => {
+const ClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -134,6 +134,7 @@ const ClientManagement = ({ onStartChat }) => {
                             <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
                             <button
                                 onClick={() => handleToggleStatus(client)}
+                                disabled={userRole === 'SUB_ADMIN'}
                                 style={{
                                     padding: '0.35rem 0.75rem',
                                     fontSize: '0.7rem',
@@ -142,50 +143,55 @@ const ClientManagement = ({ onStartChat }) => {
                                     color: client.isActive ? 'var(--success)' : 'var(--danger)',
                                     border: 'none',
                                     borderRadius: '20px',
-                                    cursor: 'pointer'
+                                    cursor: userRole === 'SUB_ADMIN' ? 'not-allowed' : 'pointer',
+                                    opacity: userRole === 'SUB_ADMIN' ? 0.6 : 1
                                 }}
-                                title={client.isActive ? 'Click to deactivate' : 'Click to activate'}
+                                title={userRole === 'SUB_ADMIN' ? 'View Only' : (client.isActive ? 'Click to deactivate' : 'Click to activate')}
                             >
                                 {client.isActive ? '● Active' : '○ Inactive'}
                             </button>
-                            <button
-                                onClick={() => {
-                                    if (onStartChat) onStartChat(client._id);
-                                    else window.location.href = `/admin?tab=inbox`;
-                                }}
-                                style={{
-                                    marginLeft: '0.5rem',
-                                    padding: '0.35rem 0.75rem',
-                                    fontSize: '0.7rem',
-                                    fontWeight: 600,
-                                    backgroundColor: 'var(--bg-main)',
-                                    color: 'var(--primary)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '20px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                💬 Chat
-                            </button>
+                            {!userRole === 'SUB_ADMIN' && (
+                                <button
+                                    onClick={() => {
+                                        if (onStartChat) onStartChat(client._id);
+                                        else window.location.href = `/admin?tab=inbox`;
+                                    }}
+                                    style={{
+                                        marginLeft: '0.5rem',
+                                        padding: '0.35rem 0.75rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        backgroundColor: 'var(--bg-main)',
+                                        color: 'var(--primary)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '20px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    💬 Chat
+                                </button>
+                            )}
                         </div>
                         {client.pocName && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>👤 {client.pocName}</div>}
                         {client.pocEmail && <div style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '0.25rem' }}>✉️ {client.pocEmail}</div>}
                         {client.pocPhone && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {client.pocPhone}</div>}
-                        < button
-                            onClick={() => handleDelete(client._id, client.name)}
-                            style={{
-                                position: 'absolute',
-                                top: '1rem',
-                                right: '1rem',
-                                padding: '0.25rem 0.5rem',
-                                fontSize: '0.7rem',
-                                backgroundColor: 'transparent',
-                                color: 'var(--danger)',
-                                border: '1px solid var(--danger)'
-                            }}
-                        >
-                            Remove
-                        </button>
+                        {userRole !== 'SUB_ADMIN' && (
+                            <button
+                                onClick={() => handleDelete(client._id, client.name)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    right: '1rem',
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.7rem',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--danger)',
+                                    border: '1px solid var(--danger)'
+                                }}
+                            >
+                                Remove
+                            </button>
+                        )}
                     </div>
                 ))
                 }

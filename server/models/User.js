@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: {
         type: String,
-        enum: ['ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'CANDIDATE'],
+        enum: ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'CANDIDATE'],
         default: 'CANDIDATE'
     },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // For CLIENT_SUPPORT and CANDIDATE

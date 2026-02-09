@@ -11,8 +11,11 @@ import ClientManagement from '../components/ClientManagement';
 import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
+    const { user } = useAuth();
+    const isSubAdmin = user?.role === 'SUB_ADMIN';
     const [activeTab, setActiveTab] = useState('candidates');
     const [candidates, setCandidates] = useState([]);
     const [selectedCandidateId, setSelectedCandidateId] = useState(null);
@@ -189,7 +192,10 @@ const AdminDashboard = () => {
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
                 <div className="scrollable-tabs">
-                    {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources', 'announcements'].map(tab => (
+                    {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
+                        if (isSubAdmin) return ['candidates', 'banks'].includes(tab);
+                        return true;
+                    }).map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -297,27 +303,31 @@ const AdminDashboard = () => {
                                                 >
                                                     View Details
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete('candidate', c._id)}
-                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
-                                                >
-                                                    Delete
-                                                </button>
-                                                {!c.userId && (
-                                                    <button
-                                                        onClick={() => handleSyncLogin(c._id)}
-                                                        style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
-                                                        title="Create missing login account"
-                                                    >
-                                                        Fix Login
-                                                    </button>
+                                                {!isSubAdmin && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleDelete('candidate', c._id)}
+                                                            style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                        {!c.userId && (
+                                                            <button
+                                                                onClick={() => handleSyncLogin(c._id)}
+                                                                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
+                                                                title="Create missing login account"
+                                                            >
+                                                                Fix Login
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleStartChat(c._id)}
+                                                            style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
+                                                        >
+                                                            Chat
+                                                        </button>
+                                                    </>
                                                 )}
-                                                <button
-                                                    onClick={() => handleStartChat(c._id)}
-                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
-                                                >
-                                                    Chat
-                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -359,7 +369,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'users' && <UserManagement />}
-                {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} />}
+                {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
                 {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
