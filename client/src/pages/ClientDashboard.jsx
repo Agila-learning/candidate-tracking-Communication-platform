@@ -16,6 +16,7 @@ const ClientDashboard = () => {
     const [selectedCandidateId, setSelectedCandidateId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [chatCandidate, setChatCandidate] = useState(null);
 
     // Add Candidate State
     const [showAddModal, setShowAddModal] = useState(false);
@@ -237,9 +238,8 @@ const ClientDashboard = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => {
+                                                            setChatCandidate(c);
                                                             setActiveTab('inbox');
-                                                            // Logic to select conversation would go here in full impl
-                                                            // For now, it just goes to inbox
                                                         }}
                                                         style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
                                                     >
@@ -262,7 +262,12 @@ const ClientDashboard = () => {
                     </>
                 )}
 
-                {activeTab === 'inbox' && <SupportInbox />}
+                {activeTab === 'inbox' && (
+                    <SupportInbox
+                        targetCandidate={chatCandidate}
+                        onClearTarget={() => setChatCandidate(null)}
+                    />
+                )}
                 {activeTab === 'announcements' && <Announcements />}
                 {activeTab === 'resources' && <Resources />}
             </div>

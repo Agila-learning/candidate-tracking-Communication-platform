@@ -4,12 +4,37 @@ import Chat from './Chat';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 
-const SupportInbox = ({ clients = [], initialConversationId = null }) => {
+const SupportInbox = ({ clients = [], initialConversationId = null, targetCandidate = null, onClearTarget = () => { } }) => {
     const { user } = useAuth();
     const [conversations, setConversations] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const [filterType, setFilterType] = useState('all');
     const [filterClientId, setFilterClientId] = useState('');
+
+    useEffect(() => {
+        if (targetCandidate) {
+            initiateChat();
+        }
+    }, [targetCandidate]);
+
+    const initiateChat = async () => {
+        try {
+            // bank is starting chat with candidate
+            const res = await axios.post(`${config.endpoints.chat}/candidate/${targetCandidate._id}/client`);
+            const conversation = res.data;
+
+            setConversations(prev => {
+                if (!prev.find(c => c._id === conversation._id)) {
+                    return [conversation, ...prev];
+                }
+                return prev;
+            });
+            setSelectedId(conversation._id);
+            onClearTarget();
+        } catch (e) {
+            console.error("Failed to init chat", e);
+        }
+    };
 
     useEffect(() => {
         if (initialConversationId) {
