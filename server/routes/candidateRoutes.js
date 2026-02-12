@@ -37,8 +37,8 @@ router.post('/create-profile', auth, async (req, res) => {
     }
 });
 
-// Create Candidate (Admin/Support)
-router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
+// Create Candidate (Admin/Support/Agency Admin)
+router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -46,6 +46,12 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPO
                 return res.status(403).json({ error: 'No client assigned to your account' });
             }
             req.body.clientId = req.user.clientId;
+        }
+
+        // Enforce Agency Admin ownership
+        if (req.user.role === 'AGENCY_ADMIN') {
+            req.body.createdBy = req.user._id;
+            req.body.referredBy = req.user.name;
         }
 
         // Sanitize clientId
@@ -129,11 +135,11 @@ router.get('/', auth, async (req, res) => {
 
         // Apply additional filters from query params
         if (req.query.status) query.currentStatus = req.query.status;
-        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUB_ADMIN' || req.user.role === 'SUPPORT_FIC')) {
+        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUB_ADMIN' || req.user.role === 'SUPPORT_FIC' || req.user.role === 'AGENCY_ADMIN')) {
             query.clientId = req.query.clientId;
         }
 
-        const candidates = await Candidate.find(query).populate('clientId').sort({ createdAt: -1 });
+        const candidates = await Candidate.find(query).populate('clientId').populate('createdBy', 'name _id').sort({ createdAt: -1 });
 
         // Mask phone for bank support
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -151,7 +157,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Update Status + History
-router.patch('/:id/status', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
+router.patch('/:id/status', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();
@@ -166,6 +172,18 @@ router.patch('/:id/status', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPP
             remark,
             updatedBy: req.user._id
         });
+
+        // Agency Admin check: Can they update status? The req says "edit only their candidate". 
+        // Assuming status update is part of "editing".
+        if (req.user.role === 'AGENCY_ADMIN') {
+            if (candidate.createdBy && candidate.createdBy.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: 'You can only update candidates you referred.' });
+            }
+            // If legacy candidate (no createdBy), restrict or allow? Safest to restrict.
+            if (!candidate.createdBy) {
+                return res.status(403).json({ error: 'You cannot update this candidate.' });
+            }
+        }
 
         await candidate.save();
         res.send(candidate);
@@ -268,11 +286,20 @@ router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_S
 });
 
 // Update Candidate (General)
-router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC'), async (req, res) => {
+router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN'), async (req, res) => {
     try {
-        const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();
-        res.send(candidate);
+
+        // Agency Admin check
+        if (req.user.role === 'AGENCY_ADMIN') {
+            if (!candidate.createdBy || candidate.createdBy.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: 'You can only edit candidates you referred.' });
+            }
+        }
+
+        const updated = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.send(updated);
     } catch (e) {
         res.status(400).send(e);
     }
@@ -348,10 +375,19 @@ router.post('/:id/sync-user', auth, authorize('ADMIN'), async (req, res) => {
 });
 
 // Delete Candidate
-router.delete('/:id', auth, authorize('ADMIN'), async (req, res) => {
+router.delete('/:id', auth, authorize('ADMIN', 'AGENCY_ADMIN'), async (req, res) => {
     try {
-        const candidate = await Candidate.findByIdAndDelete(req.params.id);
+        const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send({ error: 'Candidate not found' });
+
+        // Agency Admin check
+        if (req.user.role === 'AGENCY_ADMIN') {
+            if (!candidate.createdBy || candidate.createdBy.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: 'You can only delete candidates you referred.' });
+            }
+        }
+
+        await Candidate.findByIdAndDelete(req.params.id);
 
         // Optionally delete linked User
         if (candidate.userId) {

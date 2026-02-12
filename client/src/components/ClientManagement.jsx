@@ -7,7 +7,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '' });
+    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -31,7 +31,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
         try {
             await axios.post(config.endpoints.clients.create, formData);
             showToast('Bank partner added successfully!');
-            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '' });
+            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
             setShowForm(false);
             fetchClients();
         } catch (err) {
@@ -112,8 +112,12 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value })} />
                             <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                            <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                                <option value="BANKING">Banking Client</option>
+                                <option value="IT">IT Client</option>
+                            </select>
                         </div>
-                        <button type="submit" style={{ justifySelf: 'start' }}>Add Bank Partner</button>
+                        <button type="submit" style={{ justifySelf: 'start' }}>{formData.type === 'IT' ? 'Add IT Partner' : 'Add Bank Partner'}</button>
                     </form>
                 </div>
             )}
@@ -131,7 +135,11 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                         }}
                     >
                         <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{client.name}</div>
+                                {client.type === 'IT' && <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>IT</span>}
+                            </div>
+                            <div style={{ marginBottom: '0.5rem' }}></div>
                             <button
                                 onClick={() => handleToggleStatus(client)}
                                 disabled={userRole === 'SUB_ADMIN'}

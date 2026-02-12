@@ -24,9 +24,29 @@ const ClientDashboard = () => {
 
     const { showToast } = useToast();
 
+    const [clientData, setClientData] = useState(null);
+
     useEffect(() => {
         if (activeTab === 'candidates') fetchCandidates();
+        fetchClientDetails();
     }, [activeTab]);
+
+    const fetchClientDetails = async () => {
+        try {
+            // Check if user has clientId populated, or fetch list
+            if (user?.clientId) {
+                // If user.clientId is an object, use it. If string, fetch list.
+                // Assuming it might be just ID in token.
+                const res = await axios.get(config.endpoints.clients.list);
+                const myClient = res.data.find(c => c._id === (user.clientId._id || user.clientId));
+                if (myClient) {
+                    setClientData(myClient);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const fetchCandidates = async () => {
         try {
@@ -134,8 +154,12 @@ const ClientDashboard = () => {
             )}
 
             <div style={{ marginBottom: '2rem' }}>
-                <h1 style={{ marginBottom: '0.5rem' }}>Bank Partner Portal</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Manage your assigned candidates and support queries.</p>
+                <h1 style={{ marginBottom: '0.5rem' }}>
+                    {clientData?.type === 'IT' ? 'IT Partner Portal' : 'Bank Partner Portal'}
+                </h1>
+                <p style={{ color: 'var(--text-muted)' }}>
+                    {clientData?.type === 'IT' ? 'Manage your IT candidates and support.' : 'Manage your assigned candidates and support queries.'}
+                </p>
 
                 <div className="scrollable-tabs">
                     {['candidates', 'inbox', 'announcements', 'resources'].map(tab => (
@@ -151,7 +175,9 @@ const ClientDashboard = () => {
                                 textTransform: 'capitalize'
                             }}
                         >
-                            {tab === 'inbox' ? 'Bank Support Inbox' : tab === 'candidates' ? 'My Candidates' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'inbox'
+                                ? (clientData?.type === 'IT' ? 'IT Support Inbox' : 'Bank Support Inbox')
+                                : tab === 'candidates' ? 'My Candidates' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
                 </div>

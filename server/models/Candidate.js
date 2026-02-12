@@ -41,6 +41,8 @@ const candidateSchema = new mongoose.Schema({
         uploadedAt: { type: Date, default: Date.now }
     }],
     statusHistory: [statusHistorySchema],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    referredBy: { type: String },
     isActive: { type: Boolean, default: true } // Admin can enable/disable candidate access
 }, { timestamps: true });
 

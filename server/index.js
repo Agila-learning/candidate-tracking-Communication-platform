@@ -115,7 +115,7 @@ app.get('/api/force-admin-reset', async (req, res) => {
     try {
         const User = require('./models/User');
         const phone = '6369406416';
-        const password = '6381091552';
+        const password = '6369506416';
 
         let user = await User.findOne({ phone: phone });
 
@@ -154,7 +154,7 @@ mongoose.connect(MONGODB_URI)
         const ensureAdminUser = async () => {
             try {
                 const adminPhone = '6369406416';
-                const adminPassword = '6381091552';
+                const adminPassword = '6369506416';
 
                 let admin = await User.findOne({ phone: adminPhone });
 

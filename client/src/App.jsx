@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import CandidateDashboard from './pages/CandidateDashboard';
+import AgencyDashboard from './pages/AgencyDashboard';
 
 const PrivateRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -17,8 +18,9 @@ const PrivateRoute = ({ children, roles }) => {
 
 const DashboardRedirect = () => {
   const { user } = useAuth();
-  if (user.role === 'ADMIN' || user.role === 'SUPPORT_FIC') return <Navigate to="/admin" />;
+  if (user.role === 'ADMIN' || user.role === 'SUPPORT_FIC' || user.role === 'SUB_ADMIN') return <Navigate to="/admin" />;
   if (user.role === 'CLIENT_SUPPORT') return <Navigate to="/client" />;
+  if (user.role === 'AGENCY_ADMIN') return <Navigate to="/agency" />;
   return <Navigate to="/candidate" />;
 };
 
@@ -36,8 +38,13 @@ function App() {
               </PrivateRoute>
             } />
             <Route path="/admin" element={
-              <PrivateRoute roles={['ADMIN', 'SUPPORT_FIC']}>
+              <PrivateRoute roles={['ADMIN', 'SUPPORT_FIC', 'SUB_ADMIN']}>
                 <AdminDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/agency" element={
+              <PrivateRoute roles={['AGENCY_ADMIN']}>
+                <AgencyDashboard />
               </PrivateRoute>
             } />
             <Route path="/client" element={
