@@ -11,7 +11,11 @@ const Resources = () => {
         title: '',
         description: '',
         type: 'Document',
-        url: ''
+        title: '',
+        description: '',
+        type: 'Document',
+        url: '',
+        file: null
     });
 
     const userRole = user?.role || '';
@@ -29,9 +33,20 @@ const Resources = () => {
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(config.endpoints.resources, newResource);
+            const formData = new FormData();
+            formData.append('title', newResource.title);
+            formData.append('description', newResource.description);
+            formData.append('type', newResource.type);
+            formData.append('url', newResource.url);
+            if (newResource.file) {
+                formData.append('file', newResource.file);
+            }
+
+            await axios.post(config.endpoints.resources, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setIsAdding(false);
-            setNewResource({ title: '', description: '', type: 'Document', url: '' });
+            setNewResource({ title: '', description: '', type: 'Document', url: '', file: null });
             fetchResources();
         } catch (e) {
             alert('Failed to post resource');
@@ -70,8 +85,12 @@ const Resources = () => {
                                 </select>
                             </div>
                             <div>
-                                <label style={{ fontSize: '0.85rem' }}>URL / Link</label>
-                                <input value={newResource.url} onChange={e => setNewResource({ ...newResource, url: e.target.value })} placeholder="https://..." />
+                                <label style={{ fontSize: '0.85rem' }}>{newResource.type === 'Document' ? 'File Upload' : 'URL / Link'}</label>
+                                {newResource.type === 'Document' ? (
+                                    <input type="file" onChange={e => setNewResource({ ...newResource, file: e.target.files[0] })} />
+                                ) : (
+                                    <input value={newResource.url} onChange={e => setNewResource({ ...newResource, url: e.target.value })} placeholder="https://..." />
+                                )}
                             </div>
                         </div>
                         <button type="submit" className="primary" style={{ width: 'fit-content', padding: '0.75rem 2rem' }}>Post Entry</button>
@@ -108,7 +127,23 @@ const Resources = () => {
                                     fontWeight: 600,
                                     border: '1px solid var(--border)'
                                 }}>
-                                    View Resource &rarr;
+                                    View Link &rarr;
+                                </a>
+                            )}
+                            {res.fileUrl && (
+                                <a href={res.fileUrl} target="_blank" rel="noreferrer" style={{
+                                    display: 'inline-block',
+                                    padding: '0.4rem 0.8rem',
+                                    backgroundColor: 'var(--bg-main)',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem',
+                                    textDecoration: 'none',
+                                    color: 'var(--primary)',
+                                    fontWeight: 600,
+                                    border: '1px solid var(--border)',
+                                    marginTop: '0.5rem'
+                                }}>
+                                    Download {res.originalName || 'File'} ⬇️
                                 </a>
                             )}
                         </div>
