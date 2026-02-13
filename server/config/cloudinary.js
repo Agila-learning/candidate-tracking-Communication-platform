@@ -27,11 +27,18 @@ const storage = new CloudinaryStorage({
         }
 
         return {
-            folder: 'fic_resources',
-            resource_type: resource_type,
-            public_id: public_id,
-            flags: resource_type === 'raw' ? 'attachment' : undefined
-        };
+            if(resource_type === 'raw') {
+                const ext = file.originalname.split('.').pop();
+public_id += '.' + ext;
+        }
+
+return {
+    folder: 'fic_resources',
+    resource_type: resource_type,
+    public_id: public_id,
+    type: resource_type === 'raw' ? 'authenticated' : 'upload', // Use authenticated for docs
+    flags: resource_type === 'raw' ? 'attachment' : undefined
+};
     },
 });
 

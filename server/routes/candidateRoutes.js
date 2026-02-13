@@ -176,7 +176,7 @@ router.get('/', auth, async (req, res) => {
                 const isRaw = candidateObj.resumeUrl && candidateObj.resumeUrl.includes('/raw/');
                 candidateObj.resumeUrl = cloudinary.url(candidateObj.resumePublicId, {
                     resource_type: isRaw ? 'raw' : 'image',
-                    type: 'upload',
+                    type: isRaw ? 'authenticated' : 'upload',
                     sign_url: true,
                     secure: true
                 });
