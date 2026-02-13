@@ -22,7 +22,29 @@ router.get('/', auth, async (req, res) => {
         // Admin and Support FIC see all resources by default
 
         const resources = await Resource.find(query).sort({ createdAt: -1 }).populate('postedBy', 'name');
-        res.send(resources);
+
+        // Generate Signed URLs for secure access (bypassing strict PDF security)
+        const resourcesWithSignedUrls = resources.map(r => {
+            const resourceObj = r.toObject();
+            if (resourceObj.publicId) {
+                // Determine resource type based on fileUrl or default to image
+                // If fileUrl contains '/raw/', it's raw.
+                // Or we can check extension if available in originalName, but URL path is safer.
+                const isRaw = resourceObj.fileUrl && resourceObj.fileUrl.includes('/raw/');
+
+                // Generate Signed URL
+                resourceObj.fileUrl = cloudinary.url(resourceObj.publicId, {
+                    resource_type: isRaw ? 'raw' : 'image',
+                    type: 'upload', // Default upload type
+                    sign_url: true, // Generate signature
+                    secure: true,   // Force HTTPS
+                    flags: isRaw ? 'attachment' : undefined // Force download for documents
+                });
+            }
+            return resourceObj;
+        });
+
+        res.send(resourcesWithSignedUrls);
     } catch (e) {
         res.status(500).send(e);
     }
