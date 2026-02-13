@@ -8,6 +8,7 @@ import Reports from '../components/Reports';
 import Resources from '../components/Resources';
 import UserManagement from '../components/UserManagement';
 import ClientManagement from '../components/ClientManagement';
+import ITClientManagement from '../components/ITClientManagement';
 import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
@@ -192,8 +193,8 @@ const AdminDashboard = () => {
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
                 <div className="scrollable-tabs">
-                    {['candidates', 'leads', 'users', 'banks', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
-                        if (isSubAdmin) return ['candidates', 'banks'].includes(tab);
+                    {['candidates', 'leads', 'users', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
+                        if (isSubAdmin) return ['candidates', 'banks', 'it_partners'].includes(tab);
                         return true;
                     }).map(tab => (
                         <button
@@ -205,10 +206,11 @@ const AdminDashboard = () => {
                                 borderBottom: activeTab === tab ? '2px solid var(--primary)' : 'none',
                                 borderRadius: 0,
                                 padding: '1rem 0.5rem',
-                                textTransform: 'capitalize'
+                                textTransform: 'capitalize',
+                                whiteSpace: 'nowrap'
                             }}
                         >
-                            {tab}
+                            {tab === 'it_partners' ? 'IT Partners' : tab === 'banks' ? 'Bank Partners' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
                 </div>
@@ -370,6 +372,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
+                {activeTab === 'it_partners' && <ITClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
                 {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}

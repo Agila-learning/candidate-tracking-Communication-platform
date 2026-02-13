@@ -3,11 +3,11 @@ import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 
-const ClientManagement = ({ onStartChat, userRole }) => {
+const ITClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
+    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' });
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -18,10 +18,10 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            // Filter only BANKING clients (default)
-            setClients(res.data.filter(c => !c.type || c.type === 'BANKING'));
+            // Filter only IT clients
+            setClients(res.data.filter(c => c.type === 'IT'));
         } catch (e) {
-            showToast('Failed to fetch clients', 'error');
+            showToast('Failed to fetch IT clients', 'error');
         } finally {
             setLoading(false);
         }
@@ -31,12 +31,12 @@ const ClientManagement = ({ onStartChat, userRole }) => {
         e.preventDefault();
         try {
             await axios.post(config.endpoints.clients.create, formData);
-            showToast('Bank partner added successfully!');
-            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
+            showToast('IT Partner added successfully!');
+            setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' });
             setShowForm(false);
             fetchClients();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to add client', 'error');
+            showToast(err.response?.data?.error || 'Failed to add IT Partner', 'error');
         }
     };
 
@@ -44,7 +44,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
         if (!confirm(`⚠️ Delete ${clientName}? This will affect all associated users and candidates.`)) return;
         try {
             await axios.delete(config.endpoints.clients.delete(id));
-            showToast('Bank partner removed successfully');
+            showToast('IT Partner removed successfully');
             fetchClients();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to delete', 'error');
@@ -54,7 +54,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const handleToggleStatus = async (client) => {
         const action = client.isActive ? 'deactivate' : 'activate';
         const message = client.isActive
-            ? `⚠️ Deactivate ${client.name}? Users assigned to this bank  won't be able to login.`
+            ? `⚠️ Deactivate ${client.name}? Users assigned to this company won't be able to login.`
             : `Activate ${client.name}? Associated users will regain access.`;
 
         if (!confirm(message)) return;
@@ -64,7 +64,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
             showToast(`${client.name} ${action}d successfully`);
             fetchClients();
         } catch (err) {
-            showToast(err.response?.data?.error || `Failed to ${action} bank partner`, 'error');
+            showToast(err.response?.data?.error || `Failed to ${action} company`, 'error');
         }
     };
 
@@ -88,34 +88,34 @@ const ClientManagement = ({ onStartChat, userRole }) => {
         <div className="fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <h3 style={{ margin: 0 }}>🏦 Bank Partners</h3>
+                    <h3 style={{ margin: 0 }}>💻 IT Partners</h3>
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
                         style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                     >
-                        <option value="all">All Banks ({clients.length})</option>
+                        <option value="all">All Companies ({clients.length})</option>
                         <option value="active">Active ({clients.filter(c => c.isActive).length})</option>
                         <option value="inactive">Inactive ({clients.filter(c => !c.isActive).length})</option>
                     </select>
                 </div>
-                <button onClick={() => setShowForm(!showForm)}>
-                    {showForm ? '✕ Cancel' : '+ Add Bank'}
+                <button onClick={() => setShowForm(!showForm)} className="primary">
+                    {showForm ? '✕ Cancel' : '+ Add IT Company'}
                 </button>
             </div>
 
             {showForm && (
-                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--success)' }}>
+                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #8b5cf6' }}>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                            <input placeholder="Bank Name (e.g., Axis Bank)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                            <input placeholder="Company Name (e.g., Infosys)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value })} />
                             <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-                            {/* Hidden type field, always BANKING */}
+                            {/* Hidden type field, always IT */}
                         </div>
-                        <button type="submit" style={{ justifySelf: 'start' }}>Add Bank Partner</button>
+                        <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>Add IT Partner</button>
                     </form>
                 </div>
             )}
@@ -127,13 +127,15 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                         className="card"
                         style={{
                             position: 'relative',
-                            borderTop: `4px solid ${client.isActive ? 'var(--success)' : 'var(--danger)'}`,
+                            borderTop: `4px solid ${client.isActive ? '#8b5cf6' : 'var(--danger)'}`,
                             opacity: client.isActive ? 1 : 0.65,
                             transition: 'opacity 0.2s'
                         }}
                     >
                         <div style={{ marginBottom: '1rem' }}>
                             <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
+                            <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px', marginRight: '0.5rem' }}>IT</span>
+
                             <button
                                 onClick={() => handleToggleStatus(client)}
                                 disabled={userRole === 'SUB_ADMIN'}
@@ -146,7 +148,8 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                                     border: 'none',
                                     borderRadius: '20px',
                                     cursor: userRole === 'SUB_ADMIN' ? 'not-allowed' : 'pointer',
-                                    opacity: userRole === 'SUB_ADMIN' ? 0.6 : 1
+                                    opacity: userRole === 'SUB_ADMIN' ? 0.6 : 1,
+                                    marginLeft: 'auto'
                                 }}
                                 title={userRole === 'SUB_ADMIN' ? 'View Only' : (client.isActive ? 'Click to deactivate' : 'Click to activate')}
                             >
@@ -195,19 +198,16 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                             </button>
                         )}
                     </div>
-                ))
-                }
-            </div >
+                ))}
+            </div>
 
-            {
-                filteredClients.length === 0 && (
-                    <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                        {statusFilter === 'all' ? 'No bank partners yet. Add your first bank above.' : `No ${statusFilter} bank partners.`}
-                    </div>
-                )
-            }
-        </div >
+            {filteredClients.length === 0 && (
+                <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    {statusFilter === 'all' ? 'No IT partners yet. Add your first IT company above.' : `No ${statusFilter} IT partners.`}
+                </div>
+            )}
+        </div>
     );
 };
 
-export default ClientManagement;
+export default ITClientManagement;

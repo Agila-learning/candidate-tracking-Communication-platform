@@ -29,10 +29,10 @@ router.get('/', auth, async (req, res) => {
 // Create Client
 router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN'), async (req, res) => {
     try {
-        const { name, pocName, pocEmail, pocPhone, password } = req.body;
+        const { name, pocName, pocEmail, pocPhone, password, type } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });
 
-        const client = new Client({ name, pocName, pocEmail, pocPhone });
+        const client = new Client({ name, pocName, pocEmail, pocPhone, type: type || 'BANKING' });
         await client.save();
 
         // Auto-create User for Bank POC
