@@ -30,6 +30,7 @@ const storage = new CloudinaryStorage({
             folder: 'fic_resources',
             resource_type: resource_type,
             public_id: public_id,
+            flags: resource_type === 'raw' ? 'attachment' : undefined
         };
     },
 });
