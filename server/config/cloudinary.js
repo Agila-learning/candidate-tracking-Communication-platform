@@ -18,10 +18,18 @@ const storage = new CloudinaryStorage({
             resource_type = 'raw';
         }
 
+        let public_id = file.originalname.split('.')[0] + '_' + Date.now();
+
+        // For 'raw' files, we must include the extension in public_id so Cloudinary serves it with the correct extension
+        if (resource_type === 'raw') {
+            const ext = file.originalname.split('.').pop();
+            public_id += '.' + ext;
+        }
+
         return {
             folder: 'fic_resources',
             resource_type: resource_type,
-            public_id: file.originalname.split('.')[0] + '_' + Date.now(), // Append timestamp for uniqueness
+            public_id: public_id,
         };
     },
 });
