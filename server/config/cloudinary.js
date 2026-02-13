@@ -10,11 +10,20 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'fic_resources',
-        allowed_formats: ['jpg', 'png', 'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'],
-        resource_type: 'auto'
-    }
+    params: async (req, file) => {
+        let resource_type = 'auto'; // Default to auto
+
+        // Force 'raw' for non-image files to ensure they are downloadable and not treated as images
+        if (!file.mimetype.startsWith('image/')) {
+            resource_type = 'raw';
+        }
+
+        return {
+            folder: 'fic_resources',
+            resource_type: resource_type,
+            public_id: file.originalname.split('.')[0] + '_' + Date.now(), // Append timestamp for uniqueness
+        };
+    },
 });
 
 const upload = multer({ storage: storage });
