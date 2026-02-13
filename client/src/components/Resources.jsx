@@ -13,7 +13,7 @@ const Resources = () => {
         type: 'Document',
         title: '',
         description: '',
-        type: 'Document',
+        type: 'Link',
         url: '',
         file: null
     });
@@ -46,7 +46,8 @@ const Resources = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setIsAdding(false);
-            setNewResource({ title: '', description: '', type: 'Document', url: '', file: null });
+            setIsAdding(false);
+            setNewResource({ title: '', description: '', type: 'Link', url: '', file: null });
             fetchResources();
         } catch (e) {
             alert('Failed to post resource');
@@ -89,18 +90,13 @@ const Resources = () => {
                             <div>
                                 <label style={{ fontSize: '0.85rem' }}>Type</label>
                                 <select value={newResource.type} onChange={e => setNewResource({ ...newResource, type: e.target.value })}>
-                                    <option value="Document">Document</option>
-                                    <option value="Link">Link</option>
+                                    <option value="Link">Link (Google Drive/External)</option>
                                     <option value="Announcement">Announcement</option>
                                 </select>
                             </div>
                             <div>
-                                <label style={{ fontSize: '0.85rem' }}>{newResource.type === 'Document' ? 'File Upload' : 'URL / Link'}</label>
-                                {newResource.type === 'Document' ? (
-                                    <input type="file" onChange={e => setNewResource({ ...newResource, file: e.target.files[0] })} />
-                                ) : (
-                                    <input value={newResource.url} onChange={e => setNewResource({ ...newResource, url: e.target.value })} placeholder="https://..." />
-                                )}
+                                <label style={{ fontSize: '0.85rem' }}>URL / Link</label>
+                                <input value={newResource.url} onChange={e => setNewResource({ ...newResource, url: e.target.value })} placeholder="https://drive.google.com/..." />
                             </div>
                         </div>
                         <button type="submit" className="primary" style={{ width: 'fit-content', padding: '0.75rem 2rem' }}>Post Entry</button>
