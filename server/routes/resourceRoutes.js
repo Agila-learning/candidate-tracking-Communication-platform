@@ -35,7 +35,7 @@ router.get('/', auth, async (req, res) => {
                 // Generate Signed URL
                 resourceObj.fileUrl = cloudinary.url(resourceObj.publicId, {
                     resource_type: isRaw ? 'raw' : 'image',
-                    type: 'upload',
+                    type: isRaw ? 'authenticated' : 'upload',
                     sign_url: true,
                     secure: true
                 });
