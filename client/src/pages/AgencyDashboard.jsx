@@ -22,9 +22,8 @@ const AgencyDashboard = () => {
         qualification: 'Graduate',
         clientId: '',
         programName: '',
-        comments: '' // Mapped to remarks or a new field? Let's treat as remarks in interview or just generic custom field if needed. 
-        // For now, let's put it in 'programName' or appended to location if no specific field, 
-        // OR better, just add a simple note in the UI that maps to 'programName' or 'interview.remarks' if specific.
+        comments: '',
+        resume: null
     });
 
     // Actually, user asked for "comments". Candidate model doesn't have a top-level comments field.
@@ -61,11 +60,22 @@ const AgencyDashboard = () => {
     const handleAddCandidate = async (e) => {
         e.preventDefault();
         try {
+            const formData = new FormData();
+            Object.keys(newCandidate).forEach(key => {
+                if (key === 'resume') {
+                    if (newCandidate.resume) formData.append('resume', newCandidate.resume);
+                } else {
+                    formData.append(key, newCandidate[key]);
+                }
+            });
+
             // "referredBy" is handled by backend based on user role
-            await axios.post(config.endpoints.candidates.create, newCandidate);
+            await axios.post(config.endpoints.candidates.create, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             showToast('Candidate added successfully!');
             setShowAddModal(false);
-            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', clientId: '', programName: '', comments: '' });
+            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', clientId: '', programName: '', comments: '', resume: null });
             fetchCandidates();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to add candidate', 'error');
@@ -142,6 +152,11 @@ const AgencyDashboard = () => {
                             <input placeholder="Comments / Program Details" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
                             <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
 
+                            <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '4px' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Upload Resume (Optional)</label>
+                                <input type="file" onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
+                            </div>
+
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                                 <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'transparent', border: '1px solid var(--border)' }}>Cancel</button>
                                 <button type="submit" className="primary">Add Candidate</button>
@@ -201,6 +216,7 @@ const AgencyDashboard = () => {
                                 <th style={{ padding: '1rem' }}>Phone</th>
                                 <th style={{ padding: '1rem' }}>Client</th>
                                 <th style={{ padding: '1rem' }}>Status</th>
+                                <th style={{ padding: '1rem' }}>Resume</th>
                                 <th style={{ padding: '1rem' }}>Referred By</th>
                                 <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
                             </tr>
@@ -218,6 +234,15 @@ const AgencyDashboard = () => {
                                         }}>
                                             {c.currentStatus}
                                         </span>
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        {c.resumeUrl ? (
+                                            <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>
+                                                Download
+                                            </a>
+                                        ) : (
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>-</span>
+                                        )}
                                     </td>
                                     <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                         {c.referredBy || (c.createdBy?.name) || 'Self/Admin'}

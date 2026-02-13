@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { auth, authorize } = require('../middleware/auth');
 const { validateCandidate } = require('../middleware/validators');
 const { maskPhone } = require('../utils/masking');
-const upload = require('../middleware/upload');
+const { upload, cloudinary } = require('../config/cloudinary');
 
 const router = express.Router();
 
@@ -38,7 +38,7 @@ router.post('/create-profile', auth, async (req, res) => {
 });
 
 // Create Candidate (Admin/Support/Agency Admin)
-router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN'), async (req, res) => {
+router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN'), upload.single('resume'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -57,7 +57,14 @@ router.post('/', auth, validateCandidate, authorize('ADMIN', 'SUB_ADMIN', 'SUPPO
         // Sanitize clientId
         if (req.body.clientId === '') delete req.body.clientId;
 
-        const candidate = new Candidate(req.body);
+        const candidateData = { ...req.body };
+
+        if (req.file) {
+            candidateData.resumeUrl = req.file.path;
+            candidateData.resumeOriginalName = req.file.originalname;
+        }
+
+        const candidate = new Candidate(candidateData);
         await candidate.save();
 
         // Sync: Ensure a User account exists for this candidate (for OTP Login)
@@ -141,16 +148,33 @@ router.get('/', auth, async (req, res) => {
 
         const candidates = await Candidate.find(query).populate('clientId').populate('createdBy', 'name _id').sort({ createdAt: -1 });
 
-        // Mask phone for bank support
-        if (req.user.role === 'CLIENT_SUPPORT') {
-            const masked = candidates.map(c => ({
-                ...c.toObject(),
-                phone: maskPhone(c.phone)
-            }));
-            return res.send(masked);
-        }
+        // Apply Masking Logic
+        const maskedCandidates = candidates.map(c => {
+            const candidateObj = c.toObject();
+            let shouldMask = false;
 
-        res.send(candidates);
+            // Rule 1: Client Support (Bank/IT) -> Always Mask
+            if (req.user.role === 'CLIENT_SUPPORT') {
+                shouldMask = true;
+            }
+
+            // Rule 2: Agency Admin -> Mask if NOT created by them
+            if (req.user.role === 'AGENCY_ADMIN') {
+                const isCreator = c.createdBy && c.createdBy._id.toString() === req.user._id.toString();
+                if (!isCreator) {
+                    shouldMask = true;
+                }
+            }
+
+            if (shouldMask && c.phone) {
+                // Mask all but last 4 digits
+                candidateObj.phone = 'xxxxxx' + c.phone.slice(-4);
+            }
+
+            return candidateObj;
+        });
+
+        res.json(maskedCandidates);
     } catch (e) {
         res.status(500).send(e);
     }

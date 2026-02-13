@@ -235,6 +235,7 @@ const ClientDashboard = () => {
                                             <th style={{ padding: '1rem' }}>Name</th>
                                             <th style={{ padding: '1rem' }}>Program</th>
                                             <th style={{ padding: '1rem' }}>Current Status</th>
+                                            <th style={{ padding: '1rem' }}>Resume</th>
                                             <th style={{ padding: '1rem' }}>Actions</th>
                                         </tr>
                                     </thead>
@@ -254,6 +255,11 @@ const ClientDashboard = () => {
                                                     }}>
                                                         {c.currentStatus}
                                                     </span>
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    {c.resumeUrl ? (
+                                                        <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>Download</a>
+                                                    ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
                                                 </td>
                                                 <td style={{ padding: '1rem' }}>
                                                     <button

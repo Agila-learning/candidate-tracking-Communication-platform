@@ -23,7 +23,7 @@ const AdminDashboard = () => {
     const [showAddLead, setShowAddLead] = useState(false);
     const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', location: '', targetBank: '', phase: 'Phase 1' });
     const [showAddCandidate, setShowAddCandidate] = useState(false);
-    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate' });
+    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClient, setFilterClient] = useState('');
     const [clients, setClients] = useState([]);
@@ -68,8 +68,19 @@ const AdminDashboard = () => {
     const handleCreateCandidate = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(config.endpoints.candidates.create, newCandidate);
-            setNewCandidate({ name: '', email: '', phone: '', programName: '', location: '', clientId: '' });
+            const formData = new FormData();
+            Object.keys(newCandidate).forEach(key => {
+                if (key === 'resume') {
+                    if (newCandidate.resume) formData.append('resume', newCandidate.resume);
+                } else {
+                    formData.append(key, newCandidate[key]);
+                }
+            });
+
+            await axios.post(config.endpoints.candidates.create, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setNewCandidate({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null });
             setShowAddCandidate(false);
             fetchCandidates();
             showToast('Candidate onboarded successfully!');
@@ -250,6 +261,10 @@ const AdminDashboard = () => {
                                     <input placeholder="Phone" value={newCandidate.phone} onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} required />
                                     <input placeholder="Program Name" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
                                     <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Upload Resume (Optional)</label>
+                                        <input type="file" onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
+                                    </div>
                                     <select value={newCandidate.qualification} onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })}>
                                         <option value="Graduate">Graduate</option>
                                         <option value="Post Graduate">Post Graduate</option>
@@ -277,6 +292,7 @@ const AdminDashboard = () => {
                                         <th style={{ padding: '1rem' }}>Program</th>
                                         <th style={{ padding: '1rem' }}>Client</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem' }}>Resume</th>
                                         <th style={{ padding: '1rem' }}>Actions</th>
                                     </tr>
                                 </thead>
@@ -297,6 +313,11 @@ const AdminDashboard = () => {
                                                 }}>
                                                     {c.currentStatus}
                                                 </span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                {c.resumeUrl ? (
+                                                    <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>Download</a>
+                                                ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
                                             </td>
                                             <td style={{ padding: '1rem' }}>
                                                 <button

@@ -17,6 +17,8 @@ const candidateSchema = new mongoose.Schema({
     qualification: { type: String },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     programName: { type: String }, // e.g., Axis YBP
+    resumeUrl: { type: String }, // Cloudinary URL
+    resumeOriginalName: { type: String },
     currentStatus: {
         type: String,
         enum: [
