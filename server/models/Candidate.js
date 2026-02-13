@@ -18,6 +18,7 @@ const candidateSchema = new mongoose.Schema({
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     programName: { type: String }, // e.g., Axis YBP
     resumeUrl: { type: String }, // Cloudinary URL
+    resumePublicId: { type: String }, // For signed URLs
     resumeOriginalName: { type: String },
     currentStatus: {
         type: String,

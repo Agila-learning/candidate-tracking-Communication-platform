@@ -171,6 +171,17 @@ router.get('/', auth, async (req, res) => {
                 candidateObj.phone = 'xxxxxx' + c.phone.slice(-4);
             }
 
+            // Generate Signed URL for Resume if publicId exists
+            if (candidateObj.resumePublicId) {
+                const isRaw = candidateObj.resumeUrl && candidateObj.resumeUrl.includes('/raw/');
+                candidateObj.resumeUrl = cloudinary.url(candidateObj.resumePublicId, {
+                    resource_type: isRaw ? 'raw' : 'image',
+                    type: 'upload',
+                    sign_url: true,
+                    secure: true
+                });
+            }
+
             return candidateObj;
         });
 

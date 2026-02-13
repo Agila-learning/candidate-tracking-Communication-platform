@@ -35,10 +35,9 @@ router.get('/', auth, async (req, res) => {
                 // Generate Signed URL
                 resourceObj.fileUrl = cloudinary.url(resourceObj.publicId, {
                     resource_type: isRaw ? 'raw' : 'image',
-                    type: 'upload', // Default upload type
-                    sign_url: true, // Generate signature
-                    secure: true,   // Force HTTPS
-                    flags: isRaw ? 'attachment' : undefined // Force download for documents
+                    type: 'upload',
+                    sign_url: true,
+                    secure: true
                 });
             }
             return resourceObj;
