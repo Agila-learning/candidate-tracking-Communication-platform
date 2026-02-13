@@ -53,6 +53,16 @@ const Resources = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this resource?')) return;
+        try {
+            await axios.delete(`${config.endpoints.resources}/${id}`);
+            fetchResources();
+        } catch (e) {
+            alert('Failed to delete resource');
+        }
+    };
+
     return (
         <div className="fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -147,6 +157,23 @@ const Resources = () => {
                                 </a>
                             )}
                         </div>
+                        {(isAdmin || (user?._id === res.postedBy?._id) || (user?._id === res.postedBy)) && (
+                            <button
+                                onClick={() => handleDelete(res._id)}
+                                style={{
+                                    alignSelf: 'flex-start',
+                                    padding: '0.4rem 0.8rem',
+                                    color: 'var(--danger)',
+                                    background: 'transparent',
+                                    border: '1px solid var(--danger)',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
+                                Delete
+                            </button>
+                        )}
                     </div>
                 ))}
                 {resources.length === 0 && (
