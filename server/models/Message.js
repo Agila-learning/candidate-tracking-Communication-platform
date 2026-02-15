@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema({
     attachments: [{
         type: { type: String, enum: ['image', 'pdf', 'doc', 'audio'] },
         url: String,
+        public_id: String,
         name: String
     }],
     readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

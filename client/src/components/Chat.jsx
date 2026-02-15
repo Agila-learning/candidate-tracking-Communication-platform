@@ -102,7 +102,7 @@ const Chat = ({ conversationId }) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            const { url, name } = uploadRes.data;
+            const { url, name, public_id } = uploadRes.data;
 
             // 2. Send Message with Attachment
             const messageData = {
@@ -111,6 +111,7 @@ const Chat = ({ conversationId }) => {
                 attachments: [{
                     type: 'audio',
                     url: url,
+                    public_id: public_id,
                     name: name
                 }]
             };
@@ -120,6 +121,17 @@ const Chat = ({ conversationId }) => {
         } catch (err) {
             console.error('Failed to send voice message:', err);
             alert('Failed to send voice message');
+        }
+    };
+
+    const handleDelete = async (messageId) => {
+        if (!confirm('Are you sure you want to delete this message?')) return;
+        try {
+            await axios.delete(`${config.endpoints.chat}/messages/${messageId}`);
+            setMessages(prev => prev.filter(m => m._id !== messageId));
+        } catch (err) {
+            console.error('Failed to delete message:', err);
+            alert('Failed to delete message');
         }
     };
 
@@ -175,8 +187,25 @@ const Chat = ({ conversationId }) => {
                             ) : (
                                 m.text
                             )}
-                            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.7, textAlign: 'right' }}>
-                                {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.7, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                {(isMe || user?.role === 'ADMIN') && (
+                                    <button
+                                        onClick={() => handleDelete(m._id)}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'inherit',
+                                            opacity: 0.7,
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            fontSize: '0.8rem'
+                                        }}
+                                        title="Delete Message"
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
                             </div>
                         </div>
                     );

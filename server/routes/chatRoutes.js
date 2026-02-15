@@ -175,4 +175,43 @@ router.post('/upload-audio', auth, upload.single('audio'), async (req, res) => {
     }
 });
 
+// Delete Message
+router.delete('/messages/:id', auth, async (req, res) => {
+    try {
+        const message = await Message.findById(req.params.id);
+        if (!message) return res.status(404).send();
+
+        // Check permission: Admin or Sender
+        if (req.user.role !== 'ADMIN' && message.senderId.toString() !== req.user._id.toString()) {
+            return res.status(403).send({ error: 'Unauthorized to delete this message' });
+        }
+
+        // Delete attachments from Cloudinary
+        if (message.attachments && message.attachments.length > 0) {
+            for (const attachment of message.attachments) {
+                if (attachment.public_id) {
+                    try {
+                        let resourceType = 'image';
+                        if (attachment.type === 'audio') resourceType = 'video'; // Cloudinary treats audio as video
+                        else if (attachment.type === 'doc' || attachment.type === 'pdf') resourceType = 'raw';
+
+                        await cloudinary.uploader.destroy(attachment.public_id, { resource_type: resourceType });
+                    } catch (err) {
+                        console.error('Failed to delete file from Cloudinary:', err);
+                    }
+                }
+            }
+        }
+
+        // Actually, looking at resourceRoutes, we stored publicId in Resource model.
+        // in Chat, we probably didn't store public_id in Message model.
+        // Let's check Message model first.
+
+        await Message.findByIdAndDelete(req.params.id);
+        res.send(message);
+    } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
 module.exports = router;
