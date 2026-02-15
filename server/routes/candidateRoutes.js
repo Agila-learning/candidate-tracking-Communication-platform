@@ -350,13 +350,51 @@ router.post('/:id/documents', auth, upload.single('document'), async (req, res) 
 
         candidate.documents.push({
             name: req.body.name || req.file.originalname,
-            url: `/uploads/${req.file.filename}`
+            url: req.file.path, // Save Cloudinary URL directly
+            public_id: req.file.filename // Save public_id for deletion
         });
 
         await candidate.save();
         res.status(201).send(candidate);
     } catch (e) {
         res.status(400).send(e);
+    }
+});
+
+// Delete Document
+router.delete('/:id/documents/:docId', auth, async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id);
+        if (!candidate) return res.status(404).send();
+
+        const doc = candidate.documents.id(req.params.docId);
+        if (!doc) return res.status(404).send({ error: 'Document not found' });
+
+        // Delete from Cloudinary if public_id exists
+        if (doc.public_id) {
+            try {
+                // Determine resource type based on file extension or metadata if possible
+                // For now, try 'image' then 'raw' if needed, or rely on cloudinary detecting it?
+                // Actually, our upload config sets resource_type.
+                // We'll try to delete. 'raw' covers PDFs/Docs usually.
+                // Let's guess based on URL extension?
+                let resourceType = 'image';
+                if (doc.url.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/i)) resourceType = 'raw';
+
+                await cloudinary.uploader.destroy(doc.public_id, { resource_type: resourceType });
+            } catch (err) {
+                console.error('Failed to delete file from Cloudinary:', err);
+            }
+        }
+
+        // Remove from array
+        candidate.documents.pull(req.params.docId);
+        await candidate.save();
+
+        res.send(candidate);
+    } catch (e) {
+        console.error(e);
+        res.status(500).send(e);
     }
 });
 

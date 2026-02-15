@@ -88,10 +88,22 @@ const CandidateDashboard = () => {
             await axios.post(`${config.endpoints.candidates.details(candidate._id)}/documents`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            showToast(`${docName} uploaded and verified!`);
+            showToast(`${docName} uploaded successfully!`);
             fetchProfile();
         } catch (err) {
             showToast('Upload failed. Please try a smaller file.', 'error');
+        }
+    };
+
+    const handleDeleteDocument = async (docId, docName) => {
+        if (!confirm(`Are you sure you want to delete ${docName}?`)) return;
+        try {
+            await axios.delete(`${config.endpoints.candidates.details(candidate._id)}/documents/${docId}`);
+            showToast(`${docName} deleted successfully`);
+            fetchProfile();
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to delete document', 'error');
         }
     };
 
@@ -269,11 +281,20 @@ const CandidateDashboard = () => {
                                     {['ID Proof', 'Certificates', 'Photo'].map(doc => {
                                         const uploaded = candidate.documents?.find(d => d.name === doc);
                                         return (
-                                            <div key={doc} style={{ border: '1px solid var(--border)', padding: '1rem', borderRadius: '8px', textAlign: 'center', backgroundColor: uploaded ? 'hsla(150, 100%, 35%, 0.05)' : 'transparent' }}>
+                                            <div key={doc} style={{ border: '1px solid var(--border)', padding: '1rem', borderRadius: '8px', textAlign: 'center', backgroundColor: uploaded ? 'hsla(150, 100%, 35%, 0.05)' : 'transparent', position: 'relative' }}>
+                                                {uploaded && (
+                                                    <button
+                                                        onClick={() => handleDeleteDocument(uploaded._id, doc)}
+                                                        style={{ position: 'absolute', top: '5px', right: '5px', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1rem', padding: '0' }}
+                                                        title="Delete File"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
                                                 <div style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{uploaded ? '✅' : '📄'}</div>
                                                 <div style={{ fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.5rem' }}>{doc}</div>
                                                 {uploaded ? (
-                                                    <a href={`${config.apiUrl}${uploaded.url}`} target="_blank" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>View File</a>
+                                                    <a href={uploaded.url} target="_blank" rel="noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>View File</a>
                                                 ) : (
                                                     <label style={{ display: 'block', padding: '0.3rem', fontSize: '0.65rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>
                                                         Upload <input type="file" hidden onChange={(e) => handleFileUpload(e, doc)} />
