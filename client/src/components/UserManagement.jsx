@@ -186,7 +186,7 @@ const UserManagement = () => {
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Role</label>
                                 <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} style={{ width: '100%' }}>
                                     <option value="CANDIDATE">Candidate</option>
-                                    <option value="CLIENT_SUPPORT">Bank Support</option>
+                                    <option value="CLIENT_SUPPORT">Client Partner (Bank / IT)</option>
                                     <option value="SUPPORT_FIC">FIC Support</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
                                     <option value="ADMIN">Admin</option>
@@ -194,9 +194,9 @@ const UserManagement = () => {
                             </div>
                             {formData.role === 'CLIENT_SUPPORT' && (
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Bank</label>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Company / Bank</label>
                                     <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} style={{ width: '100%' }}>
-                                        <option value="">Select Bank...</option>
+                                        <option value="">Select Company...</option>
                                         {clients.filter(c => c.isActive).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                     </select>
                                 </div>
@@ -219,7 +219,7 @@ const UserManagement = () => {
                                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Phone</th>
                                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Email</th>
                                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Role</th>
-                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Bank</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Company</th>
                                 <th style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                             </tr>
                         </thead>
@@ -259,12 +259,12 @@ const UserManagement = () => {
                                             color: roleColors[user.role],
                                             whiteSpace: 'nowrap'
                                         }}>
-                                            {user.role.replace('_', ' ')}
+                                            {user.role === 'CLIENT_SUPPORT' ? 'Client Partner' : user.role.replace('_', ' ')}
                                         </span>
                                     </td>
                                     <td style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                                         {user.clientId?.name || (
-                                            user.role === 'CLIENT_SUPPORT' ? <span style={{ color: 'var(--danger)', fontWeight: 'bold' }}>⚠️ No Bank</span> : '-'
+                                            user.role === 'CLIENT_SUPPORT' ? <span style={{ color: 'var(--danger)', fontWeight: 'bold' }}>⚠️ No Company</span> : '-'
                                         )}
                                     </td>
                                     <td style={{ padding: '1rem', textAlign: 'right' }}>

@@ -2,6 +2,7 @@ const express = require('express');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const { auth } = require('../middleware/auth');
+const { upload, cloudinary } = require('../config/cloudinary');
 
 const router = express.Router();
 
@@ -153,6 +154,24 @@ router.patch('/read/:id', auth, async (req, res) => {
         res.send(conversation);
     } catch (e) {
         res.status(400).send(e);
+    }
+});
+
+// Upload Audio
+router.post('/upload-audio', auth, upload.single('audio'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).send({ error: 'No audio file uploaded' });
+
+        // Multer-storage-cloudinary has already uploaded it.
+        // We just need to return the URL and public_id.
+        res.send({
+            url: req.file.path,
+            public_id: req.file.filename,
+            name: 'Voice Message'
+        });
+    } catch (e) {
+        console.error('Audio upload error:', e);
+        res.status(400).send({ error: e.message });
     }
 });
 
