@@ -1,7 +1,7 @@
 const express = require('express');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
-const { auth } = require('../middleware/auth');
+const { auth, authorize } = require('../middleware/auth');
 const { upload, cloudinary } = require('../config/cloudinary');
 
 const router = express.Router();
@@ -210,6 +210,47 @@ router.delete('/messages/:id', auth, async (req, res) => {
         await Message.findByIdAndDelete(req.params.id);
         res.send(message);
     } catch (e) {
+        res.status(500).send(e);
+    }
+});
+
+// Delete Conversation (Admin Only)
+router.delete('/conversations/:id', auth, authorize('ADMIN'), async (req, res) => {
+    try {
+        const conversation = await Conversation.findById(req.params.id);
+        if (!conversation) return res.status(404).send();
+
+        // 1. Find all messages
+        const messages = await Message.find({ conversationId: conversation._id });
+
+        // 2. Delete all attachments from Cloudinary
+        for (const message of messages) {
+            if (message.attachments && message.attachments.length > 0) {
+                for (const attachment of message.attachments) {
+                    if (attachment.public_id) {
+                        try {
+                            let resourceType = 'image';
+                            if (attachment.type === 'audio') resourceType = 'video';
+                            else if (attachment.type === 'doc' || attachment.type === 'pdf') resourceType = 'raw';
+
+                            await cloudinary.uploader.destroy(attachment.public_id, { resource_type: resourceType });
+                        } catch (err) {
+                            console.error('Failed to delete file from Cloudinary during conversation delete:', err);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Delete all messages
+        await Message.deleteMany({ conversationId: conversation._id });
+
+        // 4. Delete conversation
+        await Conversation.findByIdAndDelete(req.params.id);
+
+        res.send({ message: 'Conversation deleted successfully' });
+    } catch (e) {
+        console.error(e);
         res.status(500).send(e);
     }
 });

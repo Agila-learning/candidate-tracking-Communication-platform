@@ -67,6 +67,20 @@ const SupportInbox = ({ clients = [], initialConversationId = null, targetCandid
         }
     };
 
+    const handleDeleteConversation = async (e, convId) => {
+        e.stopPropagation(); // Prevent selecting the conversation
+        if (!confirm('⚠️ Are you sure you want to delete this ENTIRE conversation? \n\nThis will permanently delete ALL messages and attached files for everyone. This action cannot be undone.')) return;
+
+        try {
+            await axios.delete(`${config.endpoints.chat}/conversations/${convId}`);
+            setConversations(prev => prev.filter(c => c._id !== convId));
+            if (selectedId === convId) setSelectedId(null);
+        } catch (err) {
+            console.error('Failed to delete conversation:', err);
+            alert('Failed to delete conversation');
+        }
+    };
+
     const filteredConversations = conversations.filter(conv => {
         if (filterType === 'internal' && conv.type !== 'candidate-admin') return false;
         if (filterType === 'bank' && !['candidate-client', 'admin-client'].includes(conv.type)) return false;
@@ -163,9 +177,29 @@ const SupportInbox = ({ clients = [], initialConversationId = null, targetCandid
                                 letterSpacing: '0.05em',
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'space-between',
                                 gap: '0.4rem'
                             }}>
-                                {conv.type === 'candidate-admin' ? 'Internal: FIC' : conv.type === 'admin-client' ? 'Direct: Bank' : `External: ${conv.clientId?.name || 'Bank'}`}
+                                <span>
+                                    {conv.type === 'candidate-admin' ? 'Internal: FIC' : conv.type === 'admin-client' ? 'Direct: Bank' : `External: ${conv.clientId?.name || 'Bank'}`}
+                                </span>
+                                {user?.role === 'ADMIN' && (
+                                    <button
+                                        onClick={(e) => handleDeleteConversation(e, conv._id)}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--danger)',
+                                            padding: '2px',
+                                            fontSize: '0.8rem',
+                                            opacity: 0.7
+                                        }}
+                                        title="Delete Conversation"
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
                             </div>
                         </div>
                     );
