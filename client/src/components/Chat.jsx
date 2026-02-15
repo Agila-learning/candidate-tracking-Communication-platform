@@ -6,10 +6,41 @@ import { config } from '../config';
 
 const Chat = ({ conversationId }) => {
     const { user } = useAuth();
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const socketRef = useRef();
+    const messagesEndRef = useRef();
+
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
+
+    useEffect(() => {
+        socketRef.current = io(config.apiUrl);
+        socketRef.current.emit('join_room', conversationId);
+
+        socketRef.current.on('receive_message', (message) => {
+            setMessages((prev) => [...prev, message]);
+        });
+
+        fetchMessages();
+
+        return () => socketRef.current.disconnect();
+    }, [conversationId]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const fetchMessages = async () => {
+        try {
+            const res = await axios.get(`${config.endpoints.chat}/messages/${conversationId}`);
+            setMessages(res.data);
+        } catch (err) {
+            console.error('Error fetching messages:', err);
+        }
+    };
 
     useEffect(() => {
         let interval;
