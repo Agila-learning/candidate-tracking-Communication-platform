@@ -248,7 +248,7 @@ const AdminDashboard = () => {
                                     {uniqueClients.map(client => <option key={client} value={client}>{client}</option>)}
                                 </select>
                             </div>
-                            <button className="primary" onClick={() => setShowAddCandidate(!showAddCandidate)}>
+                            <button className="primary" onClick={() => setShowAddCandidate(!showAddCandidate)} disabled={user?.role === 'CLIENT_SUPPORT'} style={{ display: user?.role === 'CLIENT_SUPPORT' ? 'none' : 'block' }}>
                                 {showAddCandidate ? 'Cancel' : '+ Manual Onboarding'}
                             </button>
                         </div>

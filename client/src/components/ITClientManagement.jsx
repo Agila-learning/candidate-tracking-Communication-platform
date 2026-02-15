@@ -99,9 +99,11 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                         <option value="inactive">Inactive ({clients.filter(c => !c.isActive).length})</option>
                     </select>
                 </div>
-                <button onClick={() => setShowForm(!showForm)} className="primary">
-                    {showForm ? '✕ Cancel' : '+ Add IT Company'}
-                </button>
+                {userRole === 'ADMIN' && (
+                    <button onClick={() => setShowForm(!showForm)} className="primary">
+                        {showForm ? '✕ Cancel' : '+ Add IT Company'}
+                    </button>
+                )}
             </div>
 
             {showForm && (

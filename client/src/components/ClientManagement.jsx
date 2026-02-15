@@ -99,9 +99,11 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                         <option value="inactive">Inactive ({clients.filter(c => !c.isActive).length})</option>
                     </select>
                 </div>
-                <button onClick={() => setShowForm(!showForm)}>
-                    {showForm ? '✕ Cancel' : '+ Add Bank'}
-                </button>
+                {userRole === 'ADMIN' && (
+                    <button onClick={() => setShowForm(!showForm)}>
+                        {showForm ? '✕ Cancel' : '+ Add Bank'}
+                    </button>
+                )}
             </div>
 
             {showForm && (

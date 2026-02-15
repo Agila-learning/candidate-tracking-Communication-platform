@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create Client
-router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN'), async (req, res) => {
+router.post('/', auth, authorize('ADMIN'), async (req, res) => {
     try {
         const { name, pocName, pocEmail, pocPhone, password, type } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });
