@@ -113,8 +113,8 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                             <input placeholder="Company Name (e.g., Infosys)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
-                            <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value })} />
-                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                            <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
+                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
                             {/* Hidden type field, always IT */}
                         </div>
                         <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>Add IT Partner</button>

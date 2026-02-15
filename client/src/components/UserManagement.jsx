@@ -187,11 +187,25 @@ const UserManagement = () => {
                             </div>
                             <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Phone</label>
-                                <input type="tel" placeholder="Mobile Number" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} style={{ width: '100%' }} />
+                                <input
+                                    type="tel"
+                                    placeholder="Mobile Number"
+                                    value={formData.phone}
+                                    onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\s/g, '') })}
+                                    style={{ width: '100%' }}
+                                />
                             </div>
                             <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Password {editingId && '(Leave blank to keep)'}</label>
-                                <input type="password" placeholder={editingId ? "New Password (Optional)" : "Password"} required={!editingId} minLength={8} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} style={{ width: '100%' }} />
+                                <input
+                                    type="password"
+                                    placeholder={editingId ? "New Password (Optional)" : "Password"}
+                                    required={!editingId}
+                                    minLength={8}
+                                    value={formData.password}
+                                    onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })}
+                                    style={{ width: '100%' }}
+                                />
                             </div>
                             <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Role</label>
