@@ -78,7 +78,7 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SU
                 email: candidate.email,
                 phone: candidate.phone,
                 role: 'CANDIDATE',
-                password: Math.random().toString(36).slice(-8), // Random password, they will use OTP
+                password: candidate.phone, // Set password to phone number per requirements
                 isActive: true
             });
             await user.save();
@@ -393,7 +393,8 @@ router.post('/:id/sync-user', auth, authorize('ADMIN'), async (req, res) => {
                 email: candidate.email,
                 phone: candidate.phone,
                 role: 'CANDIDATE',
-                password: 'cand123', // Set logic for reset
+                password: candidate.phone, // Set password to phone number
+
                 isActive: true
             });
             await user.save();

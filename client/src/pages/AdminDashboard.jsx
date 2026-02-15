@@ -279,6 +279,9 @@ const AdminDashboard = () => {
                                         <option value="">No Bank (Not Assigned)</option>
                                         {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                     </select>
+                                    <div style={{ gridColumn: '1 / -1', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                        Note: The candidate's password will be set to their Mobile Number.
+                                    </div>
                                     <button type="submit" className="primary">Create Candidate</button>
                                 </form>
                             </div>
