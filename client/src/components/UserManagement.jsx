@@ -45,6 +45,11 @@ const UserManagement = () => {
             const payload = { ...formData };
             if (!payload.clientId) delete payload.clientId;
 
+            // Normalize Role: If visual role is BANK or IT, map back to CLIENT_SUPPORT
+            if (payload.role === 'CLIENT_SUPPORT_BANK' || payload.role === 'CLIENT_SUPPORT_IT') {
+                payload.role = 'CLIENT_SUPPORT';
+            }
+
             // If editing, remove password if empty (keep existing)
             if (editingId && !payload.password) delete payload.password;
 
@@ -69,12 +74,18 @@ const UserManagement = () => {
     };
 
     const handleEdit = (user) => {
+        let visualRole = user.role;
+        if (user.role === 'CLIENT_SUPPORT') {
+            const clientType = user.clientId?.type || 'BANKING'; // Default to BANKING if uncertain
+            visualRole = clientType === 'IT' ? 'CLIENT_SUPPORT_IT' : 'CLIENT_SUPPORT_BANK';
+        }
+
         setFormData({
             name: user.name,
             email: user.email,
             phone: user.phone || '',
             password: '', // Blank implies no change
-            role: user.role,
+            role: visualRole,
             clientId: user.clientId?._id || ''
         });
         setEditingId(user._id);
@@ -184,20 +195,53 @@ const UserManagement = () => {
                             </div>
                             <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Role</label>
-                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} style={{ width: '100%' }}>
+                                <select
+                                    value={
+                                        formData.role === 'CLIENT_SUPPORT'
+                                            ? (clients.find(c => c._id === formData.clientId)?.type === 'IT' ? 'CLIENT_SUPPORT_IT' : 'CLIENT_SUPPORT_BANK')
+                                            : formData.role
+                                    }
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        if (val === 'CLIENT_SUPPORT_BANK' || val === 'CLIENT_SUPPORT_IT') {
+                                            setFormData({ ...formData, role: 'CLIENT_SUPPORT', clientId: '' }); // Reset client when switching type
+                                        } else {
+                                            setFormData({ ...formData, role: val });
+                                        }
+                                        // Store the temporary "visual" role in a separate state or just rely on the selection logic
+                                        // A better approach for the form state might be to track the "intent"
+                                        // Let's use a dataset attribute or just handle it purely in UI render if possible, 
+                                        // but we need to know which filter to apply.
+                                        // Simpler: Let's store the "visualRole" in state if needed, or just derive it.
+                                        // Actually, let's just cheat and store the extended role in formData.role temporarily, 
+                                        // and clean it up before submit.
+                                        setFormData({ ...formData, role: val, clientId: '' });
+                                    }}
+                                    style={{ width: '100%' }}
+                                >
                                     <option value="CANDIDATE">Candidate</option>
-                                    <option value="CLIENT_SUPPORT">Client Partner (Bank / IT)</option>
+                                    <option value="CLIENT_SUPPORT_BANK">Bank Partner</option>
+                                    <option value="CLIENT_SUPPORT_IT">IT Partner</option>
                                     <option value="SUPPORT_FIC">FIC Support</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
                                     <option value="ADMIN">Admin</option>
                                 </select>
                             </div>
-                            {formData.role === 'CLIENT_SUPPORT' && (
+                            {(formData.role === 'CLIENT_SUPPORT_BANK' || formData.role === 'CLIENT_SUPPORT_IT' || formData.role === 'CLIENT_SUPPORT') && (
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Company / Bank</label>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                        {formData.role === 'CLIENT_SUPPORT_IT' ? 'IT Company' : 'Bank'}
+                                    </label>
                                     <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} style={{ width: '100%' }}>
-                                        <option value="">Select Company...</option>
-                                        {clients.filter(c => c.isActive).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                        <option value="">Select {formData.role === 'CLIENT_SUPPORT_IT' ? 'Company' : 'Bank'}...</option>
+                                        {clients
+                                            .filter(c => c.isActive)
+                                            .filter(c => {
+                                                if (formData.role === 'CLIENT_SUPPORT_IT') return c.type === 'IT';
+                                                if (formData.role === 'CLIENT_SUPPORT_BANK') return c.type !== 'IT'; // Default to BANKING
+                                                return true; // Should not happen if strictly selected
+                                            })
+                                            .map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                     </select>
                                 </div>
                             )}
