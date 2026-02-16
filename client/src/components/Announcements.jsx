@@ -124,8 +124,22 @@ const Announcements = () => {
                                 {canPost && (user?.role === 'ADMIN' || user?.role === 'SUPPORT_FIC' || user?._id === item.senderId?._id) && (
                                     <button
                                         onClick={() => handleDelete(item._id)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: 0.6 }}
-                                        title="Delete"
+                                        style={{
+                                            background: '#fee2e2',
+                                            border: '1px solid #fecaca',
+                                            cursor: 'pointer',
+                                            color: '#dc2626',
+                                            borderRadius: '50%',
+                                            width: '24px',
+                                            height: '24px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 'bold',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        title="Delete Announcement"
                                     >
                                         ✕
                                     </button>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { config } from '../config';
 
 const Reports = () => {
     const [stats, setStats] = useState({
@@ -14,19 +15,23 @@ const Reports = () => {
     }, []);
 
     const fetchStats = async () => {
-        // In a real app, these would be dedicated aggregation endpoints
-        const leadRes = await axios.get('http://localhost:5000/api/leads');
-        const candRes = await axios.get('http://localhost:5000/api/candidates');
+        try {
+            const leadRes = await axios.get(config.endpoints.leads);
+            const candRes = await axios.get(config.endpoints.candidates.list);
 
-        const leads = leadRes.data;
-        const cands = candRes.data;
+            const leads = leadRes.data;
+            const cands = candRes.data;
 
-        setStats({
-            leads: leads.length,
-            candidates: cands.length,
-            conversions: leads.filter(l => l.stage === 'Converted').length,
-            interviews: cands.filter(c => c.currentStatus.includes('Interview')).length
-        });
+            setStats({
+                leads: leads.length,
+                candidates: cands.length,
+                conversions: leads.filter(l => l.stage === 'Converted').length,
+                interviews: cands.filter(c => c.currentStatus && c.currentStatus.includes('Interview')).length
+            });
+        } catch (error) {
+            console.error('Error fetching report stats:', error);
+            // Optional: showToast('Failed to load reports', 'error');
+        }
     };
 
     const cards = [
