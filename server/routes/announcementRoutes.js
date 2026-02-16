@@ -82,11 +82,15 @@ router.get('/', auth, async (req, res) => {
             if (annObj.attachmentPublicId) {
                 const { cloudinary } = require('../config/cloudinary');
 
-                // Determine resource type based on URL or previous logic
-                const isRaw = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
-
+                // Robust Detection: Check URL OR Extension
                 // If it's a RAW file (PDF/Doc), it is likely Authenticated (Private)
-                // We MUST sign the URL and use 'authenticated' type
+
+                const isRawUrl = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
+                const isDoc = annObj.attachmentName && annObj.attachmentName.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)$/i);
+
+                const isRaw = isRawUrl || isDoc;
+
+                // We MUST sign the URL and use 'authenticated' type for raw files
 
                 annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
                     resource_type: isRaw ? 'raw' : 'image',

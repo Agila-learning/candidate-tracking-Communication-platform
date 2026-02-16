@@ -14,11 +14,7 @@ const storage = new CloudinaryStorage({
         let resource_type = 'auto'; // Default to auto
 
         // Force 'raw' for non-image files to ensure they are downloadable and not treated as images
-        // BUT EXCEPTION: PDFs should be 'auto' (image) to allow image transformations/format delivery
-
-        const isPdf = file.mimetype === 'application/pdf' || file.originalname.match(/\.pdf$/i);
-
-        if (!file.mimetype.startsWith('image/') && !isPdf) {
+        if (!file.mimetype.startsWith('image/')) {
             resource_type = 'raw';
         }
 
@@ -34,7 +30,6 @@ const storage = new CloudinaryStorage({
             folder: 'fic_announcements_new',
             resource_type: resource_type,
             public_id: public_id,
-            type: resource_type === 'raw' ? 'authenticated' : 'upload',
             type: resource_type === 'raw' ? 'authenticated' : 'upload'
             // flags: resource_type === 'raw' ? 'attachment' : undefined // flags not needed for upload, causes error
         };
