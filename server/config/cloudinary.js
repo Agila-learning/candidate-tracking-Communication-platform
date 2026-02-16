@@ -35,7 +35,8 @@ const storage = new CloudinaryStorage({
             resource_type: resource_type,
             public_id: public_id,
             type: resource_type === 'raw' ? 'authenticated' : 'upload',
-            flags: resource_type === 'raw' ? 'attachment' : undefined
+            type: resource_type === 'raw' ? 'authenticated' : 'upload'
+            // flags: resource_type === 'raw' ? 'attachment' : undefined // flags not needed for upload, causes error
         };
     },
 });
