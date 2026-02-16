@@ -76,25 +76,25 @@ router.get('/', auth, async (req, res) => {
             .populate('senderId', 'username role') // basic info
             .populate('clientId', 'name');
 
-        // Generate Optimized URLs for Attachments
+        // Generate Signed URLs for Attachments
         const announcementsWithUrls = announcements.map(ann => {
             const annObj = ann.toObject();
             if (annObj.attachmentPublicId) {
                 const { cloudinary } = require('../config/cloudinary');
 
-                // Check if it is a raw file (from older uploads or if system decided to make it raw)
+                // Determine resource type based on URL or previous logic
                 const isRaw = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
 
-                if (!isRaw) {
-                    // It is an image/auto type (our new PDF strategy)
-                    // We want to force it to be served as a PDF
-                    annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
-                        resource_type: 'image',
-                        type: 'upload',
-                        format: 'pdf',
-                        flags: 'attachment' // Force download as PDF
-                    });
-                }
+                // If it's a RAW file (PDF/Doc), it is likely Authenticated (Private)
+                // We MUST sign the URL and use 'authenticated' type
+
+                annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
+                    resource_type: isRaw ? 'raw' : 'image',
+                    type: isRaw ? 'authenticated' : 'upload',
+                    sign_url: true,
+                    secure: true,
+                    flags: 'attachment' // Force download
+                });
             }
             return annObj;
         });
