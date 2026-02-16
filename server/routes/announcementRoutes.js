@@ -1,30 +1,9 @@
 const express = require('express');
 const Announcement = require('../models/Announcement');
 const { auth } = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { upload } = require('../config/cloudinary');
 
 const router = express.Router();
-
-// Local Storage Configuration for Announcements
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = 'uploads/announcements';
-        // Ensure directory exists
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-    }
-});
-
-const upload = multer({ storage: storage });
 
 // Create Announcement
 router.post('/', auth, upload.single('attachment'), async (req, res) => {
@@ -39,16 +18,8 @@ router.post('/', auth, upload.single('attachment'), async (req, res) => {
         };
 
         if (req.file) {
-            // Store Relative Path for Local Storage
-            // Req.file.path is system path (e.g. uploads\announcements\file.pdf)
-            // We need web path (e.g. /uploads/announcements/file.pdf)
-
-            // Normalize path separators for URL
-            const webPath = req.file.path.replace(/\\/g, '/');
-
-            announcementData.attachmentUrl = `${process.env.BACKEND_URL || ''}/${webPath}`;
+            announcementData.attachmentUrl = req.file.path;
             announcementData.attachmentName = req.file.originalname;
-            // attachmentPublicId is not needed for local storage, but we can store filename
             announcementData.attachmentPublicId = req.file.filename;
         }
 
@@ -68,7 +39,6 @@ router.post('/', auth, upload.single('attachment'), async (req, res) => {
         await announcement.save();
         res.status(201).send(announcement);
     } catch (e) {
-        console.error(e);
         res.status(400).send(e);
     }
 });
@@ -106,39 +76,29 @@ router.get('/', auth, async (req, res) => {
             .populate('senderId', 'username role') // basic info
             .populate('clientId', 'name');
 
-        // URL Generation for Local Storage is Simple:
-        // The URL saved in DB is already the full access path (relative to server root)
-        // No need to sign URLs or use Cloudinary.
-
-        // HOWEVER, if we need to prepend the server URL dynamically:
-        // Ideally, saving the relative path '/uploads/...' is better, but above we saved full path if BACKEND_URL env is set.
-        // For local dev, req.headers.host can be used if we didn't save absolute URL.
-
-        // Let's ensure the URL is accessible.
-        // If we saved 'uploads/announcements/file.pdf', we need to make sure the frontend can reach it.
-        // The frontend accesses API at /api, but static files are at /uploads.
-
+        // Generate Signed URLs for Attachments
         const announcementsWithUrls = announcements.map(ann => {
             const annObj = ann.toObject();
-            // If stored URL doesn't start with http, prepend current server origin (heuristic)
-            if (annObj.attachmentUrl && !annObj.attachmentUrl.startsWith('http')) {
-                // Ensure it starts with /
-                let url = annObj.attachmentUrl.startsWith('/') ? annObj.attachmentUrl : '/' + annObj.attachmentUrl;
+            if (annObj.attachmentPublicId) {
+                const { cloudinary } = require('../config/cloudinary');
 
-                // If running locally or no BACKEND_URL, might need to rely on relative paths working in frontend 
-                // (if frontend proxy is set up) or prepend server address.
-                // For safety, let's prepend / if missing, and let frontend handle relative link (to API server domain).
+                // Robust Detection: Check URL OR Extension
+                // If it's a RAW file (PDF/Doc), it is likely Authenticated (Private)
 
-                // Actually, if we are sending JSON, the frontend (React) is running on port 5173, Server on 5000.
-                // Relative link '/uploads/...' will go to 5173/uploads/... which is WRONG.
-                // We MUST return the full URL including protocol and host.
+                const isRawUrl = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
+                const isDoc = annObj.attachmentName && annObj.attachmentName.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)$/i);
 
-                const protocol = req.protocol;
-                const host = req.get('host');
-                const serverUrl = `${protocol}://${host}`;
+                const isRaw = isRawUrl || isDoc;
 
-                // Avoid double slash
-                annObj.attachmentUrl = `${serverUrl}${url}`;
+                // We MUST sign the URL and use 'authenticated' type for raw files
+
+                annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
+                    resource_type: isRaw ? 'raw' : 'image',
+                    type: isRaw ? 'authenticated' : 'upload',
+                    sign_url: true,
+                    secure: true,
+                    flags: 'attachment' // Force download
+                });
             }
             return annObj;
         });
@@ -165,33 +125,6 @@ router.delete('/:id', auth, async (req, res) => {
             }
         } else {
             return res.status(403).send();
-        }
-
-        // Delete File from Local Storage
-        if (announcement.attachmentUrl) {
-            try {
-                // Extract relative path from URL
-                // URL might be http://localhost:5000/uploads/announcements/file.pdf
-                // or uploads/announcements/file.pdf
-
-                let filePath = announcement.attachmentUrl;
-                if (filePath.startsWith('http')) {
-                    const urlObj = new URL(filePath);
-                    filePath = urlObj.pathname.substring(1); // remove leading /
-                } else if (filePath.startsWith('/')) {
-                    filePath = filePath.substring(1);
-                }
-
-                // Ensure correct separators
-                filePath = path.normalize(filePath);
-
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                }
-            } catch (err) {
-                console.error("Error deleting local file:", err);
-                // Continue to delete DB record even if file delete fails
-            }
         }
 
         await Announcement.findByIdAndDelete(req.params.id);

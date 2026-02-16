@@ -29,10 +29,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }));
 app.use(express.json());
-app.get('/uploads/*', (req, res) => {
-    const filePath = path.join(__dirname, req.path);
-    res.sendFile(filePath);
-});
+// app.use('/uploads', express.static('uploads'));
 
 app.get('/api/debug-db', async (req, res) => {
     try {
