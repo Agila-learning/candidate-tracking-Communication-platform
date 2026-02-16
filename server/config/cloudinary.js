@@ -14,7 +14,8 @@ const storage = new CloudinaryStorage({
         let resource_type = 'auto'; // Default to auto
 
         // Force 'raw' for non-image files to ensure they are downloadable and not treated as images
-        if (!file.mimetype.startsWith('image/')) {
+        // Force 'raw' for non-image files to ensure they are downloadable and not treated as images
+        if (!file.mimetype.startsWith('image/') && file.mimetype !== 'application/pdf') {
             resource_type = 'raw';
         }
 
