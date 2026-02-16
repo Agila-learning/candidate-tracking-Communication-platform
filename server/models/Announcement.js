@@ -8,6 +8,7 @@ const announcementSchema = new mongoose.Schema({
     message: { type: String, required: true },
     attachmentUrl: { type: String }, // URL from Cloudinary
     attachmentName: { type: String }, // Original filename
+    attachmentPublicId: { type: String }, // For generating signed URLs
     isGlobal: { type: Boolean, default: false }, // True if Admin sends it
     createdAt: { type: Date, default: Date.now }
 });
