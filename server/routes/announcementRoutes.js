@@ -92,7 +92,7 @@ router.get('/', auth, async (req, res) => {
                         resource_type: 'image',
                         type: 'upload',
                         format: 'pdf',
-                        flags: 'attachment'
+                        flags: 'attachment.pdf' // Force download as PDF
                     });
                 }
             }
