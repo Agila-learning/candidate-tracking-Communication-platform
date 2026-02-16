@@ -6,6 +6,8 @@ const announcementSchema = new mongoose.Schema({
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // Required if sender is CLIENT_SUPPORT
     title: { type: String, required: true },
     message: { type: String, required: true },
+    attachmentUrl: { type: String }, // URL from Cloudinary
+    attachmentName: { type: String }, // Original filename
     isGlobal: { type: Boolean, default: false }, // True if Admin sends it
     createdAt: { type: Date, default: Date.now }
 });

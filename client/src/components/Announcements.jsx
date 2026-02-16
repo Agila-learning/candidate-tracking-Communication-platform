@@ -10,6 +10,7 @@ const Announcements = () => {
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({ title: '', message: '' });
+    const [file, setFile] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const canPost = ['ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'].includes(user?.role);
@@ -35,9 +36,19 @@ const Announcements = () => {
 
         setIsSubmitting(true);
         try {
-            await axios.post(config.endpoints.announcements, formData);
+            const data = new FormData();
+            data.append('title', formData.title);
+            data.append('message', formData.message);
+            if (file) {
+                data.append('attachment', file);
+            }
+
+            await axios.post(config.endpoints.announcements, data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             showToast('Announcement posted successfully', 'success');
             setFormData({ title: '', message: '' });
+            setFile(null);
             fetchAnnouncements();
         } catch (e) {
             console.error(e);
@@ -90,6 +101,19 @@ const Announcements = () => {
                             rows={4}
                             style={{ padding: '0.8rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', resize: 'vertical' }}
                         />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                📎 Attach File:
+                                <input
+                                    type="file"
+                                    onChange={e => setFile(e.target.files[0])}
+                                    accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.jpg,.jpeg,.png"
+                                    style={{ fontSize: '0.85rem' }}
+                                />
+                            </label>
+                        </div>
+
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button type="submit" className="primary" disabled={isSubmitting}>
                                 {isSubmitting ? 'Posting...' : 'Post Announcement'}
@@ -148,6 +172,30 @@ const Announcements = () => {
                             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5', fontSize: '0.95rem' }}>
                                 {item.message}
                             </div>
+
+                            {item.attachmentUrl && (
+                                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
+                                    <a
+                                        href={item.attachmentUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            color: 'var(--primary)',
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem',
+                                            fontWeight: 500,
+                                            padding: '0.5rem',
+                                            backgroundColor: 'hsla(210, 100%, 50%, 0.1)',
+                                            borderRadius: 'var(--radius)'
+                                        }}
+                                    >
+                                        📎 Download Attachment {item.attachmentName ? `(${item.attachmentName})` : ''}
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}

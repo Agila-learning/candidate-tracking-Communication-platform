@@ -1,11 +1,12 @@
 const express = require('express');
 const Announcement = require('../models/Announcement');
 const { auth } = require('../middleware/auth');
+const { upload } = require('../config/cloudinary');
 
 const router = express.Router();
 
 // Create Announcement
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.single('attachment'), async (req, res) => {
     try {
         const { title, message } = req.body;
 
@@ -15,6 +16,11 @@ router.post('/', auth, async (req, res) => {
             title,
             message
         };
+
+        if (req.file) {
+            announcementData.attachmentUrl = req.file.path;
+            announcementData.attachmentName = req.file.originalname;
+        }
 
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC') {
             announcementData.isGlobal = true;
