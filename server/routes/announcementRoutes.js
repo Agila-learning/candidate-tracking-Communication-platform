@@ -76,7 +76,31 @@ router.get('/', auth, async (req, res) => {
             .populate('senderId', 'username role') // basic info
             .populate('clientId', 'name');
 
-        res.send(announcements);
+        // Generate Signed URLs for attachments
+        const announcementsWithSignedUrls = announcements.map(ann => {
+            const annObj = ann.toObject();
+            if (annObj.attachmentPublicId) {
+                const { cloudinary } = require('../config/cloudinary');
+
+                // Determine resource type and access type
+                // If it's a raw file (PDF, Doc), it was uploaded as 'authenticated' (private)
+                // If it's an image, it was uploaded as 'upload' (public)
+
+                // We can check the URL for '/raw/' to be sure, or rely on our config logic.
+                const isRaw = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
+
+                annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
+                    resource_type: isRaw ? 'raw' : 'image',
+                    type: isRaw ? 'authenticated' : 'upload', // CRITICAL: Must match upload type
+                    sign_url: true,
+                    secure: true,
+                    // flags: isRaw ? 'attachment' : undefined // Optional: forces download
+                });
+            }
+            return annObj;
+        });
+
+        res.send(announcementsWithSignedUrls);
     } catch (e) {
         console.error(e);
         res.status(500).send(e);

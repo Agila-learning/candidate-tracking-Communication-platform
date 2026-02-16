@@ -30,8 +30,8 @@ const storage = new CloudinaryStorage({
             folder: 'fic_announcements_new',
             resource_type: resource_type,
             public_id: public_id,
-            type: 'upload', // Make public so it can be downloaded
-            // flags: resource_type === 'raw' ? 'attachment' : undefined // flags not needed if public
+            type: resource_type === 'raw' ? 'authenticated' : 'upload',
+            flags: resource_type === 'raw' ? 'attachment' : undefined
         };
     },
 });
