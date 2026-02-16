@@ -27,7 +27,7 @@ const storage = new CloudinaryStorage({
         }
 
         return {
-            folder: 'fic_resources',
+            folder: 'fic_announcements_new',
             resource_type: resource_type,
             public_id: public_id,
             type: 'upload', // Make public so it can be downloaded

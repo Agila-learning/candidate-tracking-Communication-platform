@@ -76,39 +76,7 @@ router.get('/', auth, async (req, res) => {
             .populate('senderId', 'username role') // basic info
             .populate('clientId', 'name');
 
-        // Generate Signed URLs for attachments
-        const announcementsWithSignedUrls = announcements.map(ann => {
-            const annObj = ann.toObject();
-            if (annObj.attachmentPublicId) {
-                const { cloudinary } = require('../config/cloudinary');
-                // Detect resource type from URL or assume 'auto'/'image' based on extension logic
-                // Actually safer to check extension or use 'raw' if likely
-                // The new config uses 'auto'. 
-                // Let's try to detect if it looks like an image or not.
-                // Or just use the URL method which usually handles it.
-
-                // Note: The previous config change made PDF 'auto', so it's likely 'image' type in Cloudinary now.
-                // But let's check the URL. If it says /image/upload/, it's image.
-                // If it says /raw/upload/, it's raw.
-
-                let resourceType = 'image';
-                if (annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/')) {
-                    resourceType = 'raw';
-                }
-
-                annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
-                    resource_type: resourceType,
-                    type: 'upload', // currently 'upload', but let's sign it just in case
-                    sign_url: true,
-                    secure: true,
-                    // If it is 'image' type (PDF as image), we might need format: 'pdf' ? 
-                    // No, public_id usually has extension if we set it in storage.
-                });
-            }
-            return annObj;
-        });
-
-        res.send(announcementsWithSignedUrls);
+        res.send(announcements);
     } catch (e) {
         console.error(e);
         res.status(500).send(e);
