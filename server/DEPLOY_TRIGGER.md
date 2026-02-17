@@ -20,6 +20,7 @@ Last updated: 2026-02-03 16:12 IST
 - Implemented SUB_ADMIN role with restricted access (Bank/Candidate management only)
 - Fixed "Please authenticate" error on Bank Partner creation
 - Updated Admin Dashboard to hide sensitive actions for SUB_ADMIN
-- Fixed PDF Access 401 Error (Cloudinary Versioning issue)
+- Fixed PDF Access 401 Error (Cloudinary Versioning issue fixed in code)
+- NOTE: Cloudinary "PDF and ZIP files delivery" MUST be enabled in Account Settings > Security for PDFs to work.
 
 Render should auto-deploy on push to main branch.
