@@ -92,12 +92,17 @@ router.get('/', auth, async (req, res) => {
 
                 // We MUST sign the URL and use 'authenticated' type for raw files
 
+                // Extract version if available to ensure correct signature
+                const versionMatch = annObj.attachmentUrl && annObj.attachmentUrl.match(/\/v(\d+)\//);
+                const version = versionMatch ? versionMatch[1] : undefined;
+
                 annObj.attachmentUrl = cloudinary.url(annObj.attachmentPublicId, {
                     resource_type: isRaw ? 'raw' : 'image',
                     type: isRaw ? 'authenticated' : 'upload',
                     sign_url: true,
                     secure: true,
-                    flags: 'attachment' // Force download
+                    flags: 'attachment', // Force download
+                    version: version // Add version if found
                 });
             }
             return annObj;
