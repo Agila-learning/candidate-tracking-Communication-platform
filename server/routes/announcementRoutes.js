@@ -85,10 +85,11 @@ router.get('/', auth, async (req, res) => {
                 // Robust Detection: Check URL OR Extension
                 // If it's a RAW file (PDF/Doc), it is likely Authenticated (Private)
 
-                const isRawUrl = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
-                const isDoc = annObj.attachmentName && annObj.attachmentName.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)$/i);
-
-                const isRaw = isRawUrl || isDoc;
+                // Robust Detection: Check URL only.
+                // If it was uploaded as 'raw', the URL will contain '/raw/'.
+                // If it was uploaded as 'image' (new PDF behavior), it won't.
+                // We DO NOT check extension/isDoc anymore because we purposely want PDFs to be treated as images if they are not raw.
+                const isRaw = annObj.attachmentUrl && annObj.attachmentUrl.includes('/raw/');
 
                 // We MUST sign the URL and use 'authenticated' type for raw files
 
