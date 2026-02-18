@@ -7,7 +7,9 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showEditForm, setShowEditForm] = useState(false);
     const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' }); // Default BANKING, can be BOTH
+    const [editingId, setEditingId] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -30,14 +32,35 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(config.endpoints.clients.create, formData);
-            showToast('Bank partner added successfully!');
+            if (showEditForm) {
+                await axios.patch(`${config.endpoints.clients.list}/${editingId}`, formData);
+                showToast('Partner updated successfully!');
+                setShowEditForm(false);
+                setEditingId(null);
+            } else {
+                await axios.post(config.endpoints.clients.create, formData);
+                showToast('Bank partner added successfully!');
+                setShowForm(false);
+            }
             setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
-            setShowForm(false);
             fetchClients();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to add client', 'error');
+            showToast(err.response?.data?.error || 'Operation failed', 'error');
         }
+    };
+
+    const handleEditClick = (client) => {
+        setFormData({
+            name: client.name,
+            pocName: client.pocName || '',
+            pocEmail: client.pocEmail || '',
+            pocPhone: client.pocPhone || '',
+            type: client.type || 'BANKING',
+            password: '' // Don't fill password
+        });
+        setEditingId(client._id);
+        setShowEditForm(true);
+        setShowForm(false);
     };
 
     const handleDelete = async (id, clientName) => {
@@ -100,22 +123,22 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                     </select>
                 </div>
                 {userRole === 'ADMIN' && (
-                    <button onClick={() => setShowForm(!showForm)}>
+                    <button onClick={() => { setShowForm(!showForm); setShowEditForm(false); setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' }); }}>
                         {showForm ? '✕ Cancel' : '+ Add Bank'}
                     </button>
                 )}
             </div>
 
-            {showForm && (
-                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--success)' }}>
+            {(showForm || showEditForm) && (
+                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${showEditForm ? 'var(--primary)' : 'var(--success)'}` }}>
+                    <div style={{ marginBottom: '1rem', fontWeight: 600 }}>{showEditForm ? 'Edit Partner Details' : 'Add New Partner'}</div>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             <input placeholder="Bank Name (e.g., Axis Bank)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
-                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
-                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
+                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
                             <select
                                 value={formData.type}
                                 onChange={e => setFormData({ ...formData, type: e.target.value })}
@@ -125,7 +148,10 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                                 <option value="BOTH">Banking + IT (Dual Role)</option>
                             </select>
                         </div>
-                        <button type="submit" style={{ justifySelf: 'start' }}>Add Bank Partner</button>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button type="submit" style={{ justifySelf: 'start' }}>{showEditForm ? 'Update Partner' : 'Add Bank Partner'}</button>
+                            {showEditForm && <button type="button" onClick={() => setShowEditForm(false)} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>Cancel</button>}
+                        </div>
                     </form>
                 </div>
             )}
@@ -186,6 +212,24 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                                     }}
                                 >
                                     💬 Chat
+                                </button>
+                            )}
+                            {userRole === 'ADMIN' && (
+                                <button
+                                    onClick={() => handleEditClick(client)}
+                                    style={{
+                                        marginLeft: '0.5rem',
+                                        padding: '0.35rem 0.75rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        backgroundColor: 'var(--bg-main)',
+                                        color: 'var(--text-main)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '20px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    ✏️ Edit
                                 </button>
                             )}
                         </div>

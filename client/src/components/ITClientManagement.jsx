@@ -7,7 +7,9 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' });
+    const [showEditForm, setShowEditForm] = useState(false);
+    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' }); // Default IT, can be BOTH
+    const [editingId, setEditingId] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -30,14 +32,35 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(config.endpoints.clients.create, formData);
-            showToast('IT Partner added successfully!');
+            if (showEditForm) {
+                await axios.patch(`${config.endpoints.clients.list}/${editingId}`, formData);
+                showToast('Partner updated successfully!');
+                setShowEditForm(false);
+                setEditingId(null);
+            } else {
+                await axios.post(config.endpoints.clients.create, formData);
+                showToast('IT Partner added successfully!');
+                setShowForm(false);
+            }
             setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' });
-            setShowForm(false);
             fetchClients();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to add IT Partner', 'error');
+            showToast(err.response?.data?.error || 'Operation failed', 'error');
         }
+    };
+
+    const handleEditClick = (client) => {
+        setFormData({
+            name: client.name,
+            pocName: client.pocName || '',
+            pocEmail: client.pocEmail || '',
+            pocPhone: client.pocPhone || '',
+            type: client.type || 'IT',
+            password: '' // Don't fill password
+        });
+        setEditingId(client._id);
+        setShowEditForm(true);
+        setShowForm(false);
     };
 
     const handleDelete = async (id, clientName) => {
@@ -100,7 +123,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                     </select>
                 </div>
                 {userRole === 'ADMIN' && (
-                    <button onClick={() => setShowForm(!showForm)} className="primary">
+                    <button onClick={() => { setShowForm(!showForm); setShowEditForm(false); setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' }); }} className="primary">
                         {showForm ? '✕ Cancel' : '+ Add IT Company'}
                     </button>
                 )}
@@ -114,10 +137,20 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
-                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
-                            {/* Hidden type field, always IT */}
+                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
+                            <select
+                                value={formData.type}
+                                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                style={{ padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+                            >
+                                <option value="IT">IT Only</option>
+                                <option value="BOTH">IT + Banking (Dual Role)</option>
+                            </select>
                         </div>
-                        <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>Add IT Partner</button>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>{showEditForm ? 'Update Partner' : 'Add IT Partner'}</button>
+                            {showEditForm && <button type="button" onClick={() => setShowEditForm(false)} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>Cancel</button>}
+                        </div>
                     </form>
                 </div>
             )}
@@ -135,7 +168,6 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                         }}
                     >
                         <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
                             <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
                             <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px', marginRight: '0.5rem' }}>
                                 {client.type === 'BOTH' ? 'IT + BANK' : 'IT'}
@@ -160,7 +192,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                             >
                                 {client.isActive ? '● Active' : '○ Inactive'}
                             </button>
-                            {!userRole === 'SUB_ADMIN' && (
+                            {userRole !== 'SUB_ADMIN' && (
                                 <button
                                     onClick={() => {
                                         if (onStartChat) onStartChat(client._id);
@@ -179,6 +211,24 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                                     }}
                                 >
                                     💬 Chat
+                                </button>
+                            )}
+                            {userRole === 'ADMIN' && (
+                                <button
+                                    onClick={() => handleEditClick(client)}
+                                    style={{
+                                        marginLeft: '0.5rem',
+                                        padding: '0.35rem 0.75rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        backgroundColor: 'var(--bg-main)',
+                                        color: 'var(--text-main)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '20px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    ✏️ Edit
                                 </button>
                             )}
                         </div>
