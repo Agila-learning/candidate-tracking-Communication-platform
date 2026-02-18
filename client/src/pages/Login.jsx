@@ -60,7 +60,7 @@ const Login = () => {
                 `}</style>
                 <div style={{ position: 'relative', zIndex: 10 }}>
                     <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.1 }}>
-                        FIC Banking<br />Connect
+                        FIC Career<br />Portal
                     </h1>
                     <p style={{ fontSize: '1.25rem', opacity: 0.9, maxWidth: '400px', lineHeight: 1.6 }}>
                         The advanced platform for managing banking careers, candidates, and client relationships efficiently.
@@ -141,7 +141,7 @@ const Login = () => {
 
                 {/* Footer fixed at bottom of the form side */}
                 <div style={{ position: 'absolute', bottom: '1rem', color: '#94a3b8', fontSize: '0.75rem' }}>
-                    &copy; 2026 FIC Banking Connect. v2.5.
+                    &copy; 2026 FIC Career Portal. v2.5.
                 </div>
             </div>
         </div>

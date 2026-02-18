@@ -99,7 +99,7 @@ const Register = () => {
                 `}</style>
                 <div style={{ position: 'relative', zIndex: 10 }}>
                     <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.1 }}>
-                        Join FIC Banking<br />Connect
+                        Join FIC Career<br />Portal
                     </h1>
                     <p style={{ fontSize: '1.25rem', opacity: 0.9, maxWidth: '400px', lineHeight: 1.6 }}>
                         Start your journey with the advanced platform for managing banking careers.
@@ -259,7 +259,7 @@ const Register = () => {
 
                 {/* Footer fixed at bottom of the form side */}
                 <div style={{ marginTop: '2rem', color: '#94a3b8', fontSize: '0.75rem', textAlign: 'center' }}>
-                    &copy; 2026 FIC Banking Connect. v2.5.
+                    &copy; 2026 FIC Career Portal. v2.5.
                 </div>
             </div>
         </div>

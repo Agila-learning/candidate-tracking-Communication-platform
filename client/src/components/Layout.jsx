@@ -28,7 +28,7 @@ const Layout = ({ children }) => {
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-logo-container">
-                    <img src="/logo.jpg" alt="Forge India" className="sidebar-logo" />
+                    <img src="/logo.jpg" alt="FIC Career Portal" className="sidebar-logo" />
                 </div>
 
                 <nav style={{ flex: 1 }}>
