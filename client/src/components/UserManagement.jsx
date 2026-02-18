@@ -198,11 +198,10 @@ const UserManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Password {editingId && '(Leave blank to keep)'}</label>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Password {editingId ? '(Leave blank to keep)' : '(Default: Mobile Number)'}</label>
                                 <input
                                     type="password"
-                                    placeholder={editingId ? "New Password (Optional)" : "Password"}
-                                    required={!editingId}
+                                    placeholder={editingId ? "New Password (Optional)" : "Password (Optional)"}
                                     minLength={8}
                                     value={formData.password}
                                     onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })}

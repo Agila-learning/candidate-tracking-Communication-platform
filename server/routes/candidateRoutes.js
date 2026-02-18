@@ -78,7 +78,7 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_AD
                 email: candidate.email,
                 phone: candidate.phone,
                 role: 'CANDIDATE',
-                password: candidate.phone, // Set password to phone number per requirements
+                password: req.body.password || candidate.phone, // Default to phone number
                 isActive: true
             });
             await user.save();
@@ -279,7 +279,7 @@ router.post('/from-lead/:leadId', auth, authorize('ADMIN', 'SUPPORT_FIC'), async
                 email: candidate.email,
                 phone: candidate.phone,
                 role: 'CANDIDATE',
-                password: Math.random().toString(36).slice(-8), // Random password
+                password: candidate.phone, // Default to phone per requirements
                 isActive: true
             });
             await user.save();

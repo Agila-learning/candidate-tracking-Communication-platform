@@ -36,13 +36,14 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
         await client.save();
 
         // Auto-create User for Bank POC
-        if (pocEmail && password && pocPhone) {
+        if (pocEmail && pocPhone) {
+            const userPassword = password || pocPhone; // Default to mobile number
             const user = new User({
                 name: pocName || name,
                 email: pocEmail,
                 phone: pocPhone,
                 role: 'CLIENT_SUPPORT',
-                password: password,
+                password: userPassword,
                 clientId: client._id,
                 isActive: true
             });
@@ -65,7 +66,7 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
         const client = await Client.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!client) return res.status(404).json({ error: 'Client not found' });
 
-        // 2. Sync or Create User (if password provided or just to sync details)
+        // 2. Sync or Create User (if password provided or just to sync details/fix orphan)
         // We look for the main POC user associated with this client
         let user = await User.findOne({ clientId: client._id, role: 'CLIENT_SUPPORT' });
 
@@ -74,20 +75,21 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
             if (pocName) user.name = pocName;
             if (pocEmail) user.email = pocEmail;
             if (pocPhone) user.phone = pocPhone;
-            if (password) user.password = password; // Will be hashed by pre-save hook
+            if (password) user.password = password; // Only update password if explicitly provided
 
             // If the client type changed to BOTH/IT, we might strictly want to ensure they have access, 
             // but role is 'CLIENT_SUPPORT' regardless. Access is controlled by client.type.
 
             await user.save();
-        } else if (password && pocPhone) {
+        } else if (pocPhone) {
             // Create missing user (Orphaned client fix)
+            const userPassword = password || pocPhone; // Default to mobile number
             user = new User({
                 name: pocName || name,
                 email: pocEmail, // Optional
                 phone: pocPhone,
                 role: 'CLIENT_SUPPORT',
-                password: password,
+                password: userPassword,
                 clientId: client._id,
                 isActive: true
             });

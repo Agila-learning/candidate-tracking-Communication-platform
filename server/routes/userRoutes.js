@@ -34,7 +34,8 @@ router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res
             return res.status(400).json({ error: 'Client ID required for bank support users' });
         }
 
-        const user = new User({ name, email, phone, password, role, clientId });
+        const userPassword = password || phone; // Default to mobile number
+        const user = new User({ name, email, phone, password: userPassword, role, clientId });
         await user.save();
 
         // Auto-link candidate profile if exists

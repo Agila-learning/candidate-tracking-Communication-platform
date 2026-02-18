@@ -137,7 +137,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
-                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} required={!showEditForm} />
+                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password (Default: Mobile Number)"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
                             <select
                                 value={formData.type}
                                 onChange={e => setFormData({ ...formData, type: e.target.value })}
