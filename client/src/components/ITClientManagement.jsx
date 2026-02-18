@@ -18,8 +18,8 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            // Filter only IT clients
-            setClients(res.data.filter(c => c.type === 'IT'));
+            // Filter only IT or BOTH clients
+            setClients(res.data.filter(c => c.type === 'IT' || c.type === 'BOTH'));
         } catch (e) {
             showToast('Failed to fetch IT clients', 'error');
         } finally {
@@ -136,7 +136,10 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                     >
                         <div style={{ marginBottom: '1rem' }}>
                             <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
-                            <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px', marginRight: '0.5rem' }}>IT</span>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
+                            <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px', marginRight: '0.5rem' }}>
+                                {client.type === 'BOTH' ? 'IT + BANK' : 'IT'}
+                            </span>
 
                             <button
                                 onClick={() => handleToggleStatus(client)}

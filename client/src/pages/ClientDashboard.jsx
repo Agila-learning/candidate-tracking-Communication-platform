@@ -155,10 +155,12 @@ const ClientDashboard = () => {
 
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ marginBottom: '0.5rem' }}>
-                    {clientData?.type === 'IT' ? 'IT Partner Portal' : 'Bank Partner Portal'}
+                    {clientData?.type === 'BOTH' ? 'FIC Partner Portal' : (clientData?.type === 'IT' ? 'IT Partner Portal' : 'Bank Partner Portal')}
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>
-                    {clientData?.type === 'IT' ? 'Manage your IT candidates and support.' : 'Manage your assigned candidates and support queries.'}
+                    {clientData?.type === 'BOTH'
+                        ? 'Manage your Banking & IT candidates and support.'
+                        : (clientData?.type === 'IT' ? 'Manage your IT candidates and support.' : 'Manage your assigned candidates and support queries.')}
                 </p>
 
                 <div className="scrollable-tabs">
@@ -176,7 +178,7 @@ const ClientDashboard = () => {
                             }}
                         >
                             {tab === 'inbox'
-                                ? (clientData?.type === 'IT' ? 'IT Support Inbox' : 'Bank Support Inbox')
+                                ? (clientData?.type === 'BOTH' ? 'Unified Support Inbox' : (clientData?.type === 'IT' ? 'IT Support Inbox' : 'Bank Support Inbox'))
                                 : tab === 'candidates' ? 'My Candidates' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}

@@ -7,7 +7,7 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' });
+    const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' }); // Default BANKING, can be BOTH
     const [statusFilter, setStatusFilter] = useState('all');
     const { showToast } = useToast();
 
@@ -18,8 +18,8 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            // Filter only BANKING clients (default)
-            setClients(res.data.filter(c => !c.type || c.type === 'BANKING'));
+            // Filter BANKING or BOTH
+            setClients(res.data.filter(c => !c.type || c.type === 'BANKING' || c.type === 'BOTH'));
         } catch (e) {
             showToast('Failed to fetch clients', 'error');
         } finally {
@@ -115,7 +115,15 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                             <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
                             <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
                             <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
-                            {/* Hidden type field, always BANKING */}
+                            <input type="password" placeholder="Login Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
+                            <select
+                                value={formData.type}
+                                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                style={{ padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+                            >
+                                <option value="BANKING">Banking Only</option>
+                                <option value="BOTH">Banking + IT (Dual Role)</option>
+                            </select>
                         </div>
                         <button type="submit" style={{ justifySelf: 'start' }}>Add Bank Partner</button>
                     </form>
@@ -135,7 +143,12 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                         }}
                     >
                         <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {client.name}
+                                {client.type === 'BOTH' && (
+                                    <span style={{ fontSize: '0.7rem', background: '#3b82f6', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>DUAL</span>
+                                )}
+                            </div>
                             <button
                                 onClick={() => handleToggleStatus(client)}
                                 disabled={userRole === 'SUB_ADMIN'}
