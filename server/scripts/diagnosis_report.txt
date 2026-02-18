@@ -1,0 +1,6 @@
+--- Diagnosing Partners & Users ---
+Total Clients (Partners): 0
+
+------------------------------------------------
+Summary: 0 partners have no user account.
+------------------------------------------------

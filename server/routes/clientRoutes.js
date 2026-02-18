@@ -59,11 +59,45 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
 // Update Client
 router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
     try {
+        const { password, name, pocName, pocEmail, pocPhone, type } = req.body;
+
+        // 1. Update Client
         const client = await Client.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!client) return res.status(404).json({ error: 'Client not found' });
+
+        // 2. Sync or Create User (if password provided or just to sync details)
+        // We look for the main POC user associated with this client
+        let user = await User.findOne({ clientId: client._id, role: 'CLIENT_SUPPORT' });
+
+        if (user) {
+            // Update existing user details to match Client POC
+            if (pocName) user.name = pocName;
+            if (pocEmail) user.email = pocEmail;
+            if (pocPhone) user.phone = pocPhone;
+            if (password) user.password = password; // Will be hashed by pre-save hook
+
+            // If the client type changed to BOTH/IT, we might strictly want to ensure they have access, 
+            // but role is 'CLIENT_SUPPORT' regardless. Access is controlled by client.type.
+
+            await user.save();
+        } else if (password && pocPhone) {
+            // Create missing user (Orphaned client fix)
+            user = new User({
+                name: pocName || name,
+                email: pocEmail, // Optional
+                phone: pocPhone,
+                role: 'CLIENT_SUPPORT',
+                password: password,
+                clientId: client._id,
+                isActive: true
+            });
+            await user.save();
+        }
+
         res.json(client);
     } catch (e) {
-        res.status(400).json({ error: 'Failed to update client' });
+        console.error("Update client error:", e);
+        res.status(400).json({ error: e.message || 'Failed to update client' });
     }
 });
 
