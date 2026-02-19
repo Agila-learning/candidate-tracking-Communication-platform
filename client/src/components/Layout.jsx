@@ -44,6 +44,13 @@ const Layout = ({ children }) => {
                         </NavLink>
                     )}
 
+                    {(user?.role === 'AGENCY_ADMIN' || user?.role === 'AGENT') && (
+                        <NavLink to="/agency" className="nav-link" onClick={closeSidebar}>
+                            <span className="nav-icon">🏢</span>
+                            Agency Portal
+                        </NavLink>
+                    )}
+
                     {user?.role === 'CLIENT_SUPPORT' && (
                         <NavLink to="/client" className="nav-link" onClick={closeSidebar}>
                             <span className="nav-icon">🏦</span>

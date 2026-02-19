@@ -20,7 +20,7 @@ const DashboardRedirect = () => {
   const { user } = useAuth();
   if (user.role === 'ADMIN' || user.role === 'SUPPORT_FIC' || user.role === 'SUB_ADMIN') return <Navigate to="/admin" />;
   if (user.role === 'CLIENT_SUPPORT') return <Navigate to="/client" />;
-  if (user.role === 'AGENCY_ADMIN') return <Navigate to="/agency" />;
+  if (user.role === 'AGENCY_ADMIN' || user.role === 'AGENT') return <Navigate to="/agency" />;
   return <Navigate to="/candidate" />;
 };
 
@@ -43,7 +43,7 @@ function App() {
               </PrivateRoute>
             } />
             <Route path="/agency" element={
-              <PrivateRoute roles={['AGENCY_ADMIN']}>
+              <PrivateRoute roles={['AGENCY_ADMIN', 'AGENT']}>
                 <AgencyDashboard />
               </PrivateRoute>
             } />

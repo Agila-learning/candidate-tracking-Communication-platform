@@ -9,6 +9,7 @@ import Resources from '../components/Resources';
 import UserManagement from '../components/UserManagement';
 import ClientManagement from '../components/ClientManagement';
 import ITClientManagement from '../components/ITClientManagement';
+import AgentManagement from '../components/AgentManagement';
 import Announcements from '../components/Announcements';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
@@ -204,7 +205,7 @@ const AdminDashboard = () => {
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
                 <div className="scrollable-tabs">
-                    {['candidates', 'leads', 'users', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
+                    {['candidates', 'leads', 'users', 'agents', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
                         if (isSubAdmin) return ['candidates', 'banks', 'it_partners'].includes(tab);
                         return true;
                     }).map(tab => (
@@ -395,6 +396,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'users' && <UserManagement />}
+                {activeTab === 'agents' && <AgentManagement />}
                 {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
                 {activeTab === 'it_partners' && <ITClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
                 {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}

@@ -132,6 +132,7 @@ const UserManagement = () => {
     };
 
     const filteredUsers = users.filter(u => {
+        if (u.role === 'AGENT') return false; // Managed in Agents tab
         if (statusFilter === 'active') return u.isActive;
         if (statusFilter === 'inactive') return !u.isActive;
         return true;

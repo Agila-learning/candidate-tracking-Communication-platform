@@ -37,8 +37,8 @@ router.post('/create-profile', auth, async (req, res) => {
     }
 });
 
-// Create Candidate (Admin/Support/Agency Admin)
-router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN'), upload.single('resume'), async (req, res) => {
+// Create Candidate (Admin/Support/Agency Admin/Agent)
+router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), upload.single('resume'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -48,8 +48,8 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_AD
             req.body.clientId = req.user.clientId;
         }
 
-        // Enforce Agency Admin ownership
-        if (req.user.role === 'AGENCY_ADMIN') {
+        // Enforce Ownership for Agency Admin and Agent
+        if (req.user.role === 'AGENCY_ADMIN' || req.user.role === 'AGENT') {
             req.body.createdBy = req.user._id;
             req.body.referredBy = req.user.name;
         }
@@ -123,10 +123,8 @@ router.get('/', auth, async (req, res) => {
             query.clientId = req.user.clientId;
         } else if (req.user.role === 'CANDIDATE') {
             // CANDIDATE can only see their own record
-            // Try by userId first
             let candidates = await Candidate.find({ userId: req.user._id }).populate('clientId').sort({ createdAt: -1 });
 
-            // If not found, try to auto-link by email
             if (candidates.length === 0) {
                 const candidateByEmail = await Candidate.findOne({ email: req.user.email });
                 if (candidateByEmail) {
@@ -137,8 +135,11 @@ router.get('/', auth, async (req, res) => {
                 }
             }
             return res.send(candidates);
+        } else if (req.user.role === 'AGENT') {
+            // AGENT can ONLY see candidates they created
+            query.createdBy = req.user._id;
         }
-        // ADMIN and SUPPORT_FIC and SUB_ADMIN can see all candidates
+        // ADMIN, SUPPORT_FIC, SUB_ADMIN, AGENCY_ADMIN can see all (AGENCY_ADMIN sees all but masked)
 
         // Apply additional filters from query params
         if (req.query.status) query.currentStatus = req.query.status;
@@ -158,13 +159,15 @@ router.get('/', auth, async (req, res) => {
                 shouldMask = true;
             }
 
-            // Rule 2: Agency Admin -> Mask if NOT created by them
+            // Rule 2: Agency Admin -> Mask if NOT created by them (FIC Employee view)
             if (req.user.role === 'AGENCY_ADMIN') {
                 const isCreator = c.createdBy && c.createdBy._id.toString() === req.user._id.toString();
                 if (!isCreator) {
                     shouldMask = true;
                 }
             }
+
+            // AGENT sees ONLY their own data (filtered above), so no need to mask what they see.
 
             if (shouldMask && c.phone) {
                 // Mask all but last 4 digits
@@ -321,13 +324,13 @@ router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_S
 });
 
 // Update Candidate (General)
-router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN'), async (req, res) => {
+router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();
 
-        // Agency Admin check
-        if (req.user.role === 'AGENCY_ADMIN') {
+        // Agency Admin and Agent check
+        if (req.user.role === 'AGENCY_ADMIN' || req.user.role === 'AGENT') {
             if (!candidate.createdBy || candidate.createdBy.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ error: 'You can only edit candidates you referred.' });
             }
@@ -373,11 +376,6 @@ router.delete('/:id/documents/:docId', auth, async (req, res) => {
         // Delete from Cloudinary if public_id exists
         if (doc.public_id) {
             try {
-                // Determine resource type based on file extension or metadata if possible
-                // For now, try 'image' then 'raw' if needed, or rely on cloudinary detecting it?
-                // Actually, our upload config sets resource_type.
-                // We'll try to delete. 'raw' covers PDFs/Docs usually.
-                // Let's guess based on URL extension?
                 let resourceType = 'image';
                 if (doc.url.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/i)) resourceType = 'raw';
 
@@ -432,7 +430,6 @@ router.post('/:id/sync-user', auth, authorize('ADMIN'), async (req, res) => {
                 phone: candidate.phone,
                 role: 'CANDIDATE',
                 password: candidate.phone, // Set password to phone number
-
                 isActive: true
             });
             await user.save();
@@ -449,13 +446,13 @@ router.post('/:id/sync-user', auth, authorize('ADMIN'), async (req, res) => {
 });
 
 // Delete Candidate
-router.delete('/:id', auth, authorize('ADMIN', 'AGENCY_ADMIN'), async (req, res) => {
+router.delete('/:id', auth, authorize('ADMIN', 'AGENCY_ADMIN', 'AGENT'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send({ error: 'Candidate not found' });
 
-        // Agency Admin check
-        if (req.user.role === 'AGENCY_ADMIN') {
+        // Agency Admin and Agent check
+        if (req.user.role === 'AGENCY_ADMIN' || req.user.role === 'AGENT') {
             if (!candidate.createdBy || candidate.createdBy.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ error: 'You can only delete candidates you referred.' });
             }
