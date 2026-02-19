@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -188,12 +189,12 @@ const AgentManagement = () => {
                 </div>
             )}
 
-            {showModal && (
+            {showModal && ReactDOM.createPortal(
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
                 }}>
-                    <div className="card fade-in" style={{ width: '90%', maxWidth: '400px', backgroundColor: 'var(--bg-card)', padding: '2rem' }}>
+                    <div className="card fade-in" style={{ width: '90%', maxWidth: '400px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
                         <h3 style={{ marginBottom: '1.5rem' }}>{editingId ? 'Edit Agent' : 'Add New Agent'}</h3>
                         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                             <div>
@@ -253,7 +254,8 @@ const AgentManagement = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
