@@ -13,7 +13,7 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        if (!identifier) return showToast('Please enter your mobile number', 'error');
+        if (!identifier) return showToast('Please enter your email or mobile number', 'error');
         if (!password) return showToast('Please enter your password', 'error');
 
         setLoading(true);
@@ -91,12 +91,12 @@ const Login = () => {
                     <form onSubmit={handleLogin}>
                         <div style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.5rem' }}>
-                                Mobile Number
+                                Email or Mobile Number
                             </label>
                             <input
                                 className="modern-input"
                                 type="text"
-                                placeholder="Enter mobile number"
+                                placeholder="Enter email or mobile number"
                                 value={identifier}
                                 onChange={(e) => setIdentifier(e.target.value)}
                                 required

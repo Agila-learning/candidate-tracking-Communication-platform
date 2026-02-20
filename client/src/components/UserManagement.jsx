@@ -125,9 +125,9 @@ const UserManagement = () => {
     const roleColors = {
         ADMIN: 'var(--danger)',
         SUPPORT_FIC: 'var(--warning)',
-        SUPPORT_FIC: 'var(--warning)',
         CLIENT_SUPPORT: 'var(--success)',
-        AGENCY_ADMIN: '#8b5cf6', // Violet
+        AGENCY_ADMIN: '#8b5cf6',
+        AGENT: '#f59e0b',
         CANDIDATE: 'var(--primary)'
     };
 
@@ -241,6 +241,7 @@ const UserManagement = () => {
                                     <option value="CLIENT_SUPPORT_BOTH">Dual Role Partner (Bank + IT)</option>
                                     <option value="SUPPORT_FIC">FIC Support</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
+                                    <option value="AGENT">Agent (External)</option>
                                     <option value="ADMIN">Admin</option>
                                 </select>
                             </div>

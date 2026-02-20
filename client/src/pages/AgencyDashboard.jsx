@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -111,23 +112,34 @@ const AgencyDashboard = () => {
         }
     };
 
+    const handleDeleteCandidate = async (id) => {
+        if (!window.confirm('Delete this candidate? This cannot be undone.')) return;
+        try {
+            await axios.delete(`${config.endpoints.candidates.list}/${id}`);
+            showToast('Candidate deleted');
+            fetchCandidates();
+        } catch (err) {
+            showToast(err.response?.data?.error || 'Failed to delete candidate', 'error');
+        }
+    };
+
     return (
         <Layout>
             <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1>Agency Portal</h1>
-                    <p style={{ color: 'var(--text-muted)' }}>Welcome, {user?.name}</p>
+                    <h1>{user?.role === 'AGENT' ? '🤝 Agent Dashboard' : '🏢 Agency Admin Portal'}</h1>
+                    <p style={{ color: 'var(--text-muted)' }}>Welcome, {user?.name} &bull; <span style={{ fontSize: '0.8rem', padding: '0.15rem 0.5rem', borderRadius: '12px', background: user?.role === 'AGENT' ? '#fef3c7' : 'var(--bg-main)', color: user?.role === 'AGENT' ? '#b45309' : 'var(--text-muted)' }}>{user?.role}</span></p>
                 </div>
                 <button className="primary" onClick={() => setShowAddModal(true)}>+ Add Candidate</button>
             </div>
 
             {/* Add Modal */}
-            {showAddModal && (
+            {showAddModal && ReactDOM.createPortal(
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
                 }}>
-                    <div className="card fade-in" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
                         <h3>Add New Candidate</h3>
                         <form onSubmit={handleAddCandidate} style={{ display: 'grid', gap: '1rem' }}>
                             <input placeholder="Full Name" required value={newCandidate.name} onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
@@ -163,16 +175,17 @@ const AgencyDashboard = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Edit Modal */}
-            {showEditModal && (
+            {showEditModal && ReactDOM.createPortal(
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
                 }}>
-                    <div className="card fade-in" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
                         <h3>Edit Candidate</h3>
                         <form onSubmit={handleUpdateCandidate} style={{ display: 'grid', gap: '1rem' }}>
                             <input placeholder="Full Name" required value={newCandidate.name} onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
@@ -203,7 +216,8 @@ const AgencyDashboard = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             <div className="card">
@@ -254,6 +268,7 @@ const AgencyDashboard = () => {
                                             style={{
                                                 padding: '0.25rem 0.5rem',
                                                 fontSize: '0.75rem',
+                                                marginRight: '0.4rem',
                                                 backgroundColor: 'transparent',
                                                 color: c.createdBy?._id === user._id ? 'var(--primary)' : 'var(--text-muted)',
                                                 border: `1px solid ${c.createdBy?._id === user._id ? 'var(--primary)' : 'var(--border)'}`,
@@ -265,6 +280,22 @@ const AgencyDashboard = () => {
                                         >
                                             Edit
                                         </button>
+                                        {c.createdBy?._id === user._id && (
+                                            <button
+                                                onClick={() => handleDeleteCandidate(c._id)}
+                                                style={{
+                                                    padding: '0.25rem 0.5rem',
+                                                    fontSize: '0.75rem',
+                                                    backgroundColor: '#fee2e2',
+                                                    color: '#dc2626',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

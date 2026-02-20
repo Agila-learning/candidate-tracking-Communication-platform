@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const { auth, authorize } = require('../middleware/auth');
 const { validateRegistration } = require('../middleware/validators');
 
@@ -20,14 +21,14 @@ router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res
     try {
         const { name, email, phone, password, role, clientId } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Email already exists' });
+        if (email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) return res.status(400).json({ error: 'Email already exists' });
         }
 
-        const existingPhone = await User.findOne({ phone });
-        if (existingPhone) {
-            return res.status(400).json({ error: 'Phone number already exists' });
+        if (phone) {
+            const existingPhone = await User.findOne({ phone });
+            if (existingPhone) return res.status(400).json({ error: 'Phone number already exists' });
         }
 
         if (role === 'CLIENT_SUPPORT' && !clientId) {
@@ -66,14 +67,26 @@ router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res
 // Update user (Admin only)
 router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
     try {
-        const updates = req.body;
-        delete updates.password; // Don't allow password updates here
+        const { password, ...updates } = req.body;
 
-        const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
+        const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        res.json(user);
+        // Apply field updates
+        Object.assign(user, updates);
+
+        // Handle password update
+        if (password && password.trim()) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password.trim(), salt);
+        }
+
+        await user.save();
+
+        const updatedUser = await User.findById(user._id).select('-password');
+        res.json(updatedUser);
     } catch (e) {
+        console.error('Update user error:', e);
         res.status(400).json({ error: 'Failed to update user' });
     }
 });

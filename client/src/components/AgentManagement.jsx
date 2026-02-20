@@ -45,32 +45,22 @@ const AgentManagement = () => {
         e.preventDefault();
         try {
             const payload = {
-                ...formData,
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
                 role: 'AGENT'
             };
 
-            // If password is empty, remove it so backend handles default or keeps existing
-            if (!payload.password) {
-                delete payload.password;
-            }
-
             if (editingId) {
+                // On edit: only send password if provided
+                if (formData.password) payload.password = formData.password;
                 await axios.patch(`${config.endpoints.users.list}/${editingId}`, payload);
                 showToast('Agent updated successfully');
             } else {
-                // Create new
-                // For new agents, if password is empty, backend/frontend logic ensures it defaults to phone.
-                // In UserManagement it was handled by sending phone as password if empty? 
-                // No, existing backend logic for /register or /users/create might handles it now if I updated userRoutes?
-                // Wait, I updated userRoutes to default to phone if password missing.
-                // But AdminDashboard uses /auth/register or /users?
-                // Let's check config.endpoints.users.create usually.
-                // If it uses /auth/register, I need to check if that was updated. 
-                // I checked userRoutes.js in step 551 for "Default Password Logic Implementation" plan updates.
-                // It said: "UPDATED [userRoutes.js] - POST /: If password is missing, use phone as default password."
-                // So I can just send without password.
-                await axios.post(config.endpoints.users.create || '/api/auth/register', payload); // Check config for real endpoint
-                showToast('Agent created successfully');
+                // On create: use phone as default password if none provided
+                payload.password = formData.password || formData.phone;
+                await axios.post(config.endpoints.users.list, payload);
+                showToast('Agent created. Default password is their phone number.');
             }
 
             setShowModal(false);
