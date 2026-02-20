@@ -14,7 +14,7 @@ const validatePassword = (password) => {
 };
 
 const validateRole = (role) => {
-    const validRoles = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'CANDIDATE'];
+    const validRoles = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'AGENT', 'CANDIDATE'];
     return validRoles.includes(role);
 };
 
