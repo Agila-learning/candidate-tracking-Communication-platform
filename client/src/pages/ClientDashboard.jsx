@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import SupportInbox from '../components/SupportInbox';
@@ -111,12 +112,12 @@ const ClientDashboard = () => {
     return (
         <Layout>
             {/* Add Candidate Modal */}
-            {showAddModal && (
+            {showAddModal && ReactDOM.createPortal(
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
                 }}>
-                    <div className="card fade-in" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', borderLeft: '4px solid var(--primary)' }}>
+                    <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', borderLeft: '4px solid var(--primary)' }}>
                         <h3>Add New Candidate</h3>
                         <form onSubmit={handleAddCandidate} style={{ display: 'grid', gap: '1rem' }}>
                             <div>
@@ -150,7 +151,8 @@ const ClientDashboard = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             <div style={{ marginBottom: '2rem' }}>

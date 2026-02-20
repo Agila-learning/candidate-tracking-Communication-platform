@@ -20,7 +20,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            // Filter only IT or BOTH clients
+            // Show IT and BOTH type clients
             setClients(res.data.filter(c => c.type === 'IT' || c.type === 'BOTH'));
         } catch (e) {
             showToast('Failed to fetch IT clients', 'error');
@@ -76,6 +76,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
 
     const handleToggleStatus = async (client) => {
         const action = client.isActive ? 'deactivate' : 'activate';
+        const label = client.type === 'BOTH' ? 'Dual partner' : 'IT partner';
         const message = client.isActive
             ? `⚠️ Deactivate ${client.name}? Users assigned to this company won't be able to login.`
             : `Activate ${client.name}? Associated users will regain access.`;
@@ -129,8 +130,9 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                 )}
             </div>
 
-            {showForm && (
-                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #8b5cf6' }}>
+            {(showForm || showEditForm) && (
+                <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${showEditForm ? 'var(--primary)' : '#8b5cf6'}` }}>
+                    <div style={{ marginBottom: '1rem', fontWeight: 600 }}>{showEditForm ? 'Edit IT Partner Details' : 'Add New IT Partner'}</div>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             <input placeholder="Company Name (e.g., Infosys)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />

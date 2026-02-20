@@ -1,6 +1,7 @@
 const express = require('express');
 const Client = require('../models/Client');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -35,15 +36,18 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
         const client = new Client({ name, pocName, pocEmail, pocPhone, type: type || 'BANKING' });
         await client.save();
 
-        // Auto-create User for Bank POC
+        // Auto-create User for Client POC
         if (pocEmail && pocPhone) {
-            const userPassword = password || pocPhone; // Default to mobile number
+            const rawPassword = password || pocPhone; // Default to mobile number
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(rawPassword, salt);
+
             const user = new User({
                 name: pocName || name,
                 email: pocEmail,
                 phone: pocPhone,
                 role: 'CLIENT_SUPPORT',
-                password: userPassword,
+                password: hashedPassword,
                 clientId: client._id,
                 isActive: true
             });
@@ -67,7 +71,6 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
         if (!client) return res.status(404).json({ error: 'Client not found' });
 
         // 2. Sync or Create User (if password provided or just to sync details/fix orphan)
-        // We look for the main POC user associated with this client
         let user = await User.findOne({ clientId: client._id, role: 'CLIENT_SUPPORT' });
 
         if (user) {
@@ -75,21 +78,26 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
             if (pocName) user.name = pocName;
             if (pocEmail) user.email = pocEmail;
             if (pocPhone) user.phone = pocPhone;
-            if (password) user.password = password; // Only update password if explicitly provided
 
-            // If the client type changed to BOTH/IT, we might strictly want to ensure they have access, 
-            // but role is 'CLIENT_SUPPORT' regardless. Access is controlled by client.type.
+            // Hash password before saving
+            if (password && password.trim()) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(password.trim(), salt);
+            }
 
             await user.save();
         } else if (pocPhone) {
             // Create missing user (Orphaned client fix)
-            const userPassword = password || pocPhone; // Default to mobile number
+            const rawPassword = password || pocPhone;
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(rawPassword, salt);
+
             user = new User({
                 name: pocName || name,
-                email: pocEmail, // Optional
+                email: pocEmail,
                 phone: pocPhone,
                 role: 'CLIENT_SUPPORT',
-                password: userPassword,
+                password: hashedPassword,
                 clientId: client._id,
                 isActive: true
             });
