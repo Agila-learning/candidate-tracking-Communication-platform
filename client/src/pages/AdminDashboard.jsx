@@ -9,6 +9,7 @@ import Resources from '../components/Resources';
 import UserManagement from '../components/UserManagement';
 import ClientManagement from '../components/ClientManagement';
 import ITClientManagement from '../components/ITClientManagement';
+import PartnerManagement from '../components/PartnerManagement';
 import AgentManagement from '../components/AgentManagement';
 import Announcements from '../components/Announcements';
 import ClientRequestsPanel from '../components/ClientRequestsPanel';
@@ -213,8 +214,8 @@ const AdminDashboard = () => {
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
                 <div className="scrollable-tabs">
-                    {['candidates', 'leads', 'users', 'agents', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements', 'client_requests'].filter(tab => {
-                        if (isSubAdmin) return ['candidates', 'banks', 'it_partners', 'client_requests'].includes(tab);
+                    {['candidates', 'leads', 'users', 'agents', 'partners', 'inbox', 'reports', 'resources', 'announcements', 'client_requests'].filter(tab => {
+                        if (isSubAdmin) return ['candidates', 'partners', 'client_requests'].includes(tab);
                         return true;
                     }).map(tab => (
                         <button
@@ -231,7 +232,7 @@ const AdminDashboard = () => {
                                 position: 'relative'
                             }}
                         >
-                            {tab === 'it_partners' ? 'IT Partners' : tab === 'banks' ? 'Bank Partners' : tab === 'client_requests' ? 'Client Requests' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'it_partners' ? 'IT Partners' : tab === 'banks' ? 'Bank Partners' : tab === 'partners' ? '🤝 Partners' : tab === 'client_requests' ? 'Client Requests' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                             {tab === 'client_requests' && pendingRequestCount > 0 && (
                                 <span style={{ position: 'absolute', top: '6px', right: '-4px', background: '#dc2626', color: 'white', fontSize: '0.65rem', fontWeight: 700, borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {pendingRequestCount}
@@ -472,6 +473,8 @@ const AdminDashboard = () => {
 
                 {activeTab === 'users' && <div className="card"><div className="section-header sh-users"><span className="sh-icon">👥</span><span className="sh-title">User Management</span><span className="sh-meta">Roles & Accounts</span></div><UserManagement /></div>}
                 {activeTab === 'agents' && <div className="card"><div className="section-header sh-agents"><span className="sh-icon">🤝</span><span className="sh-title">Agency & Agents</span><span className="sh-meta">Referral Partners</span></div><AgentManagement /></div>}
+                {activeTab === 'partners' && <div className="card"><div className="section-header sh-banks"><span className="sh-icon">🤝</span><span className="sh-title">Partners</span><span className="sh-meta">All Partner Types</span></div><PartnerManagement onStartChat={handleStartBankChat} userRole={user?.role} /></div>}
+                {/* Legacy tab redirects — keep old routes working */}
                 {activeTab === 'banks' && <div className="card"><div className="section-header sh-banks"><span className="sh-icon">🏦</span><span className="sh-title">Bank Partners</span><span className="sh-meta">Banking Clients</span></div><ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} /></div>}
                 {activeTab === 'it_partners' && <div className="card"><div className="section-header sh-it_partners"><span className="sh-icon">💻</span><span className="sh-title">IT Partners</span><span className="sh-meta">Technology Clients</span></div><ITClientManagement onStartChat={handleStartBankChat} userRole={user?.role} /></div>}
                 {activeTab === 'inbox' && <div className="card"><div className="section-header sh-inbox"><span className="sh-icon">💬</span><span className="sh-title">Support Inbox</span><span className="sh-meta">Live Chat</span></div><SupportInbox clients={clients} initialConversationId={targetConversationId} /></div>}

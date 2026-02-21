@@ -196,8 +196,11 @@ const ClientRequestsPanel = () => {
                                                 <select value={approveForm.type}
                                                     onChange={e => setApproveForm({ ...approveForm, type: e.target.value })}
                                                     style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}>
-                                                    <option value="BANKING">Banking Partner</option>
-                                                    <option value="IT">Technology Partner</option>
+                                                    <option value="BANKING">🏦 Banking Partner</option>
+                                                    <option value="IT">💻 IT Partner</option>
+                                                    <option value="MANUFACTURING">🏭 Manufacturing Partner</option>
+                                                    <option value="NON_IT">📦 Non-IT Partner</option>
+                                                    <option value="OVERSEAS">✈️ Overseas Partner</option>
                                                 </select>
                                             </div>
                                             <div>
