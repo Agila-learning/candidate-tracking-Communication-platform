@@ -308,6 +308,58 @@ const AdminDashboard = () => {
                         )}
 
                         <div className="table-container" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+
+                            {/* ── Agent-referred candidates needing review ── */}
+                            {(() => {
+                                const agentReferrals = candidates.filter(c =>
+                                    c.createdBy?.role === 'AGENT' &&
+                                    (c.currentStatus === 'Registered' || c.currentStatus === 'Documents Collected')
+                                );
+                                return agentReferrals.length > 0 ? (
+                                    <div style={{
+                                        margin: '0 0 1rem 0',
+                                        background: 'linear-gradient(120deg,#fff7ed,#fff)',
+                                        border: '1px solid #fed7aa',
+                                        borderLeft: '4px solid #f97316',
+                                        borderRadius: '10px', padding: '1rem 1.25rem'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 700, color: '#c2410c', fontSize: '0.92rem' }}>
+                                                🔔 Agent Referrals Pending Review
+                                            </span>
+                                            <span style={{ background: '#f97316', color: 'white', fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>
+                                                {agentReferrals.length} NEW
+                                            </span>
+                                            <span style={{ fontSize: '0.78rem', color: '#92400e' }}>
+                                                Candidates submitted by agents — schedule interviews and assign partners
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                            {agentReferrals.slice(0, 6).map(c => (
+                                                <div key={c._id} style={{
+                                                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                    background: 'white', border: '1px solid #fed7aa',
+                                                    borderRadius: '8px', padding: '0.35rem 0.6rem'
+                                                }}>
+                                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1e293b' }}>{c.name}</span>
+                                                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>via {c.createdBy?.name || 'Agent'}</span>
+                                                    <button
+                                                        onClick={() => setSelectedCandidateId(c._id)}
+                                                        style={{ padding: '0.2rem 0.55rem', background: '#f97316', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700 }}>
+                                                        View &amp; Assign
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {agentReferrals.length > 6 && (
+                                                <span style={{ fontSize: '0.78rem', color: '#92400e', alignSelf: 'center', fontWeight: 600 }}>
+                                                    +{agentReferrals.length - 6} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : null;
+                            })()}
+
                             <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>

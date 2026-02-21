@@ -21,7 +21,8 @@ export const config = {
             list: `${API_URL}/api/clients`,
             create: `${API_URL}/api/clients`,
             toggleStatus: (id) => `${API_URL}/api/clients/${id}/toggle-status`,
-            delete: (id) => `${API_URL}/api/clients/${id}`
+            delete: (id) => `${API_URL}/api/clients/${id}`,
+            resetPassword: (id) => `${API_URL}/api/clients/${id}/reset-password`
         },
         candidates: {
             list: `${API_URL}/api/candidates`,

@@ -89,10 +89,9 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
         // Apply field updates
         Object.assign(user, updates);
 
-        // Handle password update
+        // Handle password update — assign raw; pre-save hook hashes it once
         if (password && password.trim()) {
-            const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(password.trim(), salt);
+            user.password = password.trim();
         }
 
         await user.save();

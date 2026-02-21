@@ -11,6 +11,8 @@ const ClientManagement = ({ onStartChat, userRole }) => {
     const [formData, setFormData] = useState({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'BANKING' }); // Default BANKING, can be BOTH
     const [editingId, setEditingId] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all');
+    const [resetPasswordId, setResetPasswordId] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -70,6 +72,21 @@ const ClientManagement = ({ onStartChat, userRole }) => {
             fetchClients();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to delete', 'error');
+        }
+    };
+
+    const handleResetPassword = async (clientId) => {
+        if (!newPassword || newPassword.trim().length < 6) {
+            showToast('Password must be at least 6 characters', 'error');
+            return;
+        }
+        try {
+            const res = await axios.post(config.endpoints.clients.resetPassword(clientId), { newPassword: newPassword.trim() });
+            showToast(res.data.message || 'Password reset successfully!', 'success');
+            setResetPasswordId(null);
+            setNewPassword('');
+        } catch (err) {
+            showToast(err.response?.data?.error || 'Failed to reset password', 'error');
         }
     };
 
@@ -231,6 +248,37 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                         {client.pocName && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>👤 {client.pocName}</div>}
                         {client.pocEmail && <div style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '0.25rem' }}>✉️ {client.pocEmail}</div>}
                         {client.pocPhone && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {client.pocPhone}</div>}
+
+                        {/* Reset Login Password — admin only */}
+                        {userRole === 'ADMIN' && (
+                            <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border)' }}>
+                                {resetPasswordId === client._id ? (
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>🔑 Login: <strong>{client.pocEmail}</strong></span>
+                                        <input
+                                            type="password"
+                                            placeholder="New password (min 6 chars)..."
+                                            value={newPassword}
+                                            onChange={e => setNewPassword(e.target.value)}
+                                            style={{ flex: 1, minWidth: '160px', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.82rem' }}
+                                        />
+                                        <button onClick={() => handleResetPassword(client._id)}
+                                            style={{ padding: '0.4rem 0.8rem', background: '#1e3a8a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700 }}>
+                                            Set Password
+                                        </button>
+                                        <button onClick={() => { setResetPasswordId(null); setNewPassword(''); }}
+                                            style={{ padding: '0.4rem 0.6rem', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}>
+                                            Cancel
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => { setResetPasswordId(client._id); setNewPassword(''); }}
+                                        style={{ padding: '0.3rem 0.65rem', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        🔑 Reset Login Password
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         {userRole !== 'SUB_ADMIN' && (
                             <button
                                 onClick={() => handleDelete(client._id, client.name)}

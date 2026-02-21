@@ -75,28 +75,24 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
         if (user) {
             if (pocName) user.name = pocName;
             if (pocEmail) user.email = pocEmail;
-            // Only update phone if value is provided and non-empty
             if (pocPhone && pocPhone.trim()) user.phone = pocPhone.trim();
 
-            // Hash password before saving
+            // Assign raw password — pre-save hook hashes it ONCE
             if (password && password.trim()) {
-                const salt = await bcrypt.genSalt(10);
-                user.password = await bcrypt.hash(password.trim(), salt);
+                user.password = password.trim();
             }
 
             await user.save();
         } else if (pocEmail) {
-            // Create missing user (Orphaned client fix) — email required, phone optional
+            // Create missing user (Orphaned client fix)
             const rawPassword = password || pocPhone || pocEmail.split('@')[0];
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
             user = new User({
                 name: pocName || name,
                 email: pocEmail,
                 phone: pocPhone || undefined,
                 role: 'CLIENT_SUPPORT',
-                password: hashedPassword,
+                password: rawPassword,   // ← plain text; pre-save hook hashes
                 clientId: client._id,
                 isActive: true
             });
@@ -109,6 +105,33 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
         res.status(400).json({ error: e.message || 'Failed to update client' });
     }
 });
+
+// Reset client login password (Admin only) — handles existing double-hashed accounts
+router.post('/:id/reset-password', auth, authorize('ADMIN'), async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        if (!newPassword || newPassword.trim().length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        }
+
+        const client = await Client.findById(req.params.id);
+        if (!client) return res.status(404).json({ error: 'Client not found' });
+
+        // Find linked user
+        const user = await User.findOne({ clientId: client._id, role: 'CLIENT_SUPPORT' });
+        if (!user) return res.status(404).json({ error: 'No login account found for this client. Edit the client to create one.' });
+
+        // Assign raw password — pre-save hook hashes it exactly once
+        user.password = newPassword.trim();
+        await user.save();
+
+        res.json({ message: `Password reset successfully for ${client.name}. Login email: ${user.email}` });
+    } catch (e) {
+        console.error('Reset password error:', e);
+        res.status(400).json({ error: e.message || 'Failed to reset password' });
+    }
+});
+
 
 // Delete Client
 router.delete('/:id', auth, authorize('ADMIN'), async (req, res) => {
