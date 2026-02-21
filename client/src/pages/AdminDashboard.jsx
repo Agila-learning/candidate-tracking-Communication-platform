@@ -302,7 +302,7 @@ const AdminDashboard = () => {
                             </div>
                         )}
 
-                        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                        <div className="table-container" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
                             <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
