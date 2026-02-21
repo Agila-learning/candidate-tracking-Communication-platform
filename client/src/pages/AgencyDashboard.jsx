@@ -6,31 +6,51 @@ import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 import { useToast } from '../context/ToastContext';
 
+/* ─── Status colour map ─────────────────────────────────────── */
+const STATUS_COLORS = {
+    'Applied': { bg: '#e0f2fe', color: '#0369a1' },
+    'Screening': { bg: '#ede9fe', color: '#5b21b6' },
+    'Interview Scheduled': { bg: '#fef3c7', color: '#92400e' },
+    'Interview Done': { bg: '#d1fae5', color: '#065f46' },
+    'Selected': { bg: '#dcfce7', color: '#15803d' },
+    'Rejected': { bg: '#fee2e2', color: '#991b1b' },
+    'On Hold': { bg: '#fff7ed', color: '#9a3412' },
+    'Placed': { bg: '#f0fdf4', color: '#166534' },
+    'default': { bg: 'hsla(210,100%,50%,0.1)', color: 'var(--primary)' },
+};
+
+const getStatusStyle = (status) =>
+    STATUS_COLORS[status] || STATUS_COLORS['default'];
+
+const ALL_STATUSES = [
+    'Applied', 'Screening', 'Interview Scheduled', 'Interview Done',
+    'Selected', 'Rejected', 'On Hold', 'Placed'
+];
+
+/* ─── Component ─────────────────────────────────────────────── */
 const AgencyDashboard = () => {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const isAgent = user?.role === 'AGENT';          // strict read-only for client assignment
+    const isAgencyAdmin = user?.role === 'AGENCY_ADMIN';
+
     const [candidates, setCandidates] = useState([]);
-    const [clients, setClients] = useState([]); // For dropdown
+    const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    /* Modals */
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingCandidate, setEditingCandidate] = useState(null);
     const [newCandidate, setNewCandidate] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        location: '',
-        qualification: 'Graduate',
-        clientId: '',
-        programName: '',
-        comments: '',
-        resume: null
+        name: '', email: '', phone: '', location: '',
+        qualification: 'Graduate', programName: '', resume: null
     });
 
-    // Actually, user asked for "comments". Candidate model doesn't have a top-level comments field.
-    // I will add it as a 'programName' for now as that's often used for "Program/Batch/Comments" or just ignore if not critical, 
-    // BUT safest is to add it to 'programName' or 'location' for visibility.
-    // Let's use 'programName' as the "Comments/Program" field since it's a string.
+    /* Filters */
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterClient, setFilterClient] = useState('');
 
     useEffect(() => {
         fetchCandidates();
@@ -42,7 +62,6 @@ const AgencyDashboard = () => {
             const res = await axios.get(config.endpoints.candidates.list);
             setCandidates(res.data);
         } catch (e) {
-            console.error(e);
             showToast('Failed to fetch candidates', 'error');
         } finally {
             setLoading(false);
@@ -53,11 +72,10 @@ const AgencyDashboard = () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
             setClients(res.data.filter(c => c.isActive));
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { /* silent */ }
     };
 
+    /* ── CRUD ── */
     const handleAddCandidate = async (e) => {
         e.preventDefault();
         try {
@@ -69,14 +87,12 @@ const AgencyDashboard = () => {
                     formData.append(key, newCandidate[key]);
                 }
             });
-
-            // "referredBy" is handled by backend based on user role
             await axios.post(config.endpoints.candidates.create, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            showToast('Candidate added successfully!');
+            showToast('Candidate referred successfully!');
             setShowAddModal(false);
-            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', clientId: '', programName: '', comments: '', resume: null });
+            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', programName: '', resume: null });
             fetchCandidates();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to add candidate', 'error');
@@ -91,9 +107,7 @@ const AgencyDashboard = () => {
             phone: candidate.phone,
             location: candidate.location || '',
             qualification: candidate.qualification || 'Graduate',
-            clientId: candidate.clientId?._id || '',
             programName: candidate.programName || '',
-            comments: ''
         });
         setShowEditModal(true);
     };
@@ -101,14 +115,15 @@ const AgencyDashboard = () => {
     const handleUpdateCandidate = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`${config.endpoints.candidates.list}/${editingCandidate._id}`, newCandidate);
-            showToast('Candidate updated successfully!');
+            // Agents cannot send clientId — only basic profile fields
+            const payload = { name: newCandidate.name, phone: newCandidate.phone, location: newCandidate.location, qualification: newCandidate.qualification, programName: newCandidate.programName };
+            await axios.patch(`${config.endpoints.candidates.list}/${editingCandidate._id}`, payload);
+            showToast('Candidate updated!');
             setShowEditModal(false);
             setEditingCandidate(null);
-            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', clientId: '', programName: '', comments: '' });
             fetchCandidates();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to update candidate', 'error');
+            showToast(err.response?.data?.error || 'Failed to update', 'error');
         }
     };
 
@@ -119,195 +134,358 @@ const AgencyDashboard = () => {
             showToast('Candidate deleted');
             fetchCandidates();
         } catch (err) {
-            showToast(err.response?.data?.error || 'Failed to delete candidate', 'error');
+            showToast(err.response?.data?.error || 'Failed to delete', 'error');
         }
     };
 
+    /* ── Filter ── */
+    const filtered = candidates.filter(c => {
+        const matchSearch = !searchTerm ||
+            c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.phone?.includes(searchTerm);
+        const matchStatus = !filterStatus || c.currentStatus === filterStatus;
+        const matchClient = !filterClient || c.clientId?._id === filterClient || c.clientId?.name === filterClient;
+        return matchSearch && matchStatus && matchClient;
+    });
+
+    /* ── Stats ── */
+    const stats = ALL_STATUSES.map(s => ({
+        label: s,
+        count: candidates.filter(c => c.currentStatus === s).length
+    })).filter(s => s.count > 0);
+
+    const mine = candidates.filter(c => c.createdBy?._id === user?._id);
+
+    /* ── Modal Field Component ── */
+    const CandidateForm = ({ onSubmit, submitLabel }) => (
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
+            <input placeholder="Full Name *" required value={newCandidate.name}
+                onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
+            <input placeholder="Email *" type="email" required value={newCandidate.email}
+                onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
+            <input placeholder="Phone *" required value={newCandidate.phone}
+                onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} />
+            <input placeholder="Location" value={newCandidate.location}
+                onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
+            <select value={newCandidate.qualification}
+                onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })}>
+                <option value="Graduate">Graduate</option>
+                <option value="Post Graduate">Post Graduate</option>
+                <option value="Under Graduate">Under Graduate</option>
+                <option value="Other">Other</option>
+            </select>
+            <input placeholder="Program / Batch / Comments"
+                value={newCandidate.programName}
+                onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
+            <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Resume (Optional)
+                </label>
+                <input type="file" accept=".pdf,.doc,.docx"
+                    onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
+            </div>
+
+            {/* CLIENT ASSIGNMENT — Agency Admin only */}
+            {isAgencyAdmin && (
+                <div>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Assign to Client (Agency Admin only)
+                    </label>
+                    <select style={{ width: '100%', marginTop: '0.3rem' }}>
+                        <option value="">— No Assignment —</option>
+                        {clients.map(c => (
+                            <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {/* Agents see info notice only */}
+            {isAgent && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem', background: 'var(--bg-main)', borderRadius: '6px', borderLeft: '3px solid var(--primary)' }}>
+                    ℹ️ Client assignment is handled by Admin after reviewing candidate performance.
+                </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="button"
+                    onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
+                    style={{ background: 'transparent', border: '1px solid var(--border)' }}>
+                    Cancel
+                </button>
+                <button type="submit" className="primary">{submitLabel}</button>
+            </div>
+        </form>
+    );
+
     return (
         <Layout>
-            <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h1>{user?.role === 'AGENT' ? '🤝 Agent Dashboard' : '🏢 Agency Admin Portal'}</h1>
-                    <p style={{ color: 'var(--text-muted)' }}>Welcome, {user?.name} &bull; <span style={{ fontSize: '0.8rem', padding: '0.15rem 0.5rem', borderRadius: '12px', background: user?.role === 'AGENT' ? '#fef3c7' : 'var(--bg-main)', color: user?.role === 'AGENT' ? '#b45309' : 'var(--text-muted)' }}>{user?.role}</span></p>
+            {/* ─── Page Header ─── */}
+            <div style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
+                        <h1>{isAgent ? '🤝 Agent Dashboard' : '🏢 Agency Admin Portal'}</h1>
+                        <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                            Welcome, <strong>{user?.name}</strong>
+                            &nbsp;·&nbsp;
+                            <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '12px', background: isAgent ? '#fef3c7' : 'var(--primary-light)', color: isAgent ? '#b45309' : 'var(--primary)', fontWeight: 700 }}>
+                                {user?.role?.replace('_', ' ')}
+                            </span>
+                        </p>
+                    </div>
+                    <button className="primary" onClick={() => setShowAddModal(true)}>+ Refer Candidate</button>
                 </div>
-                <button className="primary" onClick={() => setShowAddModal(true)}>+ Add Candidate</button>
+
+                {/* ─── Stats Row ─── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)' }}>{candidates.length}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>Total Referred</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#15803d' }}>{candidates.filter(c => ['Selected', 'Placed'].includes(c.currentStatus)).length}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>Placed / Selected</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#b45309' }}>{candidates.filter(c => c.currentStatus?.includes('Interview')).length}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>In Interview</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#5b21b6' }}>{mine.length}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>My Referrals</div>
+                    </div>
+                </div>
             </div>
 
-            {/* Add Modal */}
-            {showAddModal && ReactDOM.createPortal(
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
-                }}>
-                    <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <h3>Add New Candidate</h3>
-                        <form onSubmit={handleAddCandidate} style={{ display: 'grid', gap: '1rem' }}>
-                            <input placeholder="Full Name" required value={newCandidate.name} onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
-                            <input placeholder="Email" type="email" required value={newCandidate.email} onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
-                            <input placeholder="Phone" required value={newCandidate.phone} onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} />
-
-                            <div>
-                                <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Target Bank / Company</label>
-                                <select
-                                    value={newCandidate.clientId}
-                                    onChange={e => setNewCandidate({ ...newCandidate, clientId: e.target.value })}
-                                    style={{ width: '100%', marginTop: '0.25rem' }}
-                                >
-                                    <option value="">Select Client...</option>
-                                    {clients.map(c => (
-                                        <option key={c._id} value={c._id}>{c.name} ({c.type || 'BANKING'})</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <input placeholder="Qualification" value={newCandidate.qualification} onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })} />
-                            <input placeholder="Comments / Program Details" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
-                            <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
-
-                            <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '4px' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Upload Resume (Optional)</label>
-                                <input type="file" onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'transparent', border: '1px solid var(--border)' }}>Cancel</button>
-                                <button type="submit" className="primary">Add Candidate</button>
-                            </div>
-                        </form>
+            {/* ─── Client Access Info Banner (for agents) ─── */}
+            {isAgent && (
+                <div style={{ background: 'linear-gradient(120deg,#ede9fe,#f5f3ff)', border: '1px solid #c4b5fd', borderRadius: 'var(--radius)', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🏢</span>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: '#5b21b6', fontSize: '0.9rem' }}>Want your candidates to access a client portal?</div>
+                        <div style={{ color: '#7c3aed', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+                            Companies can request platform access via our staffing request form. Clients are assigned by Admin based on candidate performance.
+                        </div>
                     </div>
-                </div>,
-                document.body
+                    <a href="/request-services" target="_blank" rel="noreferrer"
+                        style={{ padding: '0.5rem 1rem', background: '#5b21b6', color: 'white', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                        Request Access →
+                    </a>
+                </div>
             )}
 
-            {/* Edit Modal */}
-            {showEditModal && ReactDOM.createPortal(
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999
-                }}>
-                    <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <h3>Edit Candidate</h3>
-                        <form onSubmit={handleUpdateCandidate} style={{ display: 'grid', gap: '1rem' }}>
-                            <input placeholder="Full Name" required value={newCandidate.name} onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
-                            <input placeholder="Email" type="email" required value={newCandidate.email} onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
-                            <input placeholder="Phone" required value={newCandidate.phone} onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} />
+            {/* ─── Candidate Table Card ─── */}
+            <div className="card fade-in">
+                {/* Section Header */}
+                <div className="section-header sh-candidates" style={{ marginBottom: '1.25rem' }}>
+                    <span className="sh-icon">🎓</span>
+                    <span className="sh-title">Candidate Status Tracker</span>
+                    <span className="sh-meta">{filtered.length} of {candidates.length}</span>
+                </div>
 
-                            <div>
-                                <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Target Bank / Company</label>
-                                <select
-                                    value={newCandidate.clientId}
-                                    onChange={e => setNewCandidate({ ...newCandidate, clientId: e.target.value })}
-                                    style={{ width: '100%', marginTop: '0.25rem' }}
-                                >
-                                    <option value="">Select Client...</option>
-                                    {clients.map(c => (
-                                        <option key={c._id} value={c._id}>{c.name} ({c.type || 'BANKING'})</option>
-                                    ))}
-                                </select>
-                            </div>
+                {/* ─── Filters ─── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <input
+                        placeholder="🔍 Search name / email / phone..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{ padding: '0.6rem 0.9rem', fontSize: '0.9rem' }}
+                    />
+                    <select
+                        value={filterStatus}
+                        onChange={e => setFilterStatus(e.target.value)}
+                        style={{ padding: '0.6rem 0.9rem', fontSize: '0.9rem' }}
+                    >
+                        <option value="">All Statuses</option>
+                        {ALL_STATUSES.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={filterClient}
+                        onChange={e => setFilterClient(e.target.value)}
+                        style={{ padding: '0.6rem 0.9rem', fontSize: '0.9rem' }}
+                    >
+                        <option value="">All Clients</option>
+                        {clients.map(c => (
+                            <option key={c._id} value={c._id}>{c.name}</option>
+                        ))}
+                    </select>
+                    {(searchTerm || filterStatus || filterClient) && (
+                        <button
+                            onClick={() => { setSearchTerm(''); setFilterStatus(''); setFilterClient(''); }}
+                            style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', background: 'var(--danger-light)', color: 'var(--danger)', border: '1px solid var(--danger-light)' }}
+                        >
+                            ✕ Clear Filters
+                        </button>
+                    )}
+                </div>
 
-                            <input placeholder="Qualification" value={newCandidate.qualification} onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })} />
-                            <input placeholder="Comments / Program Details" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
-                            <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
-
-                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <button type="button" onClick={() => setShowEditModal(false)} style={{ background: 'transparent', border: '1px solid var(--border)' }}>Cancel</button>
-                                <button type="submit" className="primary">Update Candidate</button>
-                            </div>
-                        </form>
+                {/* ─── Table ─── */}
+                {loading ? (
+                    <div style={{ display: 'grid', gap: '0.5rem' }}>
+                        {[1, 2, 3].map(i => <div key={i} className="shimmer" style={{ height: '52px' }} />)}
                     </div>
-                </div>,
-                document.body
-            )}
+                ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
+                        <div style={{ fontWeight: 600 }}>No candidates match your filters</div>
+                        <div style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>Try adjusting the filters above</div>
+                    </div>
+                ) : (
+                    <div className="table-container">
+                        <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', background: 'var(--bg-main)' }}>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Candidate</th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Phone</th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>
+                                        {isAgent ? 'Assigned Client' : 'Client'}
+                                        {isAgent && <span style={{ marginLeft: '0.35rem', fontSize: '0.65rem', color: '#5b21b6', background: '#ede9fe', padding: '0.1rem 0.4rem', borderRadius: '8px' }}>Admin Only</span>}
+                                    </th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Progress Status</th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Resume</th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Referred By</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map(c => {
+                                    const isOwner = c.createdBy?._id === user?._id;
+                                    const statusStyle = getStatusStyle(c.currentStatus);
+                                    return (
+                                        <tr key={c._id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-main)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '0.85rem 1rem' }}>
+                                                <div style={{ fontWeight: 600 }}>{c.name}</div>
+                                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{c.email}</div>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem' }}>{c.phone}</td>
+                                            <td style={{ padding: '0.85rem 1rem' }}>
+                                                {c.clientId?.name ? (
+                                                    <span style={{ fontSize: '0.82rem', padding: '0.2rem 0.55rem', borderRadius: '8px', background: '#d1fae5', color: '#065f46', fontWeight: 600 }}>
+                                                        {c.clientId.name}
+                                                    </span>
+                                                ) : c.manualPartnerName ? (
+                                                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>{c.manualPartnerName}</span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                        {isAgent ? '⏳ Pending admin review' : '—'}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '0.85rem 1rem' }}>
+                                                <span style={{
+                                                    padding: '0.25rem 0.7rem', borderRadius: '20px',
+                                                    fontSize: '0.75rem', fontWeight: 600,
+                                                    backgroundColor: statusStyle.bg,
+                                                    color: statusStyle.color
+                                                }}>
+                                                    {c.currentStatus || 'Applied'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '0.85rem 1rem' }}>
+                                                {c.resumeUrl ? (
+                                                    <a href={c.resumeUrl} target="_blank" rel="noreferrer"
+                                                        style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>
+                                                        📄 View
+                                                    </a>
+                                                ) : <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>}
+                                            </td>
+                                            <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                {c.createdBy?.name || 'Admin'}
+                                                {isOwner && <span style={{ marginLeft: '0.35rem', fontSize: '0.65rem', background: 'var(--primary-light)', color: 'var(--primary)', padding: '0.1rem 0.35rem', borderRadius: '6px', fontWeight: 700 }}>You</span>}
+                                            </td>
+                                            <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
+                                                {isOwner && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleEditInit(c)}
+                                                            style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem', marginRight: '0.35rem', background: 'var(--primary-light)', color: 'var(--primary)', border: 'none', borderRadius: '6px', fontWeight: 600 }}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteCandidate(c._id)}
+                                                            style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', fontWeight: 600 }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {!isOwner && (
+                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>View Only</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
-            <div className="card">
-                <h3>Candidate Status</h3>
-                {loading ? <p>Loading...</p> : (
-                    <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                                <th style={{ padding: '1rem' }}>Name</th>
-                                <th style={{ padding: '1rem' }}>Phone</th>
-                                <th style={{ padding: '1rem' }}>Client</th>
-                                <th style={{ padding: '1rem' }}>Status</th>
-                                <th style={{ padding: '1rem' }}>Resume</th>
-                                <th style={{ padding: '1rem' }}>Referred By</th>
-                                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {candidates.map(c => (
-                                <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <td style={{ padding: '1rem', fontWeight: 500 }}>{c.name}</td>
-                                    <td style={{ padding: '1rem' }}>{c.phone}</td>
-                                    <td style={{ padding: '1rem' }}>{c.clientId?.name || '-'}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{
-                                            padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
-                                            backgroundColor: 'hsla(210, 100%, 50%, 0.1)', color: 'var(--primary)'
-                                        }}>
-                                            {c.currentStatus}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        {c.resumeUrl ? (
-                                            <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>
-                                                Download
-                                            </a>
-                                        ) : (
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>-</span>
-                                        )}
-                                    </td>
-                                    <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                        {c.referredBy || (c.createdBy?.name) || 'Self/Admin'}
-                                    </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                        <button
-                                            onClick={() => handleEditInit(c)}
-                                            disabled={c.createdBy?._id !== user._id}
-                                            style={{
-                                                padding: '0.25rem 0.5rem',
-                                                fontSize: '0.75rem',
-                                                marginRight: '0.4rem',
-                                                backgroundColor: 'transparent',
-                                                color: c.createdBy?._id === user._id ? 'var(--primary)' : 'var(--text-muted)',
-                                                border: `1px solid ${c.createdBy?._id === user._id ? 'var(--primary)' : 'var(--border)'}`,
-                                                cursor: c.createdBy?._id === user._id ? 'pointer' : 'not-allowed',
-                                                opacity: c.createdBy?._id === user._id ? 1 : 0.5,
-                                                borderRadius: '4px'
-                                            }}
-                                            title={c.createdBy?._id === user._id ? 'Edit Candidate' : 'View Only (Not Created by You)'}
-                                        >
-                                            Edit
-                                        </button>
-                                        {c.createdBy?._id === user._id && (
-                                            <button
-                                                onClick={() => handleDeleteCandidate(c._id)}
-                                                style={{
-                                                    padding: '0.25rem 0.5rem',
-                                                    fontSize: '0.75rem',
-                                                    backgroundColor: '#fee2e2',
-                                                    color: '#dc2626',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Delete
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {candidates.length === 0 && (
-                                <tr>
-                                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No candidates found.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                {/* ─── Status Breakdown ─── */}
+                {stats.length > 0 && (
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>
+                            📈 Status Breakdown
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {stats.map(({ label, count }) => {
+                                const s = getStatusStyle(label);
+                                return (
+                                    <button
+                                        key={label}
+                                        onClick={() => setFilterStatus(filterStatus === label ? '' : label)}
+                                        style={{
+                                            padding: '0.3rem 0.75rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.78rem',
+                                            fontWeight: 700,
+                                            backgroundColor: filterStatus === label ? s.color : s.bg,
+                                            color: filterStatus === label ? 'white' : s.color,
+                                            border: `1px solid ${s.color}40`,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {label} <strong>{count}</strong>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 )}
             </div>
+
+            {/* ─── Add Modal ─── */}
+            {showAddModal && ReactDOM.createPortal(
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1rem' }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '480px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            🎓 Refer New Candidate
+                        </h3>
+                        <CandidateForm onSubmit={handleAddCandidate} submitLabel="Submit Referral" />
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* ─── Edit Modal ─── */}
+            {showEditModal && ReactDOM.createPortal(
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1rem' }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '480px', backgroundColor: 'var(--bg-card)', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            ✏️ Edit Candidate
+                        </h3>
+                        <CandidateForm onSubmit={handleUpdateCandidate} submitLabel="Save Changes" />
+                    </div>
+                </div>,
+                document.body
+            )}
         </Layout>
     );
 };
