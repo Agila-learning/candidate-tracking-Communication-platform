@@ -186,18 +186,30 @@ const AgencyDashboard = () => {
                     onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
             </div>
 
-            {/* CLIENT ASSIGNMENT — Agency Admin only */}
             {isAgencyAdmin && (
                 <div>
                     <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        Assign to Client (Agency Admin only)
+                        Assign to Client <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>
                     </label>
-                    <select style={{ width: '100%', marginTop: '0.3rem' }}>
+                    <select
+                        style={{ width: '100%', marginTop: '0.3rem' }}
+                        value={newCandidate.clientId}
+                        onChange={e => setNewCandidate({ ...newCandidate, clientId: e.target.value, manualPartnerName: '' })}
+                    >
                         <option value="">— No Assignment —</option>
                         {clients.map(c => (
                             <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
                         ))}
+                        <option value="__OTHERS__">Others (Enter Manually)</option>
                     </select>
+                    {newCandidate.clientId === '__OTHERS__' && (
+                        <input
+                            placeholder="Enter company / bank name..."
+                            value={newCandidate.manualPartnerName || ''}
+                            onChange={e => setNewCandidate({ ...newCandidate, manualPartnerName: e.target.value })}
+                            style={{ width: '100%', marginTop: '0.5rem', padding: '0.55rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }}
+                        />
+                    )}
                 </div>
             )}
 

@@ -20,8 +20,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            // Show IT and BOTH type clients
-            setClients(res.data.filter(c => c.type === 'IT' || c.type === 'BOTH'));
+            setClients(res.data.filter(c => c.type === 'IT'));
         } catch (e) {
             showToast('Failed to fetch IT clients', 'error');
         } finally {
@@ -67,7 +66,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
         if (!confirm(`⚠️ Delete ${clientName}? This will affect all associated users and candidates.`)) return;
         try {
             await axios.delete(config.endpoints.clients.delete(id));
-            showToast('IT Partner removed successfully');
+            showToast('Technology partner removed successfully');
             fetchClients();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to delete', 'error');
@@ -76,7 +75,6 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
 
     const handleToggleStatus = async (client) => {
         const action = client.isActive ? 'deactivate' : 'activate';
-        const label = client.type === 'BOTH' ? 'Dual partner' : 'IT partner';
         const message = client.isActive
             ? `⚠️ Deactivate ${client.name}? Users assigned to this company won't be able to login.`
             : `Activate ${client.name}? Associated users will regain access.`;
@@ -125,14 +123,14 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                 </div>
                 {userRole === 'ADMIN' && (
                     <button onClick={() => { setShowForm(!showForm); setShowEditForm(false); setFormData({ name: '', pocName: '', pocEmail: '', pocPhone: '', password: '', type: 'IT' }); }} className="primary">
-                        {showForm ? '✕ Cancel' : '+ Add IT Company'}
+                        {showForm ? '✕ Cancel' : '+ Add Tech Partner'}
                     </button>
                 )}
             </div>
 
             {(showForm || showEditForm) && (
                 <div className="card fade-in" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${showEditForm ? 'var(--primary)' : '#8b5cf6'}` }}>
-                    <div style={{ marginBottom: '1rem', fontWeight: 600 }}>{showEditForm ? 'Edit IT Partner Details' : 'Add New IT Partner'}</div>
+                    <div style={{ marginBottom: '1rem', fontWeight: 600 }}>{showEditForm ? 'Edit Technology Partner' : 'Add Technology Partner'}</div>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             <input placeholder="Company Name (e.g., Infosys)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
@@ -145,12 +143,11 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                                 onChange={e => setFormData({ ...formData, type: e.target.value })}
                                 style={{ padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}
                             >
-                                <option value="IT">IT Only</option>
-                                <option value="BOTH">IT + Banking (Dual Role)</option>
+                                <option value="IT">Technology Partner</option>
                             </select>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>{showEditForm ? 'Update Partner' : 'Add IT Partner'}</button>
+                            <button type="submit" style={{ justifySelf: 'start', backgroundColor: '#8b5cf6', color: 'white' }}>{showEditForm ? 'Update Partner' : 'Add Partner'}</button>
                             {showEditForm && <button type="button" onClick={() => setShowEditForm(false)} style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>Cancel</button>}
                         </div>
                     </form>
@@ -172,7 +169,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                         <div style={{ marginBottom: '1rem' }}>
                             <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{client.name}</div>
                             <span style={{ fontSize: '0.7rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '4px', marginRight: '0.5rem' }}>
-                                {client.type === 'BOTH' ? 'IT + BANK' : 'IT'}
+                                Technology
                             </span>
 
                             <button
@@ -260,7 +257,7 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
 
             {filteredClients.length === 0 && (
                 <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    {statusFilter === 'all' ? 'No IT partners yet. Add your first IT company above.' : `No ${statusFilter} IT partners.`}
+                    {statusFilter === 'all' ? 'No technology partners yet. Add your first company above.' : `No ${statusFilter} technology partners.`}
                 </div>
             )}
         </div>
