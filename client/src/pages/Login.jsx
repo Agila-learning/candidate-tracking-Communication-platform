@@ -110,7 +110,7 @@ const Login = () => {
                             <input
                                 className="modern-input"
                                 type="password"
-                                placeholder="Enter password (or mobile number)"
+                                placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required

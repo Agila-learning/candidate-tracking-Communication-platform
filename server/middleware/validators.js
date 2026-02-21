@@ -25,11 +25,24 @@ const validateRegistration = (req, res, next) => {
         return res.status(400).json({ error: 'Name must be at least 2 characters long' });
     }
 
-    if (!phone) {
-        return res.status(400).json({ error: 'Phone number is required' });
+    // For Clients (CLIENT_SUPPORT) and Agents: email is required, phone is optional
+    // For Candidates: phone or email is required (existing workflow)
+    const rolesRequiringEmail = ['CLIENT_SUPPORT', 'AGENT', 'AGENCY_ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC'];
+    if (rolesRequiringEmail.includes(role)) {
+        if (!email) {
+            return res.status(400).json({ error: 'Email address is required for this role' });
+        }
+    } else {
+        // Candidates: require phone
+        if (!phone) {
+            return res.status(400).json({ error: 'Phone number is required' });
+        }
+        if (!validatePhone(phone)) {
+            return res.status(400).json({ error: 'Invalid phone number (10 digits)' });
+        }
     }
 
-    if (!validatePhone(phone)) {
+    if (phone && !validatePhone(phone)) {
         return res.status(400).json({ error: 'Invalid phone number (10 digits starting with 6-9)' });
     }
 
@@ -49,18 +62,22 @@ const validateRegistration = (req, res, next) => {
 };
 
 const validateLogin = (req, res, next) => {
-    const { email, phone, password } = req.body;
+    // Support both: { identifier, password } and { email, phone, password }
+    const { identifier, email, phone, password } = req.body;
 
-    if ((!email && !phone) || !password) {
+    const loginId = identifier || email || phone;
+    if (!loginId || !password) {
         return res.status(400).json({ error: 'Email/Phone and password are required' });
     }
 
-    if (email && !validateEmail(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
+    // If it looks like a phone number (all digits), validate as phone
+    if (/^\d+$/.test(loginId) && !validatePhone(loginId)) {
+        return res.status(400).json({ error: 'Invalid phone number' });
     }
 
-    if (phone && !validatePhone(phone)) {
-        return res.status(400).json({ error: 'Invalid phone number' });
+    // If it looks like an email, validate format
+    if (loginId.includes('@') && !validateEmail(loginId)) {
+        return res.status(400).json({ error: 'Invalid email format' });
     }
 
     next();

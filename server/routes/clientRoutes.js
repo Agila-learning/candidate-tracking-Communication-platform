@@ -32,29 +32,28 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
     try {
         const { name, pocName, pocEmail, pocPhone, password, type } = req.body;
         if (!name) return res.status(400).json({ error: 'Client name is required' });
+        if (!pocEmail) return res.status(400).json({ error: 'POC Email is required for login' });
 
-        const client = new Client({ name, pocName, pocEmail, pocPhone, type: type || 'BANKING' });
+        const client = new Client({ name, pocName, pocEmail, pocPhone: pocPhone || undefined, type: type || 'BANKING' });
         await client.save();
 
-        // Auto-create User for Client POC
-        if (pocEmail && pocPhone) {
-            const rawPassword = password || pocPhone; // Default to mobile number
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(rawPassword, salt);
+        // Auto-create User for Client POC (email required, phone optional)
+        const rawPassword = password || pocPhone || pocEmail.split('@')[0]; // Fallback: email prefix
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
-            const user = new User({
-                name: pocName || name,
-                email: pocEmail,
-                phone: pocPhone,
-                role: 'CLIENT_SUPPORT',
-                password: hashedPassword,
-                clientId: client._id,
-                isActive: true
-            });
-            await user.save();
-        }
+        const user = new User({
+            name: pocName || name,
+            email: pocEmail,
+            phone: pocPhone || undefined, // Optional
+            role: 'CLIENT_SUPPORT',
+            password: hashedPassword,
+            clientId: client._id,
+            isActive: true
+        });
+        await user.save();
 
-        res.status(201).json(client);
+        res.status(201).json({ ...client.toObject(), _defaultPassword: !password && !pocPhone ? pocEmail.split('@')[0] : (pocPhone || '(custom)') });
     } catch (e) {
         console.error('Client creation error:', e);
         res.status(400).json({ error: e.message || 'Failed to create client' });
@@ -66,18 +65,20 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
     try {
         const { password, name, pocName, pocEmail, pocPhone, type } = req.body;
 
-        // 1. Update Client
-        const client = await Client.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // 1. Update Client (remove phone from update if it's empty string)
+        const updateData = { ...req.body };
+        if (updateData.pocPhone === '') updateData.pocPhone = undefined;
+        const client = await Client.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!client) return res.status(404).json({ error: 'Client not found' });
 
-        // 2. Sync or Create User (if password provided or just to sync details/fix orphan)
+        // 2. Sync or Create User
         let user = await User.findOne({ clientId: client._id, role: 'CLIENT_SUPPORT' });
 
         if (user) {
-            // Update existing user details to match Client POC
             if (pocName) user.name = pocName;
             if (pocEmail) user.email = pocEmail;
-            if (pocPhone) user.phone = pocPhone;
+            // Only update phone if value is provided and non-empty
+            if (pocPhone && pocPhone.trim()) user.phone = pocPhone.trim();
 
             // Hash password before saving
             if (password && password.trim()) {
@@ -86,16 +87,16 @@ router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {
             }
 
             await user.save();
-        } else if (pocPhone) {
-            // Create missing user (Orphaned client fix)
-            const rawPassword = password || pocPhone;
+        } else if (pocEmail) {
+            // Create missing user (Orphaned client fix) — email required, phone optional
+            const rawPassword = password || pocPhone || pocEmail.split('@')[0];
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
             user = new User({
                 name: pocName || name,
                 email: pocEmail,
-                phone: pocPhone,
+                phone: pocPhone || undefined,
                 role: 'CLIENT_SUPPORT',
                 password: hashedPassword,
                 clientId: client._id,

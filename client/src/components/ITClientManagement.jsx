@@ -137,9 +137,9 @@ const ITClientManagement = ({ onStartChat, userRole }) => {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             <input placeholder="Company Name (e.g., Infosys)" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                             <input placeholder="POC Name" value={formData.pocName} onChange={e => setFormData({ ...formData, pocName: e.target.value })} />
-                            <input type="email" placeholder="POC Email" value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
-                            <input type="tel" placeholder="POC Phone" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
-                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password (Default: Mobile Number)"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
+                            <input type="email" placeholder="POC Email (Required — Login ID) *" required value={formData.pocEmail} onChange={e => setFormData({ ...formData, pocEmail: e.target.value })} />
+                            <input type="tel" placeholder="POC Phone (Optional)" value={formData.pocPhone} onChange={e => setFormData({ ...formData, pocPhone: e.target.value.replace(/\s/g, '') })} />
+                            <input type="password" placeholder={showEditForm ? "New Password (Optional)" : "Login Password (Default: Phone or Email prefix)"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value.replace(/\s/g, '') })} />
                             <select
                                 value={formData.type}
                                 onChange={e => setFormData({ ...formData, type: e.target.value })}

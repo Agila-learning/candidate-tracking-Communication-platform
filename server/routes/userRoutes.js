@@ -35,8 +35,21 @@ router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res
             return res.status(400).json({ error: 'Client ID required for bank support users' });
         }
 
-        const userPassword = password || phone; // Default to mobile number
-        const user = new User({ name, email, phone, password: userPassword, role, clientId });
+        // Determine default password: explicit > phone > email-prefix
+        // CLIENT_SUPPORT and AGENT login via email, so email prefix is a valid fallback
+        const userPassword = password || phone || (email ? email.split('@')[0] : null);
+        if (!userPassword) {
+            return res.status(400).json({ error: 'Password or phone/email is required to set a default password' });
+        }
+
+        const user = new User({
+            name,
+            email: email || undefined,
+            phone: phone || undefined,
+            password: userPassword,
+            role,
+            clientId: clientId || undefined
+        });
         await user.save();
 
         // Auto-link candidate profile if exists
@@ -60,7 +73,8 @@ router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res
             user: { _id: user._id, name: user.name, email: user.email, role: user.role }
         });
     } catch (e) {
-        res.status(400).json({ error: 'Failed to create user' });
+        console.error('Create user error:', e);
+        res.status(400).json({ error: e.message || 'Failed to create user' });
     }
 });
 

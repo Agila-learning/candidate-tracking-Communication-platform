@@ -3,8 +3,8 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    email: { type: String, unique: true, sparse: true }, // Email is now optional
-    phone: { type: String, required: true, unique: true }, // Phone is mandatory
+    email: { type: String, unique: true, sparse: true }, // Email optional but unique when provided
+    phone: { type: String, unique: true, sparse: true }, // Phone optional but unique when provided
     otp: { type: String },
     otpExpires: { type: Date },
     password: { type: String, required: true },

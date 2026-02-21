@@ -47,7 +47,7 @@ const AgentManagement = () => {
             const payload = {
                 name: formData.name,
                 email: formData.email,
-                phone: formData.phone,
+                phone: formData.phone || undefined, // Phone is optional
                 role: 'AGENT'
             };
 
@@ -57,10 +57,10 @@ const AgentManagement = () => {
                 await axios.patch(`${config.endpoints.users.list}/${editingId}`, payload);
                 showToast('Agent updated successfully');
             } else {
-                // On create: use phone as default password if none provided
-                payload.password = formData.password || formData.phone;
+                // On create: use phone as default, then email prefix, then require explicit password
+                payload.password = formData.password || formData.phone || formData.email.split('@')[0];
                 await axios.post(config.endpoints.users.list, payload);
-                showToast('Agent created. Default password is their phone number.');
+                showToast(`Agent created. Default password: ${formData.password ? '(custom)' : (formData.phone || formData.email.split('@')[0])}`);
             }
 
             setShowModal(false);
@@ -198,19 +198,10 @@ const AgentManagement = () => {
                             </div>
 
                             <div>
-                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Phone Number (Login ID)</label>
-                                <input
-                                    required
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    style={{ width: '100%', marginTop: '0.25rem' }}
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Email (Optional)</label>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Email Address (Required — Login ID) *</label>
                                 <input
                                     type="email"
+                                    required
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     style={{ width: '100%', marginTop: '0.25rem' }}
@@ -218,8 +209,19 @@ const AgentManagement = () => {
                             </div>
 
                             <div>
+                                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Phone Number (Optional)</label>
+                                <input
+                                    type="tel"
+                                    placeholder="e.g. 9876543210"
+                                    value={formData.phone}
+                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                    style={{ width: '100%', marginTop: '0.25rem' }}
+                                />
+                            </div>
+
+                            <div>
                                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                    Password {editingId ? '(Leave blank to keep)' : '(Default: Mobile Number)'}
+                                    Password {editingId ? '(Leave blank to keep)' : `(Default: ${formData.phone || 'email prefix'})`}
                                 </label>
                                 <input
                                     type="password"

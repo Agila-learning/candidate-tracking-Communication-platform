@@ -102,18 +102,25 @@ router.post('/register', auth, validateRegistration, async (req, res) => {
     }
 });
 
-// Login
+// Login - accepts email or phone via single `identifier` field OR separate email/phone fields
 router.post('/login', validateLogin, async (req, res) => {
     try {
-        const { email, phone, password } = req.body;
+        const { identifier, email, phone, password } = req.body;
+
+        // Resolve identifier: could be a single string that is email or phone
+        const loginId = identifier || email || phone;
 
         let user;
-        if (email) {
-            user = await User.findOne({ email }).populate('clientId');
-        } else if (phone) {
-            user = await User.findOne({ phone }).populate('clientId');
+        if (loginId && loginId.includes('@')) {
+            // Looks like email
+            user = await User.findOne({ email: loginId }).populate('clientId');
+        } else if (loginId && /^\d{10}$/.test(loginId)) {
+            // Looks like a 10-digit phone
+            user = await User.findOne({ phone: loginId }).populate('clientId');
         } else {
-            return res.status(400).json({ error: 'Email or Phone is required' });
+            // Try email first, then phone
+            user = await User.findOne({ email: loginId }).populate('clientId');
+            if (!user) user = await User.findOne({ phone: loginId }).populate('clientId');
         }
 
         if (!user || !(await user.comparePassword(password))) {
