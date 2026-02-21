@@ -840,3 +840,228 @@ tbody tr:last-child td {
     padding: 0;
   }
 }
+
+/* ========================================= */
+/* SECTION HEADERS — COLOR-CODED              */
+/* ========================================= */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  border-bottom: 2px solid transparent;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  opacity: 0.6;
+  border-radius: 0 2px 2px 0;
+}
+
+.section-header .sh-icon {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.section-header .sh-title {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.section-header .sh-meta {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.09);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Candidates — Blue */
+.sh-candidates {
+  background: linear-gradient(120deg, #dbeafe 0%, #eff6ff 100%);
+  border-bottom-color: #93c5fd;
+  color: #1e40af;
+}
+
+/* Bank Partners — Emerald */
+.sh-banks {
+  background: linear-gradient(120deg, #d1fae5 0%, #ecfdf5 100%);
+  border-bottom-color: #6ee7b7;
+  color: #065f46;
+}
+
+/* IT Partners — Violet */
+.sh-it_partners {
+  background: linear-gradient(120deg, #ede9fe 0%, #f5f3ff 100%);
+  border-bottom-color: #c4b5fd;
+  color: #5b21b6;
+}
+
+/* Leads — Amber */
+.sh-leads {
+  background: linear-gradient(120deg, #fef3c7 0%, #fffbeb 100%);
+  border-bottom-color: #fcd34d;
+  color: #92400e;
+}
+
+/* Users — Orange */
+.sh-users {
+  background: linear-gradient(120deg, #ffedd5 0%, #fff7ed 100%);
+  border-bottom-color: #fdba74;
+  color: #9a3412;
+}
+
+/* Agents — Teal */
+.sh-agents {
+  background: linear-gradient(120deg, #ccfbf1 0%, #f0fdfa 100%);
+  border-bottom-color: #5eead4;
+  color: #0f766e;
+}
+
+/* Inbox — Cyan */
+.sh-inbox {
+  background: linear-gradient(120deg, #cffafe 0%, #ecfeff 100%);
+  border-bottom-color: #67e8f9;
+  color: #155e75;
+}
+
+/* Reports — Rose */
+.sh-reports {
+  background: linear-gradient(120deg, #ffe4e6 0%, #fff1f2 100%);
+  border-bottom-color: #fda4af;
+  color: #9f1239;
+}
+
+/* Resources — Sky */
+.sh-resources {
+  background: linear-gradient(120deg, #e0f2fe 0%, #f0f9ff 100%);
+  border-bottom-color: #7dd3fc;
+  color: #075985;
+}
+
+/* Announcements — Indigo */
+.sh-announcements {
+  background: linear-gradient(120deg, #e0e7ff 0%, #eef2ff 100%);
+  border-bottom-color: #a5b4fc;
+  color: #3730a3;
+}
+
+/* Client Requests — Red */
+.sh-client_requests {
+  background: linear-gradient(120deg, #fee2e2 0%, #fef2f2 100%);
+  border-bottom-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* === Dark mode === */
+@media (prefers-color-scheme: dark) {
+  .sh-candidates {
+    background: linear-gradient(120deg, rgba(30, 64, 175, 0.18)0%, rgba(239, 246, 255, 0.04)100%);
+    border-bottom-color: rgba(147, 197, 253, 0.35);
+    color: #93c5fd;
+  }
+
+  .sh-banks {
+    background: linear-gradient(120deg, rgba(6, 95, 70, 0.18) 0%, rgba(236, 253, 245, 0.04)100%);
+    border-bottom-color: rgba(110, 231, 183, 0.35);
+    color: #6ee7b7;
+  }
+
+  .sh-it_partners {
+    background: linear-gradient(120deg, rgba(91, 33, 182, 0.18)0%, rgba(245, 243, 255, 0.04)100%);
+    border-bottom-color: rgba(196, 181, 253, 0.35);
+    color: #c4b5fd;
+  }
+
+  .sh-leads {
+    background: linear-gradient(120deg, rgba(146, 64, 14, 0.15) 0%, rgba(255, 251, 235, 0.04)100%);
+    border-bottom-color: rgba(252, 211, 77, 0.35);
+    color: #fcd34d;
+  }
+
+  .sh-users {
+    background: linear-gradient(120deg, rgba(154, 52, 18, 0.15) 0%, rgba(255, 247, 237, 0.04)100%);
+    border-bottom-color: rgba(253, 186, 116, 0.35);
+    color: #fdba74;
+  }
+
+  .sh-agents {
+    background: linear-gradient(120deg, rgba(15, 118, 110, 0.18)0%, rgba(240, 253, 250, 0.04)100%);
+    border-bottom-color: rgba(94, 234, 212, 0.35);
+    color: #5eead4;
+  }
+
+  .sh-inbox {
+    background: linear-gradient(120deg, rgba(21, 94, 117, 0.18) 0%, rgba(236, 254, 255, 0.04)100%);
+    border-bottom-color: rgba(103, 232, 249, 0.35);
+    color: #67e8f9;
+  }
+
+  .sh-reports {
+    background: linear-gradient(120deg, rgba(159, 18, 57, 0.15) 0%, rgba(255, 241, 242, 0.04)100%);
+    border-bottom-color: rgba(253, 164, 175, 0.35);
+    color: #fda4af;
+  }
+
+  .sh-resources {
+    background: linear-gradient(120deg, rgba(7, 89, 133, 0.18) 0%, rgba(240, 249, 255, 0.04)100%);
+    border-bottom-color: rgba(125, 211, 252, 0.35);
+    color: #7dd3fc;
+  }
+
+  .sh-announcements {
+    background: linear-gradient(120deg, rgba(55, 48, 163, 0.18) 0%, rgba(238, 242, 255, 0.04)100%);
+    border-bottom-color: rgba(165, 180, 252, 0.35);
+    color: #a5b4fc;
+  }
+
+  .sh-client_requests {
+    background: linear-gradient(120deg, rgba(153, 27, 27, 0.18)0%, rgba(254, 242, 242, 0.04)100%);
+    border-bottom-color: rgba(252, 165, 165, 0.35);
+    color: #fca5a5;
+  }
+}
+
+/* Mobile responsiveness for section-header */
+@media (max-width: 768px) {
+  .section-header {
+    margin: -1rem -1rem 1rem -1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .section-header .sh-icon {
+    font-size: 1.1rem;
+  }
+
+  .section-header .sh-title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header {
+    margin: -0.85rem -0.85rem 0.85rem -0.85rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .section-header .sh-meta {
+    display: none;
+  }
+}

@@ -245,6 +245,11 @@ const AdminDashboard = () => {
             <div className="fade-in">
                 {activeTab === 'candidates' && (
                     <div className="card">
+                        <div className="section-header sh-candidates">
+                            <span className="sh-icon">🎓</span>
+                            <span className="sh-title">Candidates</span>
+                            <span className="sh-meta">Onboarding & Placement</span>
+                        </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '300px' }}>
                                 <h3>Candidates</h3>
@@ -379,9 +384,13 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'leads' && (
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <h3>Lead Management</h3>
+                    <div className="card">
+                        <div className="section-header sh-leads">
+                            <span className="sh-icon">🎯</span>
+                            <span className="sh-title">Lead Management</span>
+                            <span className="sh-meta">Pipeline</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
                             <button className="primary" onClick={() => setShowAddLead(!showAddLead)}>
                                 {showAddLead ? 'Cancel' : '+ New Lead'}
                             </button>
@@ -409,15 +418,15 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {activeTab === 'users' && <UserManagement />}
-                {activeTab === 'agents' && <AgentManagement />}
-                {activeTab === 'banks' && <ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
-                {activeTab === 'it_partners' && <ITClientManagement onStartChat={handleStartBankChat} userRole={user?.role} />}
-                {activeTab === 'inbox' && <SupportInbox clients={clients} initialConversationId={targetConversationId} />}
-                {activeTab === 'reports' && <Reports />}
-                {activeTab === 'resources' && <Resources />}
-                {activeTab === 'announcements' && <Announcements />}
-                {activeTab === 'client_requests' && <div className="card"><ClientRequestsPanel /></div>}
+                {activeTab === 'users' && <div className="card"><div className="section-header sh-users"><span className="sh-icon">👥</span><span className="sh-title">User Management</span><span className="sh-meta">Roles & Accounts</span></div><UserManagement /></div>}
+                {activeTab === 'agents' && <div className="card"><div className="section-header sh-agents"><span className="sh-icon">🤝</span><span className="sh-title">Agency & Agents</span><span className="sh-meta">Referral Partners</span></div><AgentManagement /></div>}
+                {activeTab === 'banks' && <div className="card"><div className="section-header sh-banks"><span className="sh-icon">🏦</span><span className="sh-title">Bank Partners</span><span className="sh-meta">Banking Clients</span></div><ClientManagement onStartChat={handleStartBankChat} userRole={user?.role} /></div>}
+                {activeTab === 'it_partners' && <div className="card"><div className="section-header sh-it_partners"><span className="sh-icon">💻</span><span className="sh-title">IT Partners</span><span className="sh-meta">Technology Clients</span></div><ITClientManagement onStartChat={handleStartBankChat} userRole={user?.role} /></div>}
+                {activeTab === 'inbox' && <div className="card"><div className="section-header sh-inbox"><span className="sh-icon">💬</span><span className="sh-title">Support Inbox</span><span className="sh-meta">Live Chat</span></div><SupportInbox clients={clients} initialConversationId={targetConversationId} /></div>}
+                {activeTab === 'reports' && <div className="card"><div className="section-header sh-reports"><span className="sh-icon">📊</span><span className="sh-title">Reports & Analytics</span><span className="sh-meta">Insights</span></div><Reports /></div>}
+                {activeTab === 'resources' && <div className="card"><div className="section-header sh-resources"><span className="sh-icon">📚</span><span className="sh-title">Resources</span><span className="sh-meta">Learning Materials</span></div><Resources /></div>}
+                {activeTab === 'announcements' && <div className="card"><div className="section-header sh-announcements"><span className="sh-icon">📢</span><span className="sh-title">Announcements</span><span className="sh-meta">Broadcasts</span></div><Announcements /></div>}
+                {activeTab === 'client_requests' && <div className="card"><div className="section-header sh-client_requests"><span className="sh-icon">📋</span><span className="sh-title">Staffing Requests</span><span className="sh-meta">{pendingRequestCount > 0 ? `${pendingRequestCount} Pending` : 'All Clear'}</span></div><ClientRequestsPanel /></div>}
             </div>
         </Layout >
     );
