@@ -51,7 +51,10 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_AD
         // Enforce Ownership for Agency Admin and Agent
         if (req.user.role === 'AGENCY_ADMIN' || req.user.role === 'AGENT') {
             req.body.createdBy = req.user._id;
-            req.body.referredBy = req.user.name;
+            // Use form-provided referredBy if given, else default to agent's name
+            if (!req.body.referredBy || req.body.referredBy.trim() === '') {
+                req.body.referredBy = req.user.name;
+            }
         }
 
         // Sanitize clientId

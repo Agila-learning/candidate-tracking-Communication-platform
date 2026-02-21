@@ -44,7 +44,7 @@ const AgencyDashboard = () => {
     const [editingCandidate, setEditingCandidate] = useState(null);
     const [newCandidate, setNewCandidate] = useState({
         name: '', email: '', phone: '', location: '',
-        qualification: 'Graduate', programName: '', resume: null
+        qualification: 'Graduate', programName: '', resume: null, referredBy: ''
     });
 
     /* Filters */
@@ -92,7 +92,7 @@ const AgencyDashboard = () => {
             });
             showToast('Candidate referred successfully!');
             setShowAddModal(false);
-            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', programName: '', resume: null });
+            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', programName: '', resume: null, referredBy: '' });
             fetchCandidates();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to add candidate', 'error');
@@ -162,10 +162,13 @@ const AgencyDashboard = () => {
         <form onSubmit={onSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
             <input placeholder="Full Name *" required value={newCandidate.name}
                 onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
-            <input placeholder="Email *" type="email" required value={newCandidate.email}
-                onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
-            <input placeholder="Phone *" required value={newCandidate.phone}
+            <input placeholder="Phone / Mobile *" required value={newCandidate.phone}
                 onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} />
+            <input placeholder="Email (Optional)" type="email" value={newCandidate.email}
+                onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
+            <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"
+                value={newCandidate.referredBy}
+                onChange={e => setNewCandidate({ ...newCandidate, referredBy: e.target.value })} />
             <input placeholder="Location" value={newCandidate.location}
                 onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
             <select value={newCandidate.qualification}
@@ -407,8 +410,12 @@ const AgencyDashboard = () => {
                                                 ) : <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>}
                                             </td>
                                             <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                                {c.createdBy?.name || 'Admin'}
-                                                {isOwner && <span style={{ marginLeft: '0.35rem', fontSize: '0.65rem', background: 'var(--primary-light)', color: 'var(--primary)', padding: '0.1rem 0.35rem', borderRadius: '6px', fontWeight: 700 }}>You</span>}
+                                                {c.referredBy ? (
+                                                    <span style={{ fontWeight: 600, color: '#5b21b6' }}>{c.referredBy}</span>
+                                                ) : (
+                                                    <span style={{ color: 'var(--text-muted)' }}>{c.createdBy?.name || 'Admin'}</span>
+                                                )}
+                                                {c.createdBy?._id === user?._id && <span style={{ marginLeft: '0.35rem', fontSize: '0.65rem', background: 'var(--primary-light)', color: 'var(--primary)', padding: '0.1rem 0.35rem', borderRadius: '6px', fontWeight: 700 }}>You</span>}
                                             </td>
                                             <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
                                                 {isOwner && (

@@ -12,7 +12,7 @@ const candidateSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String },         // Optional for agent-referred candidates
     location: { type: String },
     qualification: { type: String },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
