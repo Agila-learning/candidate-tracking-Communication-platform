@@ -140,8 +140,9 @@ const Login = () => {
                 </div>
 
                 {/* Footer fixed at bottom of the form side */}
-                <div style={{ position: 'absolute', bottom: '1rem', color: '#94a3b8', fontSize: '0.75rem' }}>
-                    &copy; 2026 FIC Career Portal. v2.5.
+                <div style={{ position: 'absolute', bottom: '1rem', display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#94a3b8' }}>
+                    <span>&copy; 2026 FIC Career Portal. v2.5.</span>
+                    <a href="/request-services" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>Request Staffing Services →</a>
                 </div>
             </div>
         </div>

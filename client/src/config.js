@@ -33,7 +33,11 @@ export const config = {
         leads: `${API_URL}/api/leads`,
         chat: `${API_URL}/api/chat`,
         resources: `${API_URL}/api/resources`,
-        announcements: `${API_URL}/api/announcements`
+        announcements: `${API_URL}/api/announcements`,
+        clientRequests: {
+            list: `${API_URL}/api/client-requests`,
+            pendingCount: `${API_URL}/api/client-requests/pending-count`
+        }
     }
 };
 

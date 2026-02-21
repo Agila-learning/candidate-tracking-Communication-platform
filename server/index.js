@@ -66,6 +66,7 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
+app.use('/api/client-requests', require('./routes/clientRequestRoutes'));
 
 // Serve static assets in production
 // Basic route
@@ -184,6 +185,20 @@ mongoose.connect(MONGODB_URI)
 
         // Execute the seed function
         ensureAdminUser();
+
+        // F6: Migrate BOTH-type clients to BANKING
+        const migrateBothClients = async () => {
+            try {
+                const Client = require('./models/Client');
+                const result = await Client.updateMany({ type: 'BOTH' }, { $set: { type: 'BANKING' } });
+                if (result.modifiedCount > 0) {
+                    console.log(`Migrated ${result.modifiedCount} BOTH-type client(s) to BANKING.`);
+                }
+            } catch (err) {
+                console.error('Migration error (BOTH->BANKING):', err);
+            }
+        };
+        migrateBothClients();
 
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);

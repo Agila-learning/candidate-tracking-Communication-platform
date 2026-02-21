@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 
 const CandidateDetail = ({ candidateId, onBack }) => {
@@ -10,6 +11,8 @@ const CandidateDetail = ({ candidateId, onBack }) => {
     const [isScheduling, setIsScheduling] = useState(false);
     const [clients, setClients] = useState([]);
     const [selectedClientId, setSelectedClientId] = useState('');
+    const [manualPartnerName, setManualPartnerName] = useState('');
+    const [isOthersPartner, setIsOthersPartner] = useState(false);
     const [interviewData, setInterviewData] = useState({
         dateTime: '',
         mode: 'Online',
@@ -18,6 +21,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
         remarks: ''
     });
     const { showToast } = useToast();
+    const { user } = useAuth();
 
     useEffect(() => {
         fetchDetail();
@@ -60,9 +64,12 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const handleAssignClient = async () => {
         try {
-            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}`, { clientId: selectedClientId });
+            const payload = isOthersPartner
+                ? { clientId: null, manualPartnerName }
+                : { clientId: selectedClientId, manualPartnerName: '' };
+            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}`, payload);
             fetchDetail();
-            showToast('Bank partner associated successfully!');
+            showToast('Partner associated successfully!');
         } catch (e) {
             showToast('Assignment failed', 'error');
         }
@@ -270,24 +277,50 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                         </div>
                     </div>
 
-                    <div className="card" style={{ marginBottom: '2rem' }}>
-                        <h3>Bank Association</h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Associate this candidate with a specific bank partner.</p>
-                        <select
-                            value={selectedClientId}
-                            onChange={(e) => setSelectedClientId(e.target.value)}
-                            style={{ marginBottom: '1rem' }}
-                        >
-                            <option value="">-- Select Bank Partner --</option>
-                            {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                        </select>
-                        <button
-                            onClick={handleAssignClient}
-                            style={{ width: '100%', backgroundColor: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--primary)', fontWeight: 600 }}
-                        >
-                            Assign Partner
-                        </button>
-                    </div>
+                    {/* F5: Only admin/sub-admin/support can assign clients */}
+                    {!['AGENT'].includes(user?.role) && (
+                        <div className="card" style={{ marginBottom: '2rem' }}>
+                            <h3>Partner Association</h3>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Associate this candidate with a bank or IT partner.</p>
+
+                            {/* F3: Others option */}
+                            <div style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                    <input type="radio" checked={!isOthersPartner} onChange={() => setIsOthersPartner(false)} style={{ marginRight: '0.4rem' }} />
+                                    Select from List
+                                </label>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                    <input type="radio" checked={isOthersPartner} onChange={() => setIsOthersPartner(true)} style={{ marginRight: '0.4rem' }} />
+                                    Others (Manual)
+                                </label>
+                            </div>
+
+                            {isOthersPartner ? (
+                                <input
+                                    value={manualPartnerName}
+                                    onChange={e => setManualPartnerName(e.target.value)}
+                                    placeholder="Enter partner/company name manually..."
+                                    style={{ marginBottom: '1rem', width: '100%' }}
+                                />
+                            ) : (
+                                <select
+                                    value={selectedClientId}
+                                    onChange={(e) => setSelectedClientId(e.target.value)}
+                                    style={{ marginBottom: '1rem' }}
+                                >
+                                    <option value="">-- Select Partner --</option>
+                                    {clients.map(c => <option key={c._id} value={c._id}>{c.name} ({c.type})</option>)}
+                                </select>
+                            )}
+
+                            <button
+                                onClick={handleAssignClient}
+                                style={{ width: '100%', backgroundColor: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--primary)', fontWeight: 600 }}
+                            >
+                                Save Partner Association
+                            </button>
+                        </div>
+                    )}
 
                     <div className="card" style={{ backgroundColor: 'hsla(210, 100%, 50%, 0.03)', border: '1px solid hsla(210, 100%, 50%, 0.2)' }}>
                         <h3>Interview Roadmap</h3>

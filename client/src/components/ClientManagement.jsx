@@ -145,7 +145,6 @@ const ClientManagement = ({ onStartChat, userRole }) => {
                                 style={{ padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}
                             >
                                 <option value="BANKING">Banking Only</option>
-                                <option value="BOTH">Banking + IT (Dual Role)</option>
                             </select>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>

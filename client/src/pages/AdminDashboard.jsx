@@ -11,6 +11,7 @@ import ClientManagement from '../components/ClientManagement';
 import ITClientManagement from '../components/ITClientManagement';
 import AgentManagement from '../components/AgentManagement';
 import Announcements from '../components/Announcements';
+import ClientRequestsPanel from '../components/ClientRequestsPanel';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
 import { useAuth } from '../context/AuthContext';
@@ -28,20 +29,27 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClient, setFilterClient] = useState('');
     const [clients, setClients] = useState([]);
+    const [pendingRequestCount, setPendingRequestCount] = useState(0);
     const { showToast } = useToast();
 
     useEffect(() => {
         if (activeTab === 'candidates') fetchCandidates();
         fetchClients();
+        fetchPendingCount();
     }, [activeTab]);
 
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            setClients(res.data.filter(c => c.isActive)); // Only show active clients
-        } catch (e) {
-            console.error(e);
-        }
+            setClients(res.data.filter(c => c.isActive));
+        } catch (e) { console.error(e); }
+    };
+
+    const fetchPendingCount = async () => {
+        try {
+            const res = await axios.get(config.endpoints.clientRequests.pendingCount);
+            setPendingRequestCount(res.data.count);
+        } catch (e) { /* silently fail */ }
     };
 
     const fetchCandidates = async () => {
@@ -205,13 +213,13 @@ const AdminDashboard = () => {
                 <h1 style={{ marginBottom: '1.5rem' }}>Admin Control Center</h1>
 
                 <div className="scrollable-tabs">
-                    {['candidates', 'leads', 'users', 'agents', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements'].filter(tab => {
-                        if (isSubAdmin) return ['candidates', 'banks', 'it_partners'].includes(tab);
+                    {['candidates', 'leads', 'users', 'agents', 'banks', 'it_partners', 'inbox', 'reports', 'resources', 'announcements', 'client_requests'].filter(tab => {
+                        if (isSubAdmin) return ['candidates', 'banks', 'it_partners', 'client_requests'].includes(tab);
                         return true;
                     }).map(tab => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => { setActiveTab(tab); if (tab === 'client_requests') fetchPendingCount(); }}
                             style={{
                                 backgroundColor: 'transparent',
                                 color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
@@ -219,10 +227,16 @@ const AdminDashboard = () => {
                                 borderRadius: 0,
                                 padding: '1rem 0.5rem',
                                 textTransform: 'capitalize',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                position: 'relative'
                             }}
                         >
-                            {tab === 'it_partners' ? 'IT Partners' : tab === 'banks' ? 'Bank Partners' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'it_partners' ? 'IT Partners' : tab === 'banks' ? 'Bank Partners' : tab === 'client_requests' ? 'Client Requests' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'client_requests' && pendingRequestCount > 0 && (
+                                <span style={{ position: 'absolute', top: '6px', right: '-4px', background: '#dc2626', color: 'white', fontSize: '0.65rem', fontWeight: 700, borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {pendingRequestCount}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -403,6 +417,7 @@ const AdminDashboard = () => {
                 {activeTab === 'reports' && <Reports />}
                 {activeTab === 'resources' && <Resources />}
                 {activeTab === 'announcements' && <Announcements />}
+                {activeTab === 'client_requests' && <div className="card"><ClientRequestsPanel /></div>}
             </div>
         </Layout >
     );

@@ -16,6 +16,7 @@ const candidateSchema = new mongoose.Schema({
     location: { type: String },
     qualification: { type: String },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+    manualPartnerName: { type: String }, // F3: Free-text partner when 'Others' is selected
     programName: { type: String }, // e.g., Axis YBP
     resumeUrl: { type: String }, // Cloudinary URL
     resumePublicId: { type: String }, // For signed URLs
@@ -41,6 +42,7 @@ const candidateSchema = new mongoose.Schema({
     documents: [{
         name: String,
         url: String,
+        public_id: String, // Cloudinary public_id for deletion
         uploadedAt: { type: Date, default: Date.now }
     }],
     statusHistory: [statusHistorySchema],
@@ -48,7 +50,5 @@ const candidateSchema = new mongoose.Schema({
     referredBy: { type: String },
     isActive: { type: Boolean, default: true } // Admin can enable/disable candidate access
 }, { timestamps: true });
-
-module.exports = mongoose.model('Candidate', candidateSchema);
 
 module.exports = mongoose.model('Candidate', candidateSchema);

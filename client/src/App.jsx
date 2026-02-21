@@ -24,6 +24,8 @@ const DashboardRedirect = () => {
   return <Navigate to="/candidate" />;
 };
 
+import ClientRequestPortal from './pages/ClientRequestPortal';
+
 function App() {
   return (
     <ToastProvider>
@@ -32,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/request-services" element={<ClientRequestPortal />} />
             <Route path="/" element={
               <PrivateRoute>
                 <DashboardRedirect />

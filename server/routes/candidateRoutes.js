@@ -324,18 +324,26 @@ router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_S
 });
 
 // Update Candidate (General)
-router.patch('/:id', auth, authorize('ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), async (req, res) => {
+router.patch('/:id', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();
 
-        // Agency Admin and Agent check
+        // Agency Admin and Agent check — only edit own candidates
         if (req.user.role === 'AGENCY_ADMIN' || req.user.role === 'AGENT') {
             if (!candidate.createdBy || candidate.createdBy.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ error: 'You can only edit candidates you referred.' });
             }
         }
 
+        // F5: Only ADMIN and SUB_ADMIN can assign/change the client partner
+        if (req.body.clientId !== undefined) {
+            if (!['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC'].includes(req.user.role)) {
+                delete req.body.clientId; // Silently remove — agent cannot assign client
+            }
+        }
+
+        // F3: Allow manualPartnerName to be saved
         const updated = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.send(updated);
     } catch (e) {
