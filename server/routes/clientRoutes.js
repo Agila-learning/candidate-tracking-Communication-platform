@@ -1,7 +1,6 @@
 const express = require('express');
 const Client = require('../models/Client');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -37,17 +36,16 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
         const client = new Client({ name, pocName, pocEmail, pocPhone: pocPhone || undefined, type: type || 'BANKING' });
         await client.save();
 
-        // Auto-create User for Client POC (email required, phone optional)
-        const rawPassword = password || pocPhone || pocEmail.split('@')[0]; // Fallback: email prefix
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(rawPassword, salt);
+        // Auto-create a login User for this client's POC
+        // Pass raw password — User model pre-save hook will hash it once
+        const rawPassword = password || pocPhone || pocEmail.split('@')[0];
 
         const user = new User({
             name: pocName || name,
             email: pocEmail,
-            phone: pocPhone || undefined, // Optional
+            phone: pocPhone || undefined,
             role: 'CLIENT_SUPPORT',
-            password: hashedPassword,
+            password: rawPassword,   // ← plain text; pre-save hook hashes it
             clientId: client._id,
             isActive: true
         });

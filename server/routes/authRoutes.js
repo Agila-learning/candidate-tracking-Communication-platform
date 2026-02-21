@@ -7,61 +7,14 @@ const { validateRegistration, validateLogin } = require('../middleware/validator
 
 const router = express.Router();
 
-// Public Signup - For Candidates and Clients to register themselves
-router.post('/signup', validateRegistration, async (req, res) => {
-    try {
-        const { name, email, phone, password, role, clientId } = req.body;
-
-        // Force role to be CANDIDATE or CLIENT_SUPPORT for public signup
-        // If someone tries to signup as ADMIN, force them to CANDIDATE
-        const safeRole = (role === 'CLIENT_SUPPORT') ? 'CLIENT_SUPPORT' : 'CANDIDATE';
-
-        // Check if user already exists
-        if (email) {
-            const existingUser = await User.findOne({ email });
-            if (existingUser) return res.status(400).json({ error: 'User with this email already exists' });
-        }
-
-        if (phone) {
-            const existingPhone = await User.findOne({ phone });
-            if (existingPhone) return res.status(400).json({ error: 'User with this phone number already exists' });
-        }
-
-        // Validate Client ID if role is CLIENT_SUPPORT
-        if (safeRole === 'CLIENT_SUPPORT' && !clientId) {
-            return res.status(400).json({ error: 'Please select your Bank/Client Partner' });
-        }
-
-        const user = new User({
-            name,
-            email,
-            phone,
-            password,
-            role: safeRole,
-            clientId: clientId || undefined, // Allow clientId for both roles
-            isActive: true // Active by default for public signup? Or false pending approval? usually true for MVP
-        });
-
-        await user.save();
-
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-        res.status(201).json({
-            message: 'User registered successfully',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role
-            },
-            token
-        });
-    } catch (e) {
-        console.error('Signup error:', e);
-        res.status(400).json({ error: 'Failed to create user. Please check all fields.' });
-    }
+// Public Signup - DISABLED: All accounts are created by Admin only
+// Preventing unauthorized self-registration
+router.post('/signup', async (req, res) => {
+    return res.status(403).json({
+        error: 'Self-registration is not allowed. Please contact your administrator to create an account, or request staffing services at /request-services.'
+    });
 });
+
 
 // Admin Register - Protected endpoint (only admins can create users manually)
 router.post('/register', auth, validateRegistration, async (req, res) => {
