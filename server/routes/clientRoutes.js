@@ -33,6 +33,14 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
         if (!name) return res.status(400).json({ error: 'Client name is required' });
         if (!pocEmail) return res.status(400).json({ error: 'POC Email is required for login' });
 
+        // ── Pre-check: email must not already belong to a user ────────────
+        const existingUser = await User.findOne({ email: pocEmail.toLowerCase().trim() });
+        if (existingUser) {
+            return res.status(400).json({
+                error: `A user with email "${pocEmail}" already exists. Please use a different POC email, or edit the existing partner who uses this email.`
+            });
+        }
+
         const client = new Client({ name, pocName, pocEmail, pocPhone: pocPhone || undefined, type: type || 'BANKING' });
         await client.save();
 
@@ -40,23 +48,36 @@ router.post('/', auth, authorize('ADMIN'), async (req, res) => {
         // Pass raw password — User model pre-save hook will hash it once
         const rawPassword = password || pocPhone || pocEmail.split('@')[0];
 
-        const user = new User({
-            name: pocName || name,
-            email: pocEmail,
-            phone: pocPhone || undefined,
-            role: 'CLIENT_SUPPORT',
-            password: rawPassword,   // ← plain text; pre-save hook hashes it
-            clientId: client._id,
-            isActive: true
-        });
-        await user.save();
+        let user;
+        try {
+            user = new User({
+                name: pocName || name,
+                email: pocEmail.toLowerCase().trim(),
+                phone: pocPhone || undefined,
+                role: 'CLIENT_SUPPORT',
+                password: rawPassword,   // ← plain text; pre-save hook hashes it
+                clientId: client._id,
+                isActive: true
+            });
+            await user.save();
+        } catch (userErr) {
+            // Rollback: delete the client we just created so it doesn't become orphaned
+            await Client.findByIdAndDelete(client._id);
+            throw userErr;
+        }
 
         res.status(201).json({ ...client.toObject(), _defaultPassword: !password && !pocPhone ? pocEmail.split('@')[0] : (pocPhone || '(custom)') });
     } catch (e) {
         console.error('Client creation error:', e);
+        // Friendly duplicate key message
+        if (e.code === 11000) {
+            const field = e.keyPattern?.email ? 'email' : 'phone number';
+            return res.status(400).json({ error: `This ${field} is already registered. Please use a different ${field}.` });
+        }
         res.status(400).json({ error: e.message || 'Failed to create client' });
     }
 });
+
 
 // Update Client
 router.patch('/:id', auth, authorize('ADMIN'), async (req, res) => {

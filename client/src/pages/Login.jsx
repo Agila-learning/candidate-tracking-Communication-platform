@@ -69,6 +69,15 @@ const Login = () => {
                     0%   { transform: scale(1); opacity: 0.4; }
                     100% { transform: scale(1.8); opacity: 0; }
                 }
+                .logo-card {
+                    background: white;
+                    border-radius: 18px;
+                    padding: 1.25rem 1.5rem;
+                    display: inline-block;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                    margin-bottom: 2rem;
+                    backdrop-filter: blur(4px);
+                }
                 .login-brand-side { animation: fadeUp 0.7s ease both; }
                 .login-form-side  { animation: fadeUp 0.7s 0.15s ease both; }
                 @media (max-width: 900px) {
@@ -130,19 +139,13 @@ const Login = () => {
                 <Blob top="55%" left="-5%" size="250px" color="#8b5cf6" delay="1s" />
                 <Blob top="70%" left="60%" size="200px" color="#06b6d4" delay="2s" />
 
-                {/* Pulse dot behind logo area */}
-                <div style={{ position: 'relative', width: '72px', height: '72px', marginBottom: '2rem' }}>
-                    <div style={{
-                        position: 'absolute', inset: 0, borderRadius: '50%',
-                        background: 'rgba(59,130,246,0.3)',
-                        animation: 'pulse-ring 2s ease-in-out infinite'
-                    }} />
-                    <div style={{
-                        width: '72px', height: '72px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.8rem', position: 'relative', zIndex: 1
-                    }}>🏦</div>
+                {/* Forge India Logo on white card */}
+                <div className="logo-card">
+                    <img
+                        src="/logo.jpg"
+                        alt="Forge India Connect"
+                        style={{ width: '220px', height: 'auto', display: 'block' }}
+                    />
                 </div>
 
                 <div style={{ position: 'relative', zIndex: 10 }}>
