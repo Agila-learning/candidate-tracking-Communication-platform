@@ -45,8 +45,7 @@ const UserManagement = () => {
             const payload = { ...formData };
             if (!payload.clientId) delete payload.clientId;
 
-            // Normalize Role: If visual role is BANK or IT, map back to CLIENT_SUPPORT
-            if (payload.role === 'CLIENT_SUPPORT_BANK' || payload.role === 'CLIENT_SUPPORT_IT') {
+            if (payload.role === 'CLIENT_SUPPORT_PARTNER') {
                 payload.role = 'CLIENT_SUPPORT';
             }
 
@@ -74,19 +73,12 @@ const UserManagement = () => {
     };
 
     const handleEdit = (user) => {
-        let visualRole = user.role;
-        if (user.role === 'CLIENT_SUPPORT') {
-            const clientType = user.clientId?.type || 'BANKING';
-            if (clientType === 'IT') visualRole = 'CLIENT_SUPPORT_IT';
-            else visualRole = 'CLIENT_SUPPORT_BANK';
-        }
-
         setFormData({
             name: user.name,
             email: user.email,
             phone: user.phone || '',
-            password: '', // Blank implies no change
-            role: visualRole,
+            password: '',
+            role: user.role === 'CLIENT_SUPPORT' ? 'CLIENT_SUPPORT_PARTNER' : user.role,
             clientId: user.clientId?._id || ''
         });
         setEditingId(user._id);
@@ -236,8 +228,7 @@ const UserManagement = () => {
                                     style={{ width: '100%' }}
                                 >
                                     <option value="CANDIDATE">Candidate</option>
-                                    <option value="CLIENT_SUPPORT_BANK">Bank Partner (Client Support)</option>
-                                    <option value="CLIENT_SUPPORT_IT">Technology Partner (Client Support)</option>
+                                    <option value="CLIENT_SUPPORT_PARTNER">🏢 Partner Staff (Client Support — all types)</option>
                                     <option value="SUPPORT_FIC">FIC Support Staff</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
                                     <option value="AGENT">Agent (External)</option>
@@ -245,20 +236,20 @@ const UserManagement = () => {
                                     <option value="ADMIN">Admin (Super)</option>
                                 </select>
                             </div>
-                            {(formData.role === 'CLIENT_SUPPORT_BANK' || formData.role === 'CLIENT_SUPPORT_IT' || formData.role === 'CLIENT_SUPPORT_BOTH' || formData.role === 'CLIENT_SUPPORT') && (
+                            {(formData.role === 'CLIENT_SUPPORT_PARTNER' || formData.role === 'CLIENT_SUPPORT') && (
                                 <div>
                                     <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                        {formData.role === 'CLIENT_SUPPORT_IT' ? 'Technology Company' : 'Bank / Partner'}
+                                        Select Partner Company
                                     </label>
                                     <select required value={formData.clientId} onChange={e => setFormData({ ...formData, clientId: e.target.value })} style={{ width: '100%' }}>
-                                        <option value="">Select {formData.role === 'CLIENT_SUPPORT_IT' ? 'Tech Company' : 'Bank'}...</option>
+                                        <option value="">— Select Partner Company —</option>
                                         {clients
                                             .filter(c => c.isActive)
-                                            .filter(c => {
-                                                if (formData.role === 'CLIENT_SUPPORT_IT') return c.type === 'IT';
-                                                return c.type === 'BANKING' || !c.type; // Bank Partner
-                                            })
-                                            .map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                            .map(c => (
+                                                <option key={c._id} value={c._id}>
+                                                    {c.name} ({c.type || 'BANKING'})
+                                                </option>
+                                            ))}
                                     </select>
                                 </div>
                             )}
