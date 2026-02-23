@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import Layout from '../components/Layout';
 import axios from 'axios';
@@ -32,82 +32,95 @@ const ALL_STATUSES = [
 ];
 
 
-/* ─── CandidateForm — defined OUTSIDE parent to keep stable identity ─────
-   If defined inside AgencyDashboard, React treats it as a new component
-   on every render (keystroke), causing unmount+remount and lost focus.    */
-const CandidateForm = ({ formData, onChange, onSubmit, onCancel, submitLabel, clients, isAgencyAdmin, isAgent }) => (
-    <form onSubmit={onSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
-        <input placeholder="Full Name *" required autoFocus value={formData.name}
-            onChange={e => onChange({ ...formData, name: e.target.value })} />
-        <input placeholder="Phone / Mobile *" required value={formData.phone}
-            onChange={e => onChange({ ...formData, phone: e.target.value })} />
-        <input placeholder="Email (Optional)" type="email" value={formData.email}
-            onChange={e => onChange({ ...formData, email: e.target.value })} />
-        <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"
-            value={formData.referredBy}
-            onChange={e => onChange({ ...formData, referredBy: e.target.value })} />
-        <input placeholder="Location" value={formData.location}
-            onChange={e => onChange({ ...formData, location: e.target.value })} />
-        <select value={formData.qualification}
-            onChange={e => onChange({ ...formData, qualification: e.target.value })}>
-            <option value="Graduate">Graduate</option>
-            <option value="Post Graduate">Post Graduate</option>
-            <option value="Under Graduate">Under Graduate</option>
-            <option value="Other">Other</option>
-        </select>
-        <input placeholder="Program / Batch / Comments"
-            value={formData.programName}
-            onChange={e => onChange({ ...formData, programName: e.target.value })} />
-        <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Resume (Optional)
-            </label>
-            <input type="file" accept=".pdf,.doc,.docx"
-                onChange={e => onChange({ ...formData, resume: e.target.files[0] })} />
-        </div>
+/* ─── CandidateForm — self-contained with its OWN state ───────────────────
+   Moving form state here means the parent (AgencyDashboard) is never
+   re-rendered while the user types. This is the safest fix for focus loss.  */
+const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, isAgencyAdmin, isAgent }) => {
+    const [form, setForm] = useState(initialData || {
+        name: '', phone: '', email: '', referredBy: '',
+        location: '', qualification: 'Graduate', programName: '', resume: null, clientId: '', manualPartnerName: ''
+    });
 
-        {isAgencyAdmin && (
-            <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Assign to Client <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(form);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
+            <input placeholder="Full Name *" required value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+            <input placeholder="Phone / Mobile *" required value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+            <input placeholder="Email (Optional)" type="email" value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"
+                value={form.referredBy}
+                onChange={e => setForm(f => ({ ...f, referredBy: e.target.value }))} />
+            <input placeholder="Location" value={form.location}
+                onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+            <select value={form.qualification}
+                onChange={e => setForm(f => ({ ...f, qualification: e.target.value }))}>
+                <option value="Graduate">Graduate</option>
+                <option value="Post Graduate">Post Graduate</option>
+                <option value="Under Graduate">Under Graduate</option>
+                <option value="Other">Other</option>
+            </select>
+            <input placeholder="Program / Batch / Comments"
+                value={form.programName}
+                onChange={e => setForm(f => ({ ...f, programName: e.target.value }))} />
+            <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Resume (Optional)
                 </label>
-                <select
-                    style={{ width: '100%', marginTop: '0.3rem' }}
-                    value={formData.clientId || ''}
-                    onChange={e => onChange({ ...formData, clientId: e.target.value, manualPartnerName: '' })}
-                >
-                    <option value="">— No Assignment —</option>
-                    {clients.map(c => (
-                        <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
-                    ))}
-                    <option value="__OTHERS__">Others (Enter Manually)</option>
-                </select>
-                {formData.clientId === '__OTHERS__' && (
-                    <input
-                        placeholder="Enter company / bank name..."
-                        value={formData.manualPartnerName || ''}
-                        onChange={e => onChange({ ...formData, manualPartnerName: e.target.value })}
-                        style={{ width: '100%', marginTop: '0.5rem', padding: '0.55rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }}
-                    />
-                )}
+                <input type="file" accept=".pdf,.doc,.docx"
+                    onChange={e => setForm(f => ({ ...f, resume: e.target.files[0] }))} />
             </div>
-        )}
 
-        {isAgent && (
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem', background: 'var(--bg-main)', borderRadius: '6px', borderLeft: '3px solid var(--primary)' }}>
-                ℹ️ Client assignment is handled by Admin after reviewing candidate performance.
-            </p>
-        )}
+            {isAgencyAdmin && (
+                <div>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Assign to Client <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>
+                    </label>
+                    <select
+                        style={{ width: '100%', marginTop: '0.3rem' }}
+                        value={form.clientId || ''}
+                        onChange={e => setForm(f => ({ ...f, clientId: e.target.value, manualPartnerName: '' }))}
+                    >
+                        <option value="">— No Assignment —</option>
+                        {clients.map(c => (
+                            <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
+                        ))}
+                        <option value="__OTHERS__">Others (Enter Manually)</option>
+                    </select>
+                    {form.clientId === '__OTHERS__' && (
+                        <input
+                            placeholder="Enter company / bank name..."
+                            value={form.manualPartnerName || ''}
+                            onChange={e => setForm(f => ({ ...f, manualPartnerName: e.target.value }))}
+                            style={{ width: '100%', marginTop: '0.5rem', padding: '0.55rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }}
+                        />
+                    )}
+                </div>
+            )}
 
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-            <button type="button" onClick={onCancel}
-                style={{ background: 'transparent', border: '1px solid var(--border)' }}>
-                Cancel
-            </button>
-            <button type="submit" className="primary">{submitLabel}</button>
-        </div>
-    </form>
-);
+            {isAgent && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem', background: 'var(--bg-main)', borderRadius: '6px', borderLeft: '3px solid var(--primary)' }}>
+                    ℹ️ Client assignment is handled by Admin after reviewing candidate performance.
+                </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="button" onClick={onCancel}
+                    style={{ background: 'transparent', border: '1px solid var(--border)' }}>
+                    Cancel
+                </button>
+                <button type="submit" className="primary">{submitLabel}</button>
+            </div>
+        </form>
+    );
+};
+
 
 
 /* ─── Component ─────────────────────────────────────────────── */
@@ -159,23 +172,21 @@ const AgencyDashboard = () => {
     };
 
     /* ── CRUD ── */
-    const handleAddCandidate = async (e) => {
-        e.preventDefault();
+    const handleAddCandidate = async (formValues) => {
         try {
-            const formData = new FormData();
-            Object.keys(newCandidate).forEach(key => {
+            const fd = new FormData();
+            Object.keys(formValues).forEach(key => {
                 if (key === 'resume') {
-                    if (newCandidate.resume) formData.append('resume', newCandidate.resume);
+                    if (formValues.resume) fd.append('resume', formValues.resume);
                 } else {
-                    formData.append(key, newCandidate[key]);
+                    fd.append(key, formValues[key]);
                 }
             });
-            await axios.post(config.endpoints.candidates.create, formData, {
+            await axios.post(config.endpoints.candidates.create, fd, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             showToast('Candidate referred successfully!');
             setShowAddModal(false);
-            setNewCandidate({ name: '', email: '', phone: '', location: '', qualification: 'Graduate', programName: '', resume: null, referredBy: '' });
             fetchCandidates();
         } catch (err) {
             showToast(err.response?.data?.error || 'Failed to add candidate', 'error');
@@ -195,11 +206,15 @@ const AgencyDashboard = () => {
         setShowEditModal(true);
     };
 
-    const handleUpdateCandidate = async (e) => {
-        e.preventDefault();
+    const handleUpdateCandidate = async (formValues) => {
         try {
-            // Agents cannot send clientId — only basic profile fields
-            const payload = { name: newCandidate.name, phone: newCandidate.phone, location: newCandidate.location, qualification: newCandidate.qualification, programName: newCandidate.programName };
+            const payload = {
+                name: formValues.name,
+                phone: formValues.phone,
+                location: formValues.location,
+                qualification: formValues.qualification,
+                programName: formValues.programName
+            };
             await axios.patch(`${config.endpoints.candidates.list}/${editingCandidate._id}`, payload);
             showToast('Candidate updated!');
             setShowEditModal(false);
@@ -496,8 +511,6 @@ const AgencyDashboard = () => {
                             🎓 Refer New Candidate
                         </h3>
                         <CandidateForm
-                            formData={newCandidate}
-                            onChange={setNewCandidate}
                             onSubmit={handleAddCandidate}
                             onCancel={() => setShowAddModal(false)}
                             submitLabel="Submit Referral"
@@ -518,8 +531,16 @@ const AgencyDashboard = () => {
                             ✏️ Edit Candidate
                         </h3>
                         <CandidateForm
-                            formData={newCandidate}
-                            onChange={setNewCandidate}
+                            initialData={editingCandidate ? {
+                                name: editingCandidate.name || '',
+                                phone: editingCandidate.phone || '',
+                                email: editingCandidate.email || '',
+                                location: editingCandidate.location || '',
+                                qualification: editingCandidate.qualification || 'Graduate',
+                                programName: editingCandidate.programName || '',
+                                referredBy: editingCandidate.referredBy || '',
+                                resume: null, clientId: '', manualPartnerName: ''
+                            } : undefined}
                             onSubmit={handleUpdateCandidate}
                             onCancel={() => setShowEditModal(false)}
                             submitLabel="Save Changes"
