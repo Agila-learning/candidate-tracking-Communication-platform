@@ -27,6 +27,84 @@ const ALL_STATUSES = [
     'Selected', 'Rejected', 'On Hold', 'Placed'
 ];
 
+/* ─── CandidateForm — defined OUTSIDE parent to keep stable identity ─────
+   If defined inside AgencyDashboard, React treats it as a new component
+   on every render (keystroke), causing unmount+remount and lost focus.    */
+const CandidateForm = ({ formData, onChange, onSubmit, onCancel, submitLabel, clients, isAgencyAdmin, isAgent }) => (
+    <form onSubmit={onSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
+        <input placeholder="Full Name *" required autoFocus value={formData.name}
+            onChange={e => onChange({ ...formData, name: e.target.value })} />
+        <input placeholder="Phone / Mobile *" required value={formData.phone}
+            onChange={e => onChange({ ...formData, phone: e.target.value })} />
+        <input placeholder="Email (Optional)" type="email" value={formData.email}
+            onChange={e => onChange({ ...formData, email: e.target.value })} />
+        <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"
+            value={formData.referredBy}
+            onChange={e => onChange({ ...formData, referredBy: e.target.value })} />
+        <input placeholder="Location" value={formData.location}
+            onChange={e => onChange({ ...formData, location: e.target.value })} />
+        <select value={formData.qualification}
+            onChange={e => onChange({ ...formData, qualification: e.target.value })}>
+            <option value="Graduate">Graduate</option>
+            <option value="Post Graduate">Post Graduate</option>
+            <option value="Under Graduate">Under Graduate</option>
+            <option value="Other">Other</option>
+        </select>
+        <input placeholder="Program / Batch / Comments"
+            value={formData.programName}
+            onChange={e => onChange({ ...formData, programName: e.target.value })} />
+        <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Resume (Optional)
+            </label>
+            <input type="file" accept=".pdf,.doc,.docx"
+                onChange={e => onChange({ ...formData, resume: e.target.files[0] })} />
+        </div>
+
+        {isAgencyAdmin && (
+            <div>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Assign to Client <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>
+                </label>
+                <select
+                    style={{ width: '100%', marginTop: '0.3rem' }}
+                    value={formData.clientId || ''}
+                    onChange={e => onChange({ ...formData, clientId: e.target.value, manualPartnerName: '' })}
+                >
+                    <option value="">— No Assignment —</option>
+                    {clients.map(c => (
+                        <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
+                    ))}
+                    <option value="__OTHERS__">Others (Enter Manually)</option>
+                </select>
+                {formData.clientId === '__OTHERS__' && (
+                    <input
+                        placeholder="Enter company / bank name..."
+                        value={formData.manualPartnerName || ''}
+                        onChange={e => onChange({ ...formData, manualPartnerName: e.target.value })}
+                        style={{ width: '100%', marginTop: '0.5rem', padding: '0.55rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }}
+                    />
+                )}
+            </div>
+        )}
+
+        {isAgent && (
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem', background: 'var(--bg-main)', borderRadius: '6px', borderLeft: '3px solid var(--primary)' }}>
+                ℹ️ Client assignment is handled by Admin after reviewing candidate performance.
+            </p>
+        )}
+
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <button type="button" onClick={onCancel}
+                style={{ background: 'transparent', border: '1px solid var(--border)' }}>
+                Cancel
+            </button>
+            <button type="submit" className="primary">{submitLabel}</button>
+        </div>
+    </form>
+);
+
+
 /* ─── Component ─────────────────────────────────────────────── */
 const AgencyDashboard = () => {
     const { user } = useAuth();
@@ -157,82 +235,7 @@ const AgencyDashboard = () => {
 
     const mine = candidates.filter(c => c.createdBy?._id === user?._id);
 
-    /* ── Modal Field Component ── */
-    const CandidateForm = ({ onSubmit, submitLabel }) => (
-        <form onSubmit={onSubmit} style={{ display: 'grid', gap: '0.9rem' }}>
-            <input placeholder="Full Name *" required value={newCandidate.name}
-                onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} />
-            <input placeholder="Phone / Mobile *" required value={newCandidate.phone}
-                onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })} />
-            <input placeholder="Email (Optional)" type="email" value={newCandidate.email}
-                onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })} />
-            <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"
-                value={newCandidate.referredBy}
-                onChange={e => setNewCandidate({ ...newCandidate, referredBy: e.target.value })} />
-            <input placeholder="Location" value={newCandidate.location}
-                onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
-            <select value={newCandidate.qualification}
-                onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })}>
-                <option value="Graduate">Graduate</option>
-                <option value="Post Graduate">Post Graduate</option>
-                <option value="Under Graduate">Under Graduate</option>
-                <option value="Other">Other</option>
-            </select>
-            <input placeholder="Program / Batch / Comments"
-                value={newCandidate.programName}
-                onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
-            <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Resume (Optional)
-                </label>
-                <input type="file" accept=".pdf,.doc,.docx"
-                    onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
-            </div>
-
-            {isAgencyAdmin && (
-                <div>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        Assign to Client <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>
-                    </label>
-                    <select
-                        style={{ width: '100%', marginTop: '0.3rem' }}
-                        value={newCandidate.clientId}
-                        onChange={e => setNewCandidate({ ...newCandidate, clientId: e.target.value, manualPartnerName: '' })}
-                    >
-                        <option value="">— No Assignment —</option>
-                        {clients.map(c => (
-                            <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
-                        ))}
-                        <option value="__OTHERS__">Others (Enter Manually)</option>
-                    </select>
-                    {newCandidate.clientId === '__OTHERS__' && (
-                        <input
-                            placeholder="Enter company / bank name..."
-                            value={newCandidate.manualPartnerName || ''}
-                            onChange={e => setNewCandidate({ ...newCandidate, manualPartnerName: e.target.value })}
-                            style={{ width: '100%', marginTop: '0.5rem', padding: '0.55rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }}
-                        />
-                    )}
-                </div>
-            )}
-
-            {/* Agents see info notice only */}
-            {isAgent && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem', background: 'var(--bg-main)', borderRadius: '6px', borderLeft: '3px solid var(--primary)' }}>
-                    ℹ️ Client assignment is handled by Admin after reviewing candidate performance.
-                </p>
-            )}
-
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                <button type="button"
-                    onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-                    style={{ background: 'transparent', border: '1px solid var(--border)' }}>
-                    Cancel
-                </button>
-                <button type="submit" className="primary">{submitLabel}</button>
-            </div>
-        </form>
-    );
+    /* ── Modal Field Component: rendered via stable top-level CandidateForm ── */
 
     return (
         <Layout>
@@ -487,7 +490,16 @@ const AgencyDashboard = () => {
                         <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             🎓 Refer New Candidate
                         </h3>
-                        <CandidateForm onSubmit={handleAddCandidate} submitLabel="Submit Referral" />
+                        <CandidateForm
+                            formData={newCandidate}
+                            onChange={setNewCandidate}
+                            onSubmit={handleAddCandidate}
+                            onCancel={() => setShowAddModal(false)}
+                            submitLabel="Submit Referral"
+                            clients={clients}
+                            isAgencyAdmin={isAgencyAdmin}
+                            isAgent={isAgent}
+                        />
                     </div>
                 </div>,
                 document.body
@@ -500,7 +512,16 @@ const AgencyDashboard = () => {
                         <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             ✏️ Edit Candidate
                         </h3>
-                        <CandidateForm onSubmit={handleUpdateCandidate} submitLabel="Save Changes" />
+                        <CandidateForm
+                            formData={newCandidate}
+                            onChange={setNewCandidate}
+                            onSubmit={handleUpdateCandidate}
+                            onCancel={() => setShowEditModal(false)}
+                            submitLabel="Save Changes"
+                            clients={clients}
+                            isAgencyAdmin={isAgencyAdmin}
+                            isAgent={isAgent}
+                        />
                     </div>
                 </div>,
                 document.body
