@@ -34,10 +34,15 @@ const AdminDashboard = () => {
     const { showToast } = useToast();
 
     useEffect(() => {
-        if (activeTab === 'candidates') fetchCandidates();
+        fetchCandidates();
         fetchClients();
         fetchPendingCount();
+    }, []);
+
+    useEffect(() => {
+        if (activeTab === 'candidates') fetchCandidates();
     }, [activeTab]);
+
 
     const fetchClients = async () => {
         try {
@@ -368,16 +373,22 @@ const AdminDashboard = () => {
                                         <th style={{ padding: '1rem' }}>Program</th>
                                         <th style={{ padding: '1rem' }}>Client</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem' }}>Referred By</th>
                                         <th style={{ padding: '1rem' }}>Resume</th>
                                         <th style={{ padding: '1rem' }}>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredCandidates.map(c => (
-                                        <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                            <td style={{ padding: '1rem', fontWeight: 500 }}>{c.name}</td>
+                                        <tr key={c._id} style={{ borderBottom: '1px solid var(--border)', background: c.createdBy?.role === 'AGENT' || c.createdBy?.role === 'AGENCY_ADMIN' ? '#fffbeb' : 'transparent' }}>
+                                            <td style={{ padding: '1rem', fontWeight: 500 }}>
+                                                {c.name}
+                                                {(c.createdBy?.role === 'AGENT' || c.createdBy?.role === 'AGENCY_ADMIN') && (
+                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.65rem', background: '#f97316', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>AGENT</span>
+                                                )}
+                                            </td>
                                             <td style={{ padding: '1rem' }}>{c.programName || 'N/A'}</td>
-                                            <td style={{ padding: '1rem' }}>{c.clientId?.name || 'Unassigned'}</td>
+                                            <td style={{ padding: '1rem' }}>{c.clientId?.name || c.manualPartnerName || 'Unassigned'}</td>
                                             <td style={{ padding: '1rem' }}>
                                                 <span style={{
                                                     padding: '0.25rem 0.75rem',
@@ -389,6 +400,9 @@ const AdminDashboard = () => {
                                                 }}>
                                                     {c.currentStatus}
                                                 </span>
+                                            </td>
+                                            <td style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                {c.referredBy || c.createdBy?.name || '—'}
                                             </td>
                                             <td style={{ padding: '1rem' }}>
                                                 {c.resumeUrl ? (

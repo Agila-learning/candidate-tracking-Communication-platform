@@ -150,7 +150,7 @@ router.get('/', auth, async (req, res) => {
             query.clientId = req.query.clientId;
         }
 
-        const candidates = await Candidate.find(query).populate('clientId').populate('createdBy', 'name _id').sort({ createdAt: -1 });
+        const candidates = await Candidate.find(query).populate('clientId').populate('createdBy', 'name role _id').sort({ createdAt: -1 });
 
         // Apply Masking Logic
         const maskedCandidates = candidates.map(c => {

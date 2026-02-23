@@ -8,14 +8,17 @@ import { useToast } from '../context/ToastContext';
 
 /* ─── Status colour map ─────────────────────────────────────── */
 const STATUS_COLORS = {
-    'Applied': { bg: '#e0f2fe', color: '#0369a1' },
-    'Screening': { bg: '#ede9fe', color: '#5b21b6' },
-    'Interview Scheduled': { bg: '#fef3c7', color: '#92400e' },
-    'Interview Done': { bg: '#d1fae5', color: '#065f46' },
-    'Selected': { bg: '#dcfce7', color: '#15803d' },
-    'Rejected': { bg: '#fee2e2', color: '#991b1b' },
-    'On Hold': { bg: '#fff7ed', color: '#9a3412' },
-    'Placed': { bg: '#f0fdf4', color: '#166534' },
+    'Registered': { bg: '#e0f2fe', color: '#0369a1' },
+    'Documents Collected': { bg: '#ede9fe', color: '#5b21b6' },
+    'Training In Progress': { bg: '#fef3c7', color: '#92400e' },
+    'Training Completed': { bg: '#d1fae5', color: '#065f46' },
+    'Interview Scheduled': { bg: '#fef9c3', color: '#713f12' },
+    'Interview Attended': { bg: '#dcfce7', color: '#15803d' },
+    'Interview Cleared': { bg: '#bbf7d0', color: '#166534' },
+    'Offer Released': { bg: '#dbeafe', color: '#1d4ed8' },
+    'Joining Confirmed': { bg: '#f0fdf4', color: '#15803d' },
+    'Joined': { bg: '#dcfce7', color: '#166534' },
+    'Rejected / Dropped': { bg: '#fee2e2', color: '#991b1b' },
     'default': { bg: 'hsla(210,100%,50%,0.1)', color: 'var(--primary)' },
 };
 
@@ -23,9 +26,11 @@ const getStatusStyle = (status) =>
     STATUS_COLORS[status] || STATUS_COLORS['default'];
 
 const ALL_STATUSES = [
-    'Applied', 'Screening', 'Interview Scheduled', 'Interview Done',
-    'Selected', 'Rejected', 'On Hold', 'Placed'
+    'Registered', 'Documents Collected', 'Training In Progress', 'Training Completed',
+    'Interview Scheduled', 'Interview Attended', 'Interview Cleared',
+    'Offer Released', 'Joining Confirmed', 'Joined', 'Rejected / Dropped'
 ];
+
 
 /* ─── CandidateForm — defined OUTSIDE parent to keep stable identity ─────
    If defined inside AgencyDashboard, React treats it as a new component
