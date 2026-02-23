@@ -123,6 +123,7 @@ const UserManagement = () => {
 
     const roleColors = {
         ADMIN: 'var(--danger)',
+        SUB_ADMIN: '#e11d48',
         SUPPORT_FIC: 'var(--warning)',
         CLIENT_SUPPORT: 'var(--success)',
         AGENCY_ADMIN: '#8b5cf6',
@@ -240,7 +241,8 @@ const UserManagement = () => {
                                     <option value="SUPPORT_FIC">FIC Support Staff</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
                                     <option value="AGENT">Agent (External)</option>
-                                    <option value="ADMIN">Admin</option>
+                                    <option value="SUB_ADMIN">Sub Admin (FIC)</option>
+                                    <option value="ADMIN">Admin (Super)</option>
                                 </select>
                             </div>
                             {(formData.role === 'CLIENT_SUPPORT_BANK' || formData.role === 'CLIENT_SUPPORT_IT' || formData.role === 'CLIENT_SUPPORT_BOTH' || formData.role === 'CLIENT_SUPPORT') && (
