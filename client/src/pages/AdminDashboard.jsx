@@ -379,71 +379,82 @@ const AdminDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredCandidates.map(c => (
-                                        <tr key={c._id} style={{ borderBottom: '1px solid var(--border)', background: c.createdBy?.role === 'AGENT' || c.createdBy?.role === 'AGENCY_ADMIN' ? '#fffbeb' : 'transparent' }}>
-                                            <td style={{ padding: '1rem', fontWeight: 500 }}>
-                                                {c.name}
-                                                {(c.createdBy?.role === 'AGENT' || c.createdBy?.role === 'AGENCY_ADMIN') && (
-                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.65rem', background: '#f97316', color: 'white', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>AGENT</span>
-                                                )}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>{c.programName || 'N/A'}</td>
-                                            <td style={{ padding: '1rem' }}>{c.clientId?.name || c.manualPartnerName || 'Unassigned'}</td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{
-                                                    padding: '0.25rem 0.75rem',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 600,
-                                                    backgroundColor: 'hsla(210, 100%, 50%, 0.1)',
-                                                    color: 'var(--primary)'
-                                                }}>
-                                                    {c.currentStatus}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                                {c.referredBy || c.createdBy?.name || '—'}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                {c.resumeUrl ? (
-                                                    <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>Download</a>
-                                                ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <button
-                                                    onClick={() => setSelectedCandidateId(c._id)}
-                                                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border)' }}
-                                                >
-                                                    View Details
-                                                </button>
-                                                {!isSubAdmin && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleDelete('candidate', c._id)}
-                                                            style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                        {!c.userId && (
+                                    {filteredCandidates.map(c => {
+                                        const isAgentReferred = c.createdBy?.role === 'AGENT';
+                                        const isAgencyAdmin = c.createdBy?.role === 'AGENCY_ADMIN';
+                                        return (
+                                            <tr key={c._id} style={{ borderBottom: '1px solid var(--border)', background: isAgentReferred ? '#fff7ed' : 'transparent' }}>
+                                                <td style={{ padding: '1rem', fontWeight: 500 }}>
+                                                    {c.name}
+                                                    {isAgentReferred && (
+                                                        <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', background: '#f97316', color: 'white', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, letterSpacing: '0.03em' }}>
+                                                            🤝 Via Agent
+                                                        </span>
+                                                    )}
+                                                    {isAgencyAdmin && (
+                                                        <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', background: '#8b5cf6', color: 'white', padding: '2px 8px', borderRadius: '10px', fontWeight: 700 }}>
+                                                            Agency
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>{c.programName || 'N/A'}</td>
+                                                <td style={{ padding: '1rem' }}>{c.clientId?.name || c.manualPartnerName || 'Unassigned'}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 600,
+                                                        backgroundColor: 'hsla(210, 100%, 50%, 0.1)',
+                                                        color: 'var(--primary)'
+                                                    }}>
+                                                        {c.currentStatus}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                    {c.referredBy || c.createdBy?.name || '—'}
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    {c.resumeUrl ? (
+                                                        <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}>Download</a>
+                                                    ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <button
+                                                        onClick={() => setSelectedCandidateId(c._id)}
+                                                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border)' }}
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                    {!isSubAdmin && (
+                                                        <>
                                                             <button
-                                                                onClick={() => handleSyncLogin(c._id)}
-                                                                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
-                                                                title="Create missing login account"
+                                                                onClick={() => handleDelete('candidate', c._id)}
+                                                                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
                                                             >
-                                                                Fix Login
+                                                                Delete
                                                             </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleStartChat(c._id)}
-                                                            style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
-                                                        >
-                                                            Chat
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                            {!c.userId && (
+                                                                <button
+                                                                    onClick={() => handleSyncLogin(c._id)}
+                                                                    style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
+                                                                    title="Create missing login account"
+                                                                >
+                                                                    Fix Login
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleStartChat(c._id)}
+                                                                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none' }}
+                                                            >
+                                                                Chat
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
