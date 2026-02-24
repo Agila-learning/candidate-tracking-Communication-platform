@@ -1,4 +1,6 @@
+// FIC Platform v1.1.2 - Backend Validators
 const validateEmail = (email) => {
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
@@ -14,8 +16,10 @@ const validatePassword = (password) => {
 };
 
 const validateRole = (role) => {
+    if (!role) return false;
     const validRoles = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'AGENT', 'CANDIDATE', 'HR'];
-    return validRoles.includes(role);
+    return validRoles.includes(role.trim().toUpperCase());
+
 };
 
 const validateRegistration = (req, res, next) => {

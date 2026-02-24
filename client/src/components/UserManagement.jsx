@@ -1,4 +1,6 @@
+// FIC Platform v1.1.2 - User Management
 import { useState, useEffect } from 'react';
+
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 import { config } from '../config';
