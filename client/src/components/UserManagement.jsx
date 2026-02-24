@@ -120,7 +120,9 @@ const UserManagement = () => {
         CLIENT_SUPPORT: 'var(--success)',
         AGENCY_ADMIN: '#8b5cf6',
         AGENT: '#f59e0b',
+        HR: '#10b981',
         CANDIDATE: 'var(--primary)'
+
     };
 
     const filteredUsers = users.filter(u => {
@@ -232,7 +234,9 @@ const UserManagement = () => {
                                     <option value="SUPPORT_FIC">FIC Support Staff</option>
                                     <option value="AGENCY_ADMIN">Agency Admin</option>
                                     <option value="AGENT">Agent (External)</option>
+                                    <option value="HR">HR (Interviewer)</option>
                                     <option value="SUB_ADMIN">Sub Admin (FIC)</option>
+
                                     <option value="ADMIN">Admin (Super)</option>
                                 </select>
                             </div>

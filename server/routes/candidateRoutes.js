@@ -38,7 +38,7 @@ router.post('/create-profile', auth, async (req, res) => {
 });
 
 // Create Candidate (Admin/Support/Agency Admin/Agent)
-router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), upload.single('resume'), async (req, res) => {
+router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT', 'HR'), upload.single('resume'), async (req, res) => {
     try {
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
@@ -146,7 +146,7 @@ router.get('/', auth, async (req, res) => {
 
         // Apply additional filters from query params
         if (req.query.status) query.currentStatus = req.query.status;
-        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUB_ADMIN' || req.user.role === 'SUPPORT_FIC' || req.user.role === 'AGENCY_ADMIN')) {
+        if (req.query.clientId && (req.user.role === 'ADMIN' || req.user.role === 'SUB_ADMIN' || req.user.role === 'SUPPORT_FIC' || req.user.role === 'AGENCY_ADMIN' || req.user.role === 'HR')) {
             query.clientId = req.query.clientId;
         }
 
@@ -198,7 +198,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Update Status + History
-router.patch('/:id/status', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN'), async (req, res) => {
+router.patch('/:id/status', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'HR'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();
@@ -305,7 +305,7 @@ router.post('/from-lead/:leadId', auth, authorize('ADMIN', 'SUPPORT_FIC'), async
 });
 
 // Update Interview Details
-router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT'), async (req, res) => {
+router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'HR'), async (req, res) => {
     try {
         const candidate = await Candidate.findByIdAndUpdate(req.params.id, {
             interview: req.body,
@@ -327,7 +327,7 @@ router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_S
 });
 
 // Update Candidate (General)
-router.patch('/:id', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT'), async (req, res) => {
+router.patch('/:id', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT', 'HR'), async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id);
         if (!candidate) return res.status(404).send();

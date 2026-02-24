@@ -277,8 +277,9 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                         </div>
                     </div>
 
-                    {/* F5: Only admin/sub-admin/support can assign clients */}
-                    {!['AGENT'].includes(user?.role) && (
+                    {/* F5: Only admin/sub-admin/support can assign clients. HR/Agent cannot. */}
+                    {!['AGENT', 'HR'].includes(user?.role) && (
+
                         <div className="card" style={{ marginBottom: '2rem' }}>
                             <h3>Partner Association</h3>
                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Associate this candidate with a bank or IT partner.</p>

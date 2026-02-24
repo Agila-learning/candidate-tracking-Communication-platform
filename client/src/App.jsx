@@ -6,6 +6,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import CandidateDashboard from './pages/CandidateDashboard';
 import AgencyDashboard from './pages/AgencyDashboard';
+import HRDashboard from './pages/HRDashboard';
+
 
 const PrivateRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -20,6 +22,7 @@ const DashboardRedirect = () => {
   if (user.role === 'ADMIN' || user.role === 'SUPPORT_FIC' || user.role === 'SUB_ADMIN') return <Navigate to="/admin" />;
   if (user.role === 'CLIENT_SUPPORT') return <Navigate to="/client" />;
   if (user.role === 'AGENCY_ADMIN' || user.role === 'AGENT') return <Navigate to="/agency" />;
+  if (user.role === 'HR') return <Navigate to="/hr" />;
   return <Navigate to="/candidate" />;
 };
 
@@ -54,11 +57,17 @@ function App() {
                 <ClientDashboard />
               </PrivateRoute>
             } />
+            <Route path="/hr" element={
+              <PrivateRoute roles={['HR']}>
+                <HRDashboard />
+              </PrivateRoute>
+            } />
             <Route path="/candidate" element={
               <PrivateRoute roles={['CANDIDATE']}>
                 <CandidateDashboard />
               </PrivateRoute>
             } />
+
           </Routes>
         </Router>
       </AuthProvider>
