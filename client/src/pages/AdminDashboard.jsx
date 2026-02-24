@@ -34,7 +34,6 @@ const AdminDashboard = () => {
     const { showToast } = useToast();
 
     useEffect(() => {
-        fetchCandidates();
         fetchClients();
         fetchPendingCount();
     }, []);
@@ -42,6 +41,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (activeTab === 'candidates') fetchCandidates();
     }, [activeTab]);
+
 
 
     const fetchClients = async () => {

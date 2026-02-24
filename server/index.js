@@ -68,11 +68,17 @@ app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/client-requests', require('./routes/clientRequestRoutes'));
 
+// Health check — also used by self-ping keep-alive to prevent Render cold start
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
 // Serve static assets in production
 // Basic route
 app.get('/', (req, res) => {
     res.send('FIC Banking Chat Forum API is running...');
 });
+
 
 // Socket.IO Logic
 io.on('connection', (socket) => {
@@ -202,7 +208,24 @@ mongoose.connect(MONGODB_URI)
 
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
+
+            // ── Keep Render free-tier warm ──────────────────────────────────────────
+            // Render spins down free services after 15 min of inactivity.
+            // This self-ping every 14 min prevents the cold-start loading delay.
+            if (process.env.RENDER_EXTERNAL_URL) {
+                const https = require('https');
+                const pingUrl = `${process.env.RENDER_EXTERNAL_URL}/api/health`;
+                setInterval(() => {
+                    https.get(pingUrl, (res) => {
+                        console.log(`[Keep-alive] ${pingUrl} → ${res.statusCode}`);
+                    }).on('error', (e) => {
+                        console.warn('[Keep-alive] Ping failed:', e.message);
+                    });
+                }, 14 * 60 * 1000); // 14 minutes
+                console.log(`[Keep-alive] Self-ping active → ${pingUrl}`);
+            }
         });
+
     })
     .catch((err) => {
         console.error('Database connection error:', err);
