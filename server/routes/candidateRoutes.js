@@ -251,7 +251,7 @@ router.get('/:id', auth, async (req, res) => {
         // Security & Masking for bank support
         if (req.user.role === 'CLIENT_SUPPORT') {
             const isInternalHR = req.user.clientId?.type === 'FIC_HR';
-            const isMyCandidate = candidate.clientId && candidate.clientId.toString() === req.user.clientId?._id?.toString();
+            const isMyCandidate = candidate.clientId && candidate.clientId._id.toString() === req.user.clientId?._id?.toString();
 
             if (!isInternalHR && !isMyCandidate) {
                 return res.status(403).json({ error: 'Access denied to this candidate profile' });

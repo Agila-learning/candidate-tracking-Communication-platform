@@ -36,6 +36,8 @@ const CandidateDetail = ({ candidateId, onBack }) => {
             setSelectedClientId(res.data.clientId?._id || '');
         } catch (e) {
             console.error(e);
+            showToast(e.response?.data?.error || 'Failed to load candidate details', 'error');
+            onBack(); // Return to list if fetch fails
         }
     };
 
