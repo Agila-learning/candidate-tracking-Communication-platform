@@ -10,6 +10,7 @@ const PARTNER_TYPES = [
     { value: 'MANUFACTURING', label: '🏭 Manufacturing Partner', badge: '#c2410c', bg: '#ffedd5' },
     { value: 'NON_IT', label: '📦 Non-IT Partner', badge: '#0f766e', bg: '#ccfbf1' },
     { value: 'OVERSEAS', label: '✈️ Overseas Partner', badge: '#4338ca', bg: '#e0e7ff' },
+    { value: 'FIC_HR', label: '👔 FIC HR Partner', badge: '#0891b2', bg: '#ecfeff' },
 ];
 
 const getTypeInfo = (type) =>

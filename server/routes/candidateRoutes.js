@@ -339,10 +339,10 @@ router.patch('/:id', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENC
             }
         }
 
-        // F5: Only ADMIN and SUB_ADMIN can assign/change the client partner
+        // F5: Only ADMIN, SUB_ADMIN, SUPPORT_FIC, and HR can assign/change the client partner
         if (req.body.clientId !== undefined) {
-            if (!['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC'].includes(req.user.role)) {
-                delete req.body.clientId; // Silently remove — agent cannot assign client
+            if (!['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'HR'].includes(req.user.role)) {
+                delete req.body.clientId; // Silently remove — agent/others cannot assign client
             }
         }
 

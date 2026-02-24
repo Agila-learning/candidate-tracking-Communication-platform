@@ -194,20 +194,25 @@ router.patch('/read/:id', auth, async (req, res) => {
     }
 });
 
-// Upload Audio
-router.post('/upload-audio', auth, upload.single('audio'), async (req, res) => {
+// Upload File (Image, PDF, Doc, Audio)
+router.post('/upload-file', auth, upload.single('file'), async (req, res) => {
     try {
-        if (!req.file) return res.status(400).send({ error: 'No audio file uploaded' });
+        if (!req.file) return res.status(400).send({ error: 'No file uploaded' });
 
-        // Multer-storage-cloudinary has already uploaded it.
-        // We just need to return the URL and public_id.
+        let fileType = 'image';
+        const ext = req.file.originalname.split('.').pop().toLowerCase();
+
+        if (['pdf', 'doc', 'docx', 'txt'].includes(ext)) fileType = 'doc';
+        else if (['mp3', 'wav', 'webm', 'ogg'].includes(ext)) fileType = 'audio';
+
         res.send({
             url: req.file.path,
             public_id: req.file.filename,
-            name: 'Voice Message'
+            name: req.file.originalname,
+            type: fileType
         });
     } catch (e) {
-        console.error('Audio upload error:', e);
+        console.error('File upload error:', e);
         res.status(400).send({ error: e.message });
     }
 });

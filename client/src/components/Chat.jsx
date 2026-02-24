@@ -15,6 +15,9 @@ const Chat = ({ conversationId }) => {
     const [recordingTime, setRecordingTime] = useState(0);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
+    const fileInputRef = useRef();
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         socketRef.current = io(config.apiUrl);
@@ -92,24 +95,28 @@ const Chat = ({ conversationId }) => {
         await sendAudioMessage(audioFile);
     };
 
-    const sendAudioMessage = async (file) => {
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) setSelectedFile(file);
+    };
+
+    const sendFileMessage = async (file) => {
         const formData = new FormData();
-        formData.append('audio', file);
+        formData.append('file', file);
+        setIsUploading(true);
 
         try {
-            // 1. Upload Audio
-            const uploadRes = await axios.post(`${config.endpoints.chat}/upload-audio`, formData, {
+            const uploadRes = await axios.post(`${config.endpoints.chat}/upload-file`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            const { url, name, public_id } = uploadRes.data;
+            const { url, name, public_id, type } = uploadRes.data;
 
-            // 2. Send Message with Attachment
             const messageData = {
                 conversationId,
-                text: '🎤 Voice Message',
+                text: type === 'image' ? `📷 ${name}` : `📎 ${name}`,
                 attachments: [{
-                    type: 'audio',
+                    type: type,
                     url: url,
                     public_id: public_id,
                     name: name
@@ -118,9 +125,12 @@ const Chat = ({ conversationId }) => {
 
             const res = await axios.post(`${config.endpoints.chat}/messages`, messageData);
             socketRef.current.emit('send_message', { ...res.data, room: conversationId });
+            setSelectedFile(null);
         } catch (err) {
-            console.error('Failed to send voice message:', err);
-            alert('Failed to send voice message');
+            console.error('Failed to send file:', err);
+            alert('Failed to send file');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -137,6 +147,12 @@ const Chat = ({ conversationId }) => {
 
     const handleSend = async (e) => {
         e.preventDefault();
+
+        if (selectedFile) {
+            await sendFileMessage(selectedFile);
+            return;
+        }
+
         if (!newMessage.trim()) return;
 
         const messageData = {
@@ -184,6 +200,24 @@ const Chat = ({ conversationId }) => {
                                     <span style={{ fontSize: '1.2rem' }}>🎤</span>
                                     <audio controls src={audioAttachment.url} style={{ height: '30px', maxWidth: '200px' }} />
                                 </div>
+                            ) : m.attachments && m.attachments[0]?.type === 'image' ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <img
+                                        src={m.attachments[0].url}
+                                        alt={m.attachments[0].name}
+                                        style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        onClick={() => window.open(m.attachments[0].url)}
+                                    />
+                                    {m.text && <div style={{ fontSize: '0.9rem' }}>{m.text}</div>}
+                                </div>
+                            ) : m.attachments && m.attachments[0]?.type === 'doc' ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                                    <span style={{ fontSize: '1.5rem' }}>📄</span>
+                                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.attachments[0].name}</div>
+                                        <a href={m.attachments[0].url} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMe ? 'white' : 'var(--primary)', textDecoration: 'underline' }}>Download</a>
+                                    </div>
+                                </div>
                             ) : (
                                 m.text
                             )}
@@ -213,6 +247,16 @@ const Chat = ({ conversationId }) => {
                 <div ref={messagesEndRef} />
             </div>
 
+            {selectedFile && (
+                <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border)', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>{selectedFile.type.startsWith('image/') ? '🖼️' : '📄'}</span>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{selectedFile.name}</div>
+                    </div>
+                    <button onClick={() => setSelectedFile(null)} style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer' }}>✕ Cancel</button>
+                </div>
+            )}
+
             <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {isRecording ? (
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--danger)', fontWeight: 'bold' }}>
@@ -235,15 +279,36 @@ const Chat = ({ conversationId }) => {
                     </div>
                 ) : (
                     <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={handleFileSelect}
+                            accept="image/*,.pdf,.doc,.docx,.txt"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current.click()}
+                            style={{
+                                border: 'none',
+                                background: 'transparent',
+                                fontSize: '1.3rem',
+                                cursor: 'pointer',
+                                padding: '0 0.25rem'
+                            }}
+                            title="Attach File"
+                        >
+                            📎
+                        </button>
                         <button
                             type="button"
                             onClick={startRecording}
                             style={{
                                 border: 'none',
                                 background: 'transparent',
-                                fontSize: '1.5rem',
+                                fontSize: '1.3rem',
                                 cursor: 'pointer',
-                                padding: '0 0.5rem'
+                                padding: '0 0.25rem'
                             }}
                             title="Record Voice Message"
                         >
@@ -253,10 +318,13 @@ const Chat = ({ conversationId }) => {
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Type a message..."
+                            placeholder={selectedFile ? "Add a caption..." : "Type a message..."}
                             style={{ flex: 1 }}
+                            disabled={isUploading}
                         />
-                        <button type="submit" className="primary">Send</button>
+                        <button type="submit" className="primary" disabled={isUploading || (!newMessage.trim() && !selectedFile)}>
+                            {isUploading ? '...' : 'Send'}
+                        </button>
                     </form>
                 )}
             </div>
