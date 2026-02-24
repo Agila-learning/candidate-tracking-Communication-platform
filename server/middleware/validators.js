@@ -14,7 +14,7 @@ const validatePassword = (password) => {
 };
 
 const validateRole = (role) => {
-    const validRoles = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'AGENT', 'CANDIDATE'];
+    const validRoles = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'AGENCY_ADMIN', 'AGENT', 'CANDIDATE', 'HR'];
     return validRoles.includes(role);
 };
 
@@ -27,7 +27,7 @@ const validateRegistration = (req, res, next) => {
 
     // For Clients (CLIENT_SUPPORT) and Agents: email is required, phone is optional
     // For Candidates: phone or email is required (existing workflow)
-    const rolesRequiringEmail = ['CLIENT_SUPPORT', 'AGENT', 'AGENCY_ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC'];
+    const rolesRequiringEmail = ['CLIENT_SUPPORT', 'AGENT', 'AGENCY_ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'HR'];
     if (rolesRequiringEmail.includes(role)) {
         if (!email) {
             return res.status(400).json({ error: 'Email address is required for this role' });
@@ -50,9 +50,11 @@ const validateRegistration = (req, res, next) => {
         return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    if (!validatePassword(password)) {
+    // Only validate password if it is provided. If not provided, route logic will set default.
+    if (password && !validatePassword(password)) {
         return res.status(400).json({ error: 'Password must be at least 8 characters long' });
     }
+
 
     if (role && !validateRole(role)) {
         return res.status(400).json({ error: 'Invalid role specified' });
