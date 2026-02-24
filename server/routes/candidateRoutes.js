@@ -126,8 +126,9 @@ router.get('/', auth, async (req, res) => {
             }
 
             // If partner is NOT FIC_HR, restrict to only their candidates
+            // Use ._id because req.user.clientId is populated in auth middleware
             if (req.user.clientId.type !== 'FIC_HR') {
-                query.clientId = req.user.clientId;
+                query.clientId = req.user.clientId._id;
             }
             // else: FIC_HR staff see all
         } else if (req.user.role === 'CANDIDATE') {
@@ -247,8 +248,15 @@ router.get('/:id', auth, async (req, res) => {
         const candidate = await Candidate.findById(req.params.id).populate('clientId userId');
         if (!candidate) return res.status(404).send();
 
-        // Mask phone for bank support
+        // Security & Masking for bank support
         if (req.user.role === 'CLIENT_SUPPORT') {
+            const isInternalHR = req.user.clientId?.type === 'FIC_HR';
+            const isMyCandidate = candidate.clientId && candidate.clientId.toString() === req.user.clientId?._id?.toString();
+
+            if (!isInternalHR && !isMyCandidate) {
+                return res.status(403).json({ error: 'Access denied to this candidate profile' });
+            }
+
             const masked = {
                 ...candidate.toObject(),
                 phone: maskPhone(candidate.phone)

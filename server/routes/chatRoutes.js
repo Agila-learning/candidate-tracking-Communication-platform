@@ -14,7 +14,10 @@ router.get('/my', auth, async (req, res) => {
             // No type filter needed for admins, they see all
         } else if (req.user.role === 'CLIENT_SUPPORT') {
             // Client sees candidate chats AND admin chats
-            query.clientId = req.user.clientId;
+            // Use ._id because req.user.clientId is populated in auth middleware
+            if (req.user.clientId) {
+                query.clientId = req.user.clientId._id;
+            }
         } else if (req.user.role === 'CANDIDATE') {
             const Candidate = require('../models/Candidate');
             const candidate = await Candidate.findOne({ userId: req.user._id });
