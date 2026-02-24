@@ -15,12 +15,20 @@ router.get('/my', auth, async (req, res) => {
         } else if (req.user.role === 'CLIENT_SUPPORT') {
             // Client sees candidate chats AND admin chats
             query.clientId = req.user.clientId;
-            // No type restriction (or restrict to exclude others if needed, but client only has these two types anyway)
         } else if (req.user.role === 'CANDIDATE') {
             const Candidate = require('../models/Candidate');
             const candidate = await Candidate.findOne({ userId: req.user._id });
             if (!candidate) return res.send([]);
             query.candidateId = candidate._id;
+        } else if (req.user.role === 'AGENT' || req.user.role === 'AGENCY_ADMIN') {
+            // Agents/Agency Admins see conversations where they are participants
+            query.participants = req.user._id;
+        } else if (req.user.role === 'HR') {
+            // HR sees any HR-related chats or chats they are participants in
+            query.$or = [
+                { type: 'agent-hr' },
+                { participants: req.user._id }
+            ];
         }
 
         const conversations = await Conversation.find(query)
@@ -97,6 +105,35 @@ router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
         }
         res.send(conversation);
     } catch (e) {
+        res.status(400).send(e);
+    }
+});
+
+// Create/Get Agent-Staff Chat
+router.post('/agent/init/:target', auth, authorize('AGENT', 'AGENCY_ADMIN'), async (req, res) => {
+    try {
+        const { target } = req.params; // 'admin' or 'hr'
+        const type = `agent-${target}`;
+
+        // Find existing conversation between this specific agent and the staff group
+        // For groups, we define participants: [agentId, ...staffIds]
+        let conversation = await Conversation.findOne({ type, participants: req.user._id });
+
+        if (!conversation) {
+            const User = require('../models/User');
+            // Add all matching staff as participants so they receive notifications
+            const staffRoles = target === 'admin' ? ['ADMIN', 'SUPPORT_FIC', 'SUB_ADMIN'] : ['HR'];
+            const staffUsers = await User.find({ role: { $in: staffRoles } });
+
+            conversation = new Conversation({
+                type,
+                participants: [req.user._id, ...staffUsers.map(u => u._id)]
+            });
+            await conversation.save();
+        }
+        res.send(conversation);
+    } catch (e) {
+        console.error('Agent chat init error:', e);
         res.status(400).send(e);
     }
 });

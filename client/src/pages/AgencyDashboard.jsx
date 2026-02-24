@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config';
 import { useToast } from '../context/ToastContext';
+import Chat from '../components/Chat';
 
 /* ─── Status colour map ─────────────────────────────────────── */
 const STATUS_COLORS = {
@@ -147,6 +148,22 @@ const AgencyDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterClient, setFilterClient] = useState('');
+
+    /* Chat State */
+    const [showChat, setShowChat] = useState(false);
+    const [chatTarget, setChatTarget] = useState(null); // 'admin' or 'hr'
+    const [activeConversationId, setActiveConversationId] = useState(null);
+
+    const handleStartChat = async (target) => {
+        try {
+            setChatTarget(target);
+            const res = await axios.post(`${config.endpoints.chat}/agent/init/${target}`);
+            setActiveConversationId(res.data._id);
+            setShowChat(true);
+        } catch (err) {
+            showToast('Failed to start chat', 'error');
+        }
+    };
 
     useEffect(() => {
         fetchCandidates();
@@ -296,22 +313,29 @@ const AgencyDashboard = () => {
                 </div>
             </div>
 
-            {/* ─── Client Access Info Banner (for agents) ─── */}
+            {/* ─── Communication Center (for agents) ─── */}
             {isAgent && (
-                <div style={{ background: 'linear-gradient(120deg,#ede9fe,#f5f3ff)', border: '1px solid #c4b5fd', borderRadius: 'var(--radius)', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.5rem' }}>🏢</span>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, color: '#5b21b6', fontSize: '0.9rem' }}>Want your candidates to access a client portal?</div>
-                        <div style={{ color: '#7c3aed', fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                            Companies can request platform access via our staffing request form. Clients are assigned by Admin based on candidate performance.
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ padding: '0.75rem', background: 'var(--primary-light)', borderRadius: '12px', fontSize: '1.5rem' }}>👑</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Chat with Admin</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>Get updates on placements & partner assignments.</div>
                         </div>
+                        <button className="primary" onClick={() => handleStartChat('admin')} style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Open Chat</button>
                     </div>
-                    <a href="/request-services" target="_blank" rel="noreferrer"
-                        style={{ padding: '0.5rem 1rem', background: '#5b21b6', color: 'white', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                        Request Access →
-                    </a>
+                    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ padding: '0.75rem', background: '#d1fae5', borderRadius: '12px', fontSize: '1.5rem' }}>📋</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Chat with HR</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>Discuss interview feedback & candidate clearing.</div>
+                        </div>
+                        <button className="primary" onClick={() => handleStartChat('hr')} style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', backgroundColor: '#059669' }}>Open Chat</button>
+                    </div>
                 </div>
             )}
+
+            {/* ─── Client Access Info Banner (for agents) ─── */}
 
             {/* ─── Candidate Table Card ─── */}
             <div className="card fade-in">
@@ -548,6 +572,21 @@ const AgencyDashboard = () => {
                             isAgencyAdmin={isAgencyAdmin}
                             isAgent={isAgent}
                         />
+                    </div>
+                </div>,
+                document.body
+            )}
+            {/* ─── Chat Modal ─── */}
+            {showChat && activeConversationId && ReactDOM.createPortal(
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1rem' }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '600px', height: '80vh', backgroundColor: 'var(--bg-card)', padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: chatTarget === 'hr' ? '#059669' : 'var(--primary)', color: 'white' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Chat with {chatTarget === 'hr' ? 'HR Team' : 'Admin Team'}</h3>
+                            <button onClick={() => setShowChat(false)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto' }}>
+                            <Chat conversationId={activeConversationId} />
+                        </div>
                     </div>
                 </div>,
                 document.body

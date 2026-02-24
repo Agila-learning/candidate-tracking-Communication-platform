@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const conversationSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ['candidate-admin', 'candidate-client', 'admin-client'],
+        enum: ['candidate-admin', 'candidate-client', 'admin-client', 'agent-admin', 'agent-hr'],
         required: true
     },
     candidateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' }, // Optional for admin-client

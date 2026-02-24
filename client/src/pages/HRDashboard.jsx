@@ -13,6 +13,7 @@ const HRDashboard = () => {
     const [selectedCandidateId, setSelectedCandidateId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
+    const [referredOnly, setReferredOnly] = useState(true);
     const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 
@@ -45,9 +46,10 @@ const HRDashboard = () => {
             c.phone.includes(searchTerm);
         const matchesStatus = filterStatus === 'all' || c.currentStatus === filterStatus;
 
-        // HR queue typically focuses on candidates not yet joined/assigned permanently 
-        // but for now, we show all based on filters.
-        return matchesSearch && matchesStatus;
+        const isReferred = c.referredBy || (c.createdBy?.role === 'AGENT');
+        const matchesReferred = !referredOnly || isReferred;
+
+        return matchesSearch && matchesStatus && matchesReferred;
     });
 
     if (selectedCandidateId) {
@@ -110,6 +112,13 @@ const HRDashboard = () => {
                                 <option value="Rejected / Dropped">Rejected / Dropped</option>
                             </select>
                         </div>
+                        <button
+                            onClick={() => setReferredOnly(!referredOnly)}
+                            className={referredOnly ? "primary" : "secondary"}
+                            style={{ padding: '0.6rem 1rem', fontSize: '0.9rem' }}
+                        >
+                            {referredOnly ? "✅ Referred Only" : "🌐 All Candidates"}
+                        </button>
                         <button onClick={fetchCandidates} className="secondary" style={{ padding: '0.6rem 1rem' }}>
                             🔄 Refresh List
                         </button>
