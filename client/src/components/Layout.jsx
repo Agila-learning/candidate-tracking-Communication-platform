@@ -51,10 +51,17 @@ const Layout = ({ children }) => {
                         </NavLink>
                     )}
 
-                    {user?.role === 'CLIENT_SUPPORT' && (
+                    {(user?.role === 'CLIENT_SUPPORT' && user?.clientId?.type !== 'FIC_HR') && (
                         <NavLink to="/client" className="nav-link" onClick={closeSidebar}>
-                            <span className="nav-icon">🏦</span>
+                            <span className="nav-icon"></span>
                             Partner Portal
+                        </NavLink>
+                    )}
+
+                    {(user?.role === 'HR' || (user?.role === 'CLIENT_SUPPORT' && user?.clientId?.type === 'FIC_HR')) && (
+                        <NavLink to="/hr" className="nav-link" onClick={closeSidebar}>
+                            <span className="nav-icon">👤</span>
+                            HR Dashboard
                         </NavLink>
                     )}
 
@@ -84,7 +91,11 @@ const Layout = ({ children }) => {
                         </div>
                         <div style={{ overflow: 'hidden' }}>
                             <div style={{ fontSize: '0.85rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{user?.role.replace('_', ' ')}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                                {user?.role === 'HR' || (user?.role === 'CLIENT_SUPPORT' && user?.clientId?.type === 'FIC_HR')
+                                    ? 'FIC HR Recruiter'
+                                    : (user?.role === 'CLIENT_SUPPORT' ? 'Partner Support' : user?.role.replace('_', ' '))}
+                            </div>
                         </div>
                     </div>
                     <button onClick={logout} style={{

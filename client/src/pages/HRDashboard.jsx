@@ -18,7 +18,7 @@ const HRDashboard = () => {
     const [activeConversationId, setActiveConversationId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
-    const [referredOnly, setReferredOnly] = useState(true);
+    const [referredOnly, setReferredOnly] = useState(false);
     const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 

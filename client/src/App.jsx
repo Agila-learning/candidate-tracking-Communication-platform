@@ -20,7 +20,11 @@ const PrivateRoute = ({ children, roles }) => {
 const DashboardRedirect = () => {
   const { user } = useAuth();
   if (user.role === 'ADMIN' || user.role === 'SUPPORT_FIC' || user.role === 'SUB_ADMIN') return <Navigate to="/admin" />;
-  if (user.role === 'CLIENT_SUPPORT') return <Navigate to="/client" />;
+  if (user.role === 'CLIENT_SUPPORT') {
+    // If they are an internal FIC HR staff (mapped via Client type)
+    if (user.clientId?.type === 'FIC_HR') return <Navigate to="/hr" />;
+    return <Navigate to="/client" />;
+  }
   if (user.role === 'AGENCY_ADMIN' || user.role === 'AGENT') return <Navigate to="/agency" />;
   if (user.role === 'HR') return <Navigate to="/hr" />;
   return <Navigate to="/candidate" />;
@@ -53,12 +57,12 @@ function App() {
               </PrivateRoute>
             } />
             <Route path="/client" element={
-              <PrivateRoute roles={['CLIENT_SUPPORT']}>
+              <PrivateRoute roles={['CLIENT_SUPPORT', 'ADMIN']}>
                 <ClientDashboard />
               </PrivateRoute>
             } />
             <Route path="/hr" element={
-              <PrivateRoute roles={['HR']}>
+              <PrivateRoute roles={['HR', 'CLIENT_SUPPORT', 'ADMIN']}>
                 <HRDashboard />
               </PrivateRoute>
             } />

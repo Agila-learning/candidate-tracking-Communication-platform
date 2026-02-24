@@ -119,11 +119,17 @@ router.get('/', auth, async (req, res) => {
         let query = {};
 
         // CLIENT_SUPPORT can only see candidates assigned to their bank
+        // UNLESS the bank they belong to is of type 'FIC_HR', then they see all (as they are internal HR staff)
         if (req.user.role === 'CLIENT_SUPPORT') {
             if (!req.user.clientId) {
                 return res.status(403).json({ error: 'No client assigned to your account' });
             }
-            query.clientId = req.user.clientId;
+
+            // If partner is NOT FIC_HR, restrict to only their candidates
+            if (req.user.clientId.type !== 'FIC_HR') {
+                query.clientId = req.user.clientId;
+            }
+            // else: FIC_HR staff see all
         } else if (req.user.role === 'CANDIDATE') {
             // CANDIDATE can only see their own record
             let candidates = await Candidate.find({ userId: req.user._id }).populate('clientId').sort({ createdAt: -1 });
@@ -141,6 +147,8 @@ router.get('/', auth, async (req, res) => {
         } else if (req.user.role === 'AGENT') {
             // AGENT can ONLY see candidates they created
             query.createdBy = req.user._id;
+        } else if (req.user.role === 'HR') {
+            // HR role sees all
         }
         // ADMIN, SUPPORT_FIC, SUB_ADMIN, AGENCY_ADMIN can see all (AGENCY_ADMIN sees all but masked)
 

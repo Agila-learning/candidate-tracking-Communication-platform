@@ -42,7 +42,22 @@ const CandidateDetail = ({ candidateId, onBack }) => {
     const fetchClients = async () => {
         try {
             const res = await axios.get(config.endpoints.clients.list);
-            setClients(res.data);
+            let filtered = res.data;
+
+            // F5: Role-based filtering for associations
+            // HR/Admin see all. Others only see their own type.
+            const isInternalHR = user?.role === 'HR' || (user?.role === 'CLIENT_SUPPORT' && user?.clientId?.type === 'FIC_HR');
+            const isAdmin = ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC'].includes(user?.role);
+
+            if (!isAdmin && !isInternalHR) {
+                // If the user belongs to a specific partner type (IT/BANKING/etc)
+                const myType = user?.clientId?.type;
+                if (myType && myType !== 'BOTH') {
+                    filtered = res.data.filter(c => c.type === myType);
+                }
+            }
+
+            setClients(filtered);
         } catch (e) {
             console.error(e);
         }
