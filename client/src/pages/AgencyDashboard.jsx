@@ -1,4 +1,6 @@
+// FIC Platform v1.2.1 - Agency Dashboard
 import { useState, useEffect, useCallback } from 'react';
+
 import ReactDOM from 'react-dom';
 import Layout from '../components/Layout';
 import axios from 'axios';
@@ -336,6 +338,17 @@ const AgencyDashboard = () => {
             )}
 
             {/* ─── Client Access Info Banner (for agents) ─── */}
+            {isAgent && (
+                <div style={{ background: 'linear-gradient(120deg,#ede9fe,#f5f3ff)', border: '1px solid #c4b5fd', borderRadius: 'var(--radius)', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🏢</span>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: '#5b21b6', fontSize: '0.9rem' }}>Want your candidates to access a client portal?</div>
+                        <div style={{ color: '#7c3aed', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+                            Companies can request platform access via our staffing request form. Clients are assigned by Admin based on candidate performance.
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ─── Candidate Table Card ─── */}
             <div className="card fade-in">
