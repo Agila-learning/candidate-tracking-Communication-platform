@@ -54,7 +54,7 @@ const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, 
             <input placeholder="Full Name *" required value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             <input placeholder="Phone / Mobile *" required value={form.phone}
-                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/\s/g, '') }))} />
             <input placeholder="Email (Optional)" type="email" value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
             <input placeholder="Referred By (e.g. Walk-In, Job Fair, Agent Name)"

@@ -19,7 +19,10 @@ router.get('/', auth, authorize('ADMIN'), async (req, res) => {
 // Create user (Admin only)
 router.post('/', auth, authorize('ADMIN'), validateRegistration, async (req, res) => {
     try {
-        const { name, email, phone, password, role, clientId } = req.body;
+        let { name, email, phone, password, role, clientId } = req.body;
+
+        // Strip spaces from phone
+        if (phone) phone = phone.replace(/\s/g, '');
 
         if (email) {
             const existingUser = await User.findOne({ email });

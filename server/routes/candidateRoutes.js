@@ -38,8 +38,13 @@ router.post('/create-profile', auth, async (req, res) => {
 });
 
 // Create Candidate (Admin/Support/Agency Admin/Agent)
-router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT', 'HR'), upload.single('resume'), async (req, res) => {
+router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_ADMIN', 'AGENT', 'HR'), upload.single('resume'), validateCandidate, async (req, res) => {
     try {
+        // Strip spaces from phone to ensure consistent default passwords and login IDs
+        if (req.body.phone) {
+            req.body.phone = req.body.phone.replace(/\s/g, '');
+        }
+
         // Enforce Client ID for Bank Support Users
         if (req.user.role === 'CLIENT_SUPPORT') {
             if (!req.user.clientId) {
