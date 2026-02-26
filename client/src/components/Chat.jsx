@@ -182,64 +182,96 @@ const Chat = ({ conversationId }) => {
                     const isMe = m.senderId?.toString() === user?._id?.toString();
                     const audioAttachment = m.attachments?.find(a => a.type === 'audio');
 
+                    const currentDate = new Date(m.createdAt).toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    const prevDate = i > 0 ? new Date(messages[i - 1].createdAt).toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : null;
+                    const showDateHeader = currentDate !== prevDate;
+
                     return (
-                        <div key={i} style={{
-                            alignSelf: isMe ? 'flex-end' : 'flex-start',
-                            maxWidth: '80%',
-                            padding: '0.75rem 1rem',
-                            borderRadius: '12px',
-                            borderBottomRightRadius: isMe ? '2px' : '12px',
-                            borderBottomLeftRadius: isMe ? '12px' : '2px',
-                            backgroundColor: isMe ? 'var(--primary)' : 'var(--bg-main)',
-                            color: isMe ? 'white' : 'var(--text-main)',
-                            fontSize: '0.9rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                        }}>
-                            {audioAttachment ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <span style={{ fontSize: '1.2rem' }}>🎤</span>
-                                    <audio controls src={audioAttachment.url} style={{ height: '30px', maxWidth: '200px' }} />
+                        <div key={i} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                            {showDateHeader && (
+                                <div style={{
+                                    textAlign: 'center',
+                                    margin: '1.5rem 0',
+                                    position: 'relative',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px solid var(--border)', zIndex: 1 }}></div>
+                                    <span style={{
+                                        background: 'var(--bg-main)',
+                                        padding: '0.25rem 1rem',
+                                        fontSize: '0.75rem',
+                                        color: 'var(--text-muted)',
+                                        fontWeight: 600,
+                                        borderRadius: '20px',
+                                        position: 'relative',
+                                        zIndex: 2,
+                                        boxShadow: '0 0 10px rgba(0,0,0,0.02)'
+                                    }}>
+                                        {currentDate}
+                                    </span>
                                 </div>
-                            ) : m.attachments && m.attachments[0]?.type === 'image' ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    <img
-                                        src={m.attachments[0].url}
-                                        alt={m.attachments[0].name}
-                                        style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
-                                        onClick={() => window.open(m.attachments[0].url)}
-                                    />
-                                    {m.text && <div style={{ fontSize: '0.9rem' }}>{m.text}</div>}
-                                </div>
-                            ) : m.attachments && m.attachments[0]?.type === 'doc' ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                                    <span style={{ fontSize: '1.5rem' }}>📄</span>
-                                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.attachments[0].name}</div>
-                                        <a href={m.attachments[0].url} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMe ? 'white' : 'var(--primary)', textDecoration: 'underline' }}>Download</a>
-                                    </div>
-                                </div>
-                            ) : (
-                                m.text
                             )}
-                            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.7, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                {(isMe || user?.role === 'ADMIN') && (
-                                    <button
-                                        onClick={() => handleDelete(m._id)}
-                                        style={{
-                                            background: 'transparent',
-                                            border: 'none',
-                                            color: 'inherit',
-                                            opacity: 0.7,
-                                            cursor: 'pointer',
-                                            padding: 0,
-                                            fontSize: '0.8rem'
-                                        }}
-                                        title="Delete Message"
-                                    >
-                                        🗑️
-                                    </button>
+                            <div style={{
+                                alignSelf: isMe ? 'flex-end' : 'flex-start',
+                                maxWidth: '80%',
+                                padding: '0.75rem 1rem',
+                                borderRadius: '12px',
+                                borderBottomRightRadius: isMe ? '2px' : '12px',
+                                borderBottomLeftRadius: isMe ? '12px' : '2px',
+                                backgroundColor: isMe ? 'var(--primary)' : 'var(--bg-main)',
+                                color: isMe ? 'white' : 'var(--text-main)',
+                                fontSize: '0.9rem',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                marginBottom: '0.25rem'
+                            }}>
+                                {audioAttachment ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span style={{ fontSize: '1.2rem' }}>🎤</span>
+                                        <audio controls src={audioAttachment.url} style={{ height: '30px', maxWidth: '200px' }} />
+                                    </div>
+                                ) : m.attachments && m.attachments[0]?.type === 'image' ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <img
+                                            src={m.attachments[0].url}
+                                            alt={m.attachments[0].name}
+                                            style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                            onClick={() => window.open(m.attachments[0].url)}
+                                        />
+                                        {m.text && <div style={{ fontSize: '0.9rem' }}>{m.text}</div>}
+                                    </div>
+                                ) : m.attachments && m.attachments[0]?.type === 'doc' ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                                        <span style={{ fontSize: '1.5rem' }}>📄</span>
+                                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                                            <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.attachments[0].name}</div>
+                                            <a href={m.attachments[0].url} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMe ? 'white' : 'var(--primary)', textDecoration: 'underline' }}>Download</a>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    m.text
                                 )}
+                                <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.7, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                    <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    {(isMe || user?.role === 'ADMIN') && (
+                                        <button
+                                            onClick={() => handleDelete(m._id)}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: 'inherit',
+                                                opacity: 0.7,
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                fontSize: '0.8rem'
+                                            }}
+                                            title="Delete Message"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );

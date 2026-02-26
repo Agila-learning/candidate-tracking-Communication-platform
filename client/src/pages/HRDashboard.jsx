@@ -56,7 +56,19 @@ const HRDashboard = () => {
         cleared: candidates.filter(c => c.currentStatus === 'Interview Cleared').length
     };
 
-    const filteredCandidates = candidates.filter(c => {
+    const getFilteredByTab = (candidates) => {
+        if (activeTab === 'queue') {
+            return candidates.filter(c => ['Registered', 'Interview Scheduled', 'Interview Attended', 'Interviewing', 'Training In Progress'].includes(c.currentStatus));
+        }
+        if (activeTab === 'history') {
+            return candidates.filter(c => ['Interview Cleared', 'Rejected / Dropped', 'Joined', 'Backed Out', 'Documentation In Progress'].includes(c.currentStatus));
+        }
+        return candidates;
+    };
+
+    const tabFilteredCandidates = getFilteredByTab(candidates);
+
+    const filteredCandidates = tabFilteredCandidates.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.phone.includes(searchTerm);
         const matchesStatus = filterStatus === 'all' || c.currentStatus === filterStatus;
@@ -108,7 +120,7 @@ const HRDashboard = () => {
                     {['queue', 'inbox', 'history'].map(tab => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => { setActiveTab(tab); if (tab === 'inbox') { /* SupportInbox handles its own fetch */ } else { fetchCandidates(); } }}
                             style={{
                                 backgroundColor: 'transparent',
                                 color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
@@ -156,8 +168,9 @@ const HRDashboard = () => {
                             >
                                 {referredOnly ? "✅ Referred Only" : "🌐 All Candidates"}
                             </button>
-                            <button onClick={fetchCandidates} className="secondary" style={{ padding: '0.6rem 1rem' }}>
-                                🔄 Refresh List
+                            <button onClick={fetchCandidates} className="secondary" style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
+                                <span style={{ animation: loading ? 'spin 1s linear infinite' : 'none', display: 'inline-block' }}>🔄</span>
+                                {loading ? 'Refreshing...' : 'Refresh List'}
                             </button>
                         </div>
 

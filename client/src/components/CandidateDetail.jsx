@@ -234,7 +234,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                                     </div>
                                 </div>
 
-                                {['ADMIN', 'SUPPORT_FIC', 'HR'].includes(user?.role) && (
+                                {(['ADMIN', 'SUPPORT_FIC', 'HR'].includes(user?.role) || (user?.role === 'CLIENT_SUPPORT' && user?.clientId?.type === 'FIC_HR')) && (
                                     <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
                                         <button onClick={() => handleInitiateCandidateChat('admin')} style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--primary)', color: 'white', border: 'none' }}>
                                             💬 Open FIC Internal Chat
