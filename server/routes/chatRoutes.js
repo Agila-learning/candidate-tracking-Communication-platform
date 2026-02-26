@@ -21,10 +21,11 @@ router.get('/my', auth, async (req, res) => {
                 { participants: req.user._id }
             ];
         } else if (req.user.role === 'CLIENT_SUPPORT') {
-            // Regular Bank support sees chats for their client or where they are participants
-            if (req.user.clientId) {
-                query.clientId = req.user.clientId._id;
-            }
+            // Regular Bank support sees chats for their client OR where they are explicitly participants
+            query.$or = [
+                { clientId: req.user.clientId?._id },
+                { participants: req.user._id }
+            ];
         } else if (req.user.role === 'CANDIDATE') {
             const Candidate = require('../models/Candidate');
             const candidate = await Candidate.findOne({ userId: req.user._id });
@@ -88,7 +89,11 @@ router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
         let conversation = await Conversation.findOne(query);
 
         if (!conversation) {
+            // Important: Candidate userId MUST be a participant
             let participantIds = [req.user._id];
+            if (candidateDoc.userId) {
+                participantIds.push(candidateDoc.userId);
+            }
 
             // If chat is with Bank/Client, add all their support users to participants so they get notifications
             if (target === 'client' && candidateDoc.clientId) {
