@@ -111,6 +111,12 @@ router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
                 participants: participantIds
             });
             await conversation.save();
+        } else {
+            // If it exists but user isn't a participant, add them (e.g. for existing chats)
+            if (!conversation.participants.includes(req.user._id)) {
+                conversation.participants.push(req.user._id);
+                await conversation.save();
+            }
         }
         res.send(conversation);
     } catch (e) {
