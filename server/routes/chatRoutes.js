@@ -27,9 +27,11 @@ router.get('/my', auth, async (req, res) => {
             // Agents/Agency Admins see conversations where they are participants
             query.participants = req.user._id;
         } else if (req.user.role === 'HR') {
-            // HR sees any HR-related chats or chats they are participants in
+            // HR sees any HR-related chats, candidate chats, or chats they are participants in
             query.$or = [
                 { type: 'agent-hr' },
+                { type: 'candidate-admin' },
+                { type: 'candidate-client' },
                 { participants: req.user._id }
             ];
         }

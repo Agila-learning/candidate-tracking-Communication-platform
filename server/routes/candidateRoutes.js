@@ -23,6 +23,7 @@ router.post('/create-profile', auth, async (req, res) => {
             phone: req.user.phone, // Phone is now mandatory in User, so it's safe
             location: location || 'Not Specified',
             programName: programName || 'General Banking',
+            creationComments: req.body.creationComments,
             currentStatus: 'Registered',
             userId: req.user._id,
             clientId: req.user.clientId, // Inherit Bank Selection from User Account
@@ -73,6 +74,9 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_AD
         }
 
         const candidate = new Candidate(candidateData);
+        if (req.body.creationComments) {
+            candidate.creationComments = req.body.creationComments;
+        }
         await candidate.save();
 
         // Sync: Ensure a User account exists for this candidate (for OTP Login)
@@ -368,6 +372,7 @@ router.patch('/:id', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENC
         }
 
         // F3: Allow manualPartnerName to be saved
+        // Allow interviewFeedback to be saved for HR/Admin
         const updated = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.send(updated);
     } catch (e) {

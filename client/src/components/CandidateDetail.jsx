@@ -20,6 +20,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
         pocName: '',
         remarks: ''
     });
+    const [interviewFeedback, setInterviewFeedback] = useState('');
     const { showToast } = useToast();
     const { user } = useAuth();
 
@@ -34,6 +35,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
             setCandidate(res.data);
             setNewStatus(res.data.currentStatus);
             setSelectedClientId(res.data.clientId?._id || '');
+            setInterviewFeedback(res.data.interviewFeedback || '');
         } catch (e) {
             console.error(e);
             showToast(e.response?.data?.error || 'Failed to load candidate details', 'error');
@@ -89,6 +91,27 @@ const CandidateDetail = ({ candidateId, onBack }) => {
             showToast('Partner associated successfully!');
         } catch (e) {
             showToast('Assignment failed', 'error');
+        }
+    };
+
+    const handleUpdateFeedback = async () => {
+        try {
+            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}`, {
+                interviewFeedback
+            });
+            showToast('Interview feedback updated!');
+            fetchDetail();
+        } catch (e) {
+            showToast('Failed to update feedback', 'error');
+        }
+    };
+
+    const handleInitiateCandidateChat = async (target) => {
+        try {
+            await axios.post(`${config.endpoints.chat}/candidate/${candidateId}/${target}`);
+            showToast('Chat channel initialized! You can find it in Communication Center.');
+        } catch (e) {
+            showToast('Failed to init chat', 'error');
         }
     };
 
@@ -210,6 +233,19 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                                         <div style={{ marginTop: '0.5rem', fontSize: '0.95rem' }}>{candidate.qualification || 'Graduate'}</div>
                                     </div>
                                 </div>
+
+                                {['ADMIN', 'SUPPORT_FIC', 'HR'].includes(user?.role) && (
+                                    <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+                                        <button onClick={() => handleInitiateCandidateChat('admin')} style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--primary)', color: 'white', border: 'none' }}>
+                                            💬 Open FIC Internal Chat
+                                        </button>
+                                        {candidate.clientId && (
+                                            <button onClick={() => handleInitiateCandidateChat('client')} style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: '#059669', color: 'white', border: 'none' }}>
+                                                💬 Open Bank Support Chat
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="card" style={{ marginBottom: '2rem' }}>
@@ -260,6 +296,38 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                                     ))}
                                 </div>
                             </div>
+
+                            {(candidate.interviewFeedback || ['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'HR'].includes(user?.role)) && (
+                                <div className="card" style={{ marginTop: '2rem', borderLeft: '4px solid #10b981' }}>
+                                    <h3 style={{ marginBottom: '1rem' }}>Interview Feedback</h3>
+                                    {['ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'HR'].includes(user?.role) ? (
+                                        <div>
+                                            <textarea
+                                                value={interviewFeedback}
+                                                onChange={e => setInterviewFeedback(e.target.value)}
+                                                placeholder="Enter interview feedback and comments here..."
+                                                style={{ height: '120px', marginBottom: '1rem' }}
+                                            />
+                                            <button className="primary" onClick={handleUpdateFeedback} style={{ background: '#10b981' }}>
+                                                Save Feedback
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div style={{ padding: '1rem', backgroundColor: '#f0fdf4', borderRadius: '8px', fontSize: '0.95rem', lineHeight: '1.6', color: '#065f46' }}>
+                                            {candidate.interviewFeedback || 'No feedback provided yet.'}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {candidate.creationComments && (
+                                <div className="card" style={{ marginTop: '2rem', borderLeft: '4px solid #f59e0b' }}>
+                                    <h3 style={{ marginBottom: '0.5rem' }}>Creation Comments</h3>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                        "{candidate.creationComments}"
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>

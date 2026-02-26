@@ -26,7 +26,7 @@ const AdminDashboard = () => {
     const [showAddLead, setShowAddLead] = useState(false);
     const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', location: '', targetBank: '', phase: 'Phase 1' });
     const [showAddCandidate, setShowAddCandidate] = useState(false);
-    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null });
+    const [newCandidate, setNewCandidate] = useState({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null, creationComments: '' });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClient, setFilterClient] = useState('');
     const [clients, setClients] = useState([]);
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
             await axios.post(config.endpoints.candidates.create, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setNewCandidate({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null });
+            setNewCandidate({ name: '', email: '', phone: '', programName: '', location: '', clientId: '', qualification: 'Graduate', resume: null, creationComments: '' });
             setShowAddCandidate(false);
             fetchCandidates();
             showToast('Candidate onboarded successfully!');
@@ -305,6 +305,12 @@ const AdminDashboard = () => {
                                         <option value="">No Bank (Not Assigned)</option>
                                         {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                     </select>
+                                    <textarea
+                                        placeholder="Optional onboarding comments / referral notes..."
+                                        value={newCandidate.creationComments}
+                                        onChange={e => setNewCandidate({ ...newCandidate, creationComments: e.target.value })}
+                                        style={{ gridColumn: 'span 2', height: '60px' }}
+                                    />
                                     <div style={{ gridColumn: '1 / -1', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                                         Note: The candidate's password will be set to their Mobile Number.
                                     </div>

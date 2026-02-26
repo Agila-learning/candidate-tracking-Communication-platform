@@ -248,6 +248,35 @@ const CandidateDashboard = () => {
                                             </div>
                                         </div>
                                     ))}
+
+                                    {candidate.interviewFeedback && (
+                                        <div style={{ display: 'flex', gap: '1.5rem', paddingBottom: '2rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <div style={{
+                                                    width: '32px',
+                                                    height: '32px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'hsla(150, 100%, 35%, 0.1)',
+                                                    border: '2px solid var(--success)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '0.8rem',
+                                                    zIndex: 2
+                                                }}>
+                                                    💬
+                                                </div>
+                                                <div style={{ width: '2px', flex: 1, backgroundColor: 'var(--border)', marginTop: '4px', marginBottom: '-4px' }} />
+                                            </div>
+                                            <div style={{ flex: 1, paddingTop: '4px' }}>
+                                                <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--success)' }}>Interview Feedback</div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.5rem', padding: '1rem', backgroundColor: 'hsla(150, 100%, 35%, 0.05)', borderLeft: '3px solid var(--success)', borderRadius: 'var(--radius-sm)' }}>
+                                                    {candidate.interviewFeedback}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div style={{ display: 'flex', gap: '1.5rem' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                             <div style={{

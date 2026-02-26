@@ -41,7 +41,7 @@ const ALL_STATUSES = [
 const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, isAgencyAdmin, isAgent }) => {
     const [form, setForm] = useState(initialData || {
         name: '', phone: '', email: '', referredBy: '',
-        location: '', qualification: 'Graduate', programName: '', resume: null, clientId: '', manualPartnerName: ''
+        location: '', qualification: 'Graduate', programName: '', creationComments: '', resume: null, clientId: '', manualPartnerName: ''
     });
 
     const handleSubmit = (e) => {
@@ -72,6 +72,10 @@ const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, 
             <input placeholder="Program / Batch / Comments"
                 value={form.programName}
                 onChange={e => setForm(f => ({ ...f, programName: e.target.value }))} />
+            <textarea placeholder="Optional: Special notes or referral comments..."
+                value={form.creationComments}
+                onChange={e => setForm(f => ({ ...f, creationComments: e.target.value }))}
+                style={{ height: '70px', fontSize: '0.85rem' }} />
             <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
                 <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     Resume (Optional)
@@ -143,7 +147,7 @@ const AgencyDashboard = () => {
     const [editingCandidate, setEditingCandidate] = useState(null);
     const [newCandidate, setNewCandidate] = useState({
         name: '', email: '', phone: '', location: '',
-        qualification: 'Graduate', programName: '', resume: null, referredBy: ''
+        qualification: 'Graduate', programName: '', creationComments: '', resume: null, referredBy: ''
     });
 
     /* Filters */
