@@ -93,7 +93,7 @@ const SupportInbox = ({ clients = [], initialConversationId = null, targetCandid
             <div className="inbox-sidebar">
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <h4 style={{ margin: 0, marginBottom: '0.5rem' }}>Support Inbox</h4>
-                    {['ADMIN', 'SUPPORT_FIC'].includes(user?.role) && (
+                    {['ADMIN', 'SUPPORT_FIC', 'SUB_ADMIN', 'HR'].includes(user?.role) && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <select
                                 value={filterType}

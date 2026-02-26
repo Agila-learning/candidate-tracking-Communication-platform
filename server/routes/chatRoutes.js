@@ -111,11 +111,15 @@ router.post('/candidate/:candidateId/:target', auth, async (req, res) => {
                 participants: participantIds
             });
             await conversation.save();
+            console.log(`New conversation created: ${conversation._id} for candidate ${candidateId}`);
         } else {
             // If it exists but user isn't a participant, add them (e.g. for existing chats)
-            if (!conversation.participants.includes(req.user._id)) {
+            // Use string comparison for reliability with MongoDB IDs
+            const isParticipant = conversation.participants.some(p => p.toString() === req.user._id.toString());
+            if (!isParticipant) {
                 conversation.participants.push(req.user._id);
                 await conversation.save();
+                console.log(`User ${req.user._id} added to existing conversation ${conversation._id}`);
             }
         }
         res.send(conversation);

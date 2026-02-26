@@ -329,8 +329,8 @@ router.post('/from-lead/:leadId', auth, authorize('ADMIN', 'SUPPORT_FIC'), async
     }
 });
 
-// Update Interview Details
-router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'HR'), async (req, res) => {
+// Update Interview Details (Scheduling)
+router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_SUPPORT', 'HR', 'SUB_ADMIN'), async (req, res) => {
     try {
         const candidate = await Candidate.findByIdAndUpdate(req.params.id, {
             interview: req.body,
@@ -344,6 +344,22 @@ router.patch('/:id/interview', auth, authorize('ADMIN', 'SUPPORT_FIC', 'CLIENT_S
             updatedBy: req.user._id
         });
         await candidate.save();
+
+        res.send(candidate);
+    } catch (e) {
+        res.status(400).send(e);
+    }
+});
+
+// Update Interview Feedback (Post-Interview)
+router.patch('/:id/feedback', auth, authorize('ADMIN', 'SUPPORT_FIC', 'HR', 'SUB_ADMIN'), async (req, res) => {
+    try {
+        const { interviewFeedback } = req.body;
+        const candidate = await Candidate.findByIdAndUpdate(req.params.id,
+            { interviewFeedback },
+            { new: true }
+        );
+        if (!candidate) return res.status(404).send({ error: 'Candidate not found' });
 
         res.send(candidate);
     } catch (e) {

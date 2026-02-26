@@ -96,7 +96,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
 
     const handleUpdateFeedback = async () => {
         try {
-            await axios.patch(`${config.endpoints.candidates.list}/${candidateId}`, {
+            await axios.patch(`${config.endpoints.candidates.details(candidate._id)}/feedback`, {
                 interviewFeedback
             });
             showToast('Interview feedback updated!');
