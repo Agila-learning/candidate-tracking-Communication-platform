@@ -158,6 +158,7 @@ const HRDashboard = () => {
                                     <option value="Interview Scheduled">Interview Scheduled</option>
                                     <option value="Interview Attended">Interview Attended</option>
                                     <option value="Interview Cleared">Interview Cleared</option>
+                                    <option value="Training In Progress">Training In Progress</option>
                                     <option value="Rejected / Dropped">Rejected / Dropped</option>
                                 </select>
                             </div>
@@ -198,6 +199,7 @@ const HRDashboard = () => {
                                                     {c.createdBy?.role === 'AGENT' && <span style={{ marginLeft: '0.5rem', fontSize: '0.6rem', padding: '2px 6px', background: '#fef3c7', color: '#d97706', borderRadius: '10px', fontWeight: 700 }}>AGENT</span>}
                                                 </td>
                                                 <td style={{ padding: '1rem' }}>
+// Training In Progress gets a purple badge
                                                     <span style={{
                                                         padding: '0.25rem 0.75rem',
                                                         borderRadius: '20px',
@@ -205,10 +207,12 @@ const HRDashboard = () => {
                                                         fontWeight: 600,
                                                         backgroundColor: c.currentStatus === 'Registered' ? '#fef3c7' :
                                                             c.currentStatus === 'Interview Cleared' ? '#d1fae5' :
-                                                                c.currentStatus === 'Interview Scheduled' ? '#dbeafe' : '#f3f4f6',
+                                                                c.currentStatus === 'Interview Scheduled' ? '#dbeafe' :
+                                                                    c.currentStatus === 'Training In Progress' ? '#f3e8ff' : '#f3f4f6',
                                                         color: c.currentStatus === 'Registered' ? '#d97706' :
                                                             c.currentStatus === 'Interview Cleared' ? '#059669' :
-                                                                c.currentStatus === 'Interview Scheduled' ? '#2563eb' : '#4b5563'
+                                                                c.currentStatus === 'Interview Scheduled' ? '#2563eb' :
+                                                                    c.currentStatus === 'Training In Progress' ? '#7e22ce' : '#4b5563'
                                                     }}>
                                                         {c.currentStatus}
                                                     </span>
