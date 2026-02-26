@@ -9,6 +9,7 @@ const router = express.Router();
 // List My Conversations
 router.get('/my', auth, async (req, res) => {
     try {
+        console.log(`Fetch chats for user: ${req.user.name}, Role: ${req.user.role}, ClientType: ${req.user.clientId?.type}`);
         let query = {};
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC') {
             // No type filter needed for admins, they see all
@@ -36,12 +37,16 @@ router.get('/my', auth, async (req, res) => {
             query.participants = req.user._id;
         }
 
+        console.log('Chat Query:', JSON.stringify(query));
         const conversations = await Conversation.find(query)
             .populate('candidateId')
             .populate('clientId')
             .sort({ lastMessageAt: -1 });
+
+        console.log(`Found ${conversations.length} conversations`);
         res.send(conversations);
     } catch (e) {
+        console.error('Fetch chats error:', e);
         res.status(500).send(e);
     }
 });
