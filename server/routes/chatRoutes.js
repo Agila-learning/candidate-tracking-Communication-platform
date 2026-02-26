@@ -12,9 +12,16 @@ router.get('/my', auth, async (req, res) => {
         let query = {};
         if (req.user.role === 'ADMIN' || req.user.role === 'SUPPORT_FIC') {
             // No type filter needed for admins, they see all
+        } else if (req.user.role === 'HR' || (req.user.role === 'CLIENT_SUPPORT' && req.user.clientId?.type === 'FIC_HR')) {
+            // HR role and FIC HR staff see all candidate-related chats, HR chats, and chats they are participants in
+            query.$or = [
+                { type: 'agent-hr' },
+                { type: 'candidate-admin' },
+                { type: 'candidate-client' },
+                { participants: req.user._id }
+            ];
         } else if (req.user.role === 'CLIENT_SUPPORT') {
-            // Client sees candidate chats AND admin chats
-            // Use ._id because req.user.clientId is populated in auth middleware
+            // Regular Bank support sees chats for their client or where they are participants
             if (req.user.clientId) {
                 query.clientId = req.user.clientId._id;
             }
@@ -26,14 +33,6 @@ router.get('/my', auth, async (req, res) => {
         } else if (req.user.role === 'AGENT' || req.user.role === 'AGENCY_ADMIN') {
             // Agents/Agency Admins see conversations where they are participants
             query.participants = req.user._id;
-        } else if (req.user.role === 'HR') {
-            // HR sees any HR-related chats, candidate chats, or chats they are participants in
-            query.$or = [
-                { type: 'agent-hr' },
-                { type: 'candidate-admin' },
-                { type: 'candidate-client' },
-                { participants: req.user._id }
-            ];
         }
 
         const conversations = await Conversation.find(query)
