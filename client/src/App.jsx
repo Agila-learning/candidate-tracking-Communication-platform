@@ -23,7 +23,9 @@ const DashboardRedirect = () => {
   if (user.role === 'CLIENT_SUPPORT') {
     // If they are an internal FIC HR staff (mapped via Client type)
     if (user.clientId?.type === 'FIC_HR') return <Navigate to="/hr" />;
-    return <Navigate to="/client" />;
+    if (user.clientId?.type === 'IT') return <Navigate to="/it-portal" />;
+    if (user.clientId?.type === 'NON_IT') return <Navigate to="/non-it-portal" />;
+    return <Navigate to="/banking-portal" />;
   }
   if (user.role === 'AGENCY_ADMIN' || user.role === 'AGENT') return <Navigate to="/agency" />;
   if (user.role === 'HR') return <Navigate to="/hr" />;
@@ -57,6 +59,21 @@ function App() {
               </PrivateRoute>
             } />
             <Route path="/client" element={
+              <PrivateRoute roles={['CLIENT_SUPPORT', 'ADMIN']}>
+                <ClientDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/banking-portal" element={
+              <PrivateRoute roles={['CLIENT_SUPPORT', 'ADMIN']}>
+                <ClientDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/it-portal" element={
+              <PrivateRoute roles={['CLIENT_SUPPORT', 'ADMIN']}>
+                <ClientDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/non-it-portal" element={
               <PrivateRoute roles={['CLIENT_SUPPORT', 'ADMIN']}>
                 <ClientDashboard />
               </PrivateRoute>

@@ -157,12 +157,21 @@ const ClientDashboard = () => {
 
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ marginBottom: '0.5rem' }}>
-                    {clientData?.type === 'BOTH' ? 'FIC Partner Portal' : (clientData?.type === 'IT' ? 'IT Partner Portal' : 'Bank Partner Portal')}
+                    {clientData?.type === 'BOTH' ? 'Unified Partner Portal' :
+                        (clientData?.type === 'IT' ? 'IT Partner Portal' :
+                            (clientData?.type === 'NON_IT' ? 'Non-IT Partner Portal' :
+                                (clientData?.type === 'BANKING' ? 'Banking Partner Portal' : 'Partner Portal')))}
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>
                     {clientData?.type === 'BOTH'
-                        ? 'Manage your Banking & IT candidates and support.'
-                        : (clientData?.type === 'IT' ? 'Manage your IT candidates and support.' : 'Manage your assigned candidates and support queries.')}
+                        ? 'Manage your Banking, IT & Non-IT candidates and support.'
+                        : (clientData?.type === 'IT'
+                            ? 'Manage your IT candidates and support.'
+                            : (clientData?.type === 'NON_IT'
+                                ? 'Manage your Non-IT candidates and support.'
+                                : (clientData?.type === 'BANKING'
+                                    ? 'Manage your Banking (Manipal) candidates and support.'
+                                    : 'Manage your assigned candidates and support queries.')))}
                 </p>
 
                 <div className="scrollable-tabs">
@@ -180,7 +189,9 @@ const ClientDashboard = () => {
                             }}
                         >
                             {tab === 'inbox'
-                                ? (clientData?.type === 'BOTH' ? 'Unified Support Inbox' : (clientData?.type === 'IT' ? 'IT Support Inbox' : 'Bank Support Inbox'))
+                                ? (clientData?.type === 'BOTH' ? 'Support Inbox' :
+                                    (clientData?.type === 'IT' ? 'IT Support Inbox' :
+                                        (clientData?.type === 'NON_IT' ? 'Non-IT Support Inbox' : 'Banking Support Inbox')))
                                 : tab === 'candidates' ? 'My Candidates' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
