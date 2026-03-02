@@ -58,7 +58,7 @@ const HRDashboard = () => {
 
     const getFilteredByTab = (candidates) => {
         if (activeTab === 'queue') {
-            return candidates.filter(c => ['Registered', 'Interview Scheduled', 'Interview Attended', 'Interviewing', 'Training In Progress'].includes(c.currentStatus));
+            return candidates.filter(c => ['Registered', 'Shortlisted', 'Interview Scheduled', 'Interview Attended', 'Interviewing', 'Training In Progress'].includes(c.currentStatus));
         }
         if (activeTab === 'history') {
             return candidates.filter(c => ['Interview Cleared', 'Rejected / Dropped', 'Joined', 'Backed Out', 'Documentation In Progress'].includes(c.currentStatus));
@@ -155,6 +155,7 @@ const HRDashboard = () => {
                                 >
                                     <option value="all">All Statuses</option>
                                     <option value="Registered">New (Registered)</option>
+                                    <option value="Shortlisted">Shortlisted</option>
                                     <option value="Interview Scheduled">Interview Scheduled</option>
                                     <option value="Interview Attended">Interview Attended</option>
                                     <option value="Interview Cleared">Interview Cleared</option>
@@ -205,13 +206,15 @@ const HRDashboard = () => {
                                                         fontSize: '0.75rem',
                                                         fontWeight: 600,
                                                         backgroundColor: c.currentStatus === 'Registered' ? '#fef3c7' :
-                                                            c.currentStatus === 'Interview Cleared' ? '#d1fae5' :
-                                                                c.currentStatus === 'Interview Scheduled' ? '#dbeafe' :
-                                                                    c.currentStatus === 'Training In Progress' ? '#f3e8ff' : '#f3f4f6',
+                                                            c.currentStatus === 'Shortlisted' ? '#fce7f3' :
+                                                                c.currentStatus === 'Interview Cleared' ? '#d1fae5' :
+                                                                    c.currentStatus === 'Interview Scheduled' ? '#dbeafe' :
+                                                                        c.currentStatus === 'Training In Progress' ? '#f3e8ff' : '#f3f4f6',
                                                         color: c.currentStatus === 'Registered' ? '#d97706' :
-                                                            c.currentStatus === 'Interview Cleared' ? '#059669' :
-                                                                c.currentStatus === 'Interview Scheduled' ? '#2563eb' :
-                                                                    c.currentStatus === 'Training In Progress' ? '#7e22ce' : '#4b5563'
+                                                            c.currentStatus === 'Shortlisted' ? '#be185d' :
+                                                                c.currentStatus === 'Interview Cleared' ? '#059669' :
+                                                                    c.currentStatus === 'Interview Scheduled' ? '#2563eb' :
+                                                                        c.currentStatus === 'Training In Progress' ? '#7e22ce' : '#4b5563'
                                                     }}>
                                                         {c.currentStatus}
                                                     </span>

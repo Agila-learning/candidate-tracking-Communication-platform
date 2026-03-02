@@ -340,6 +340,7 @@ const CandidateDetail = ({ candidateId, onBack }) => {
                             <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} style={{ marginBottom: '1.25rem' }}>
                                 <option value="Registered">Registered</option>
                                 <option value="Documents Collected">Documents Collected</option>
+                                <option value="Shortlisted">Shortlisted</option>
                                 <option value="Training In Progress">Training In Progress</option>
                                 <option value="Interview Scheduled">Interview Scheduled</option>
                                 <option value="Interview Cleared">Interview Cleared</option>

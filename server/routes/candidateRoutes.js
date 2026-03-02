@@ -66,12 +66,14 @@ router.post('/', auth, authorize('ADMIN', 'SUB_ADMIN', 'SUPPORT_FIC', 'AGENCY_AD
         // Sanitize clientId
         if (req.body.clientId === '') delete req.body.clientId;
 
+        if (!req.file) {
+            return res.status(400).json({ error: 'Resume upload is mandatory for new candidates.' });
+        }
+
         const candidateData = { ...req.body };
 
-        if (req.file) {
-            candidateData.resumeUrl = req.file.path;
-            candidateData.resumeOriginalName = req.file.originalname;
-        }
+        candidateData.resumeUrl = req.file.path;
+        candidateData.resumeOriginalName = req.file.originalname;
 
         const candidate = new Candidate(candidateData);
         if (req.body.creationComments) {

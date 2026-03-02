@@ -87,6 +87,27 @@ router.post('/login', validateLogin, async (req, res) => {
             });
         }
 
+        // --- NEW: Restrict Candidate Login based on Status ---
+        if (user.role === 'CANDIDATE') {
+            const Candidate = require('../models/Candidate');
+            const candidateInfo = await Candidate.findOne({ userId: user._id });
+
+            if (candidateInfo) {
+                const allowedStatuses = [
+                    'Shortlisted', 'Training In Progress', 'Training Completed',
+                    'Interview Scheduled', 'Interview Attended', 'Interview Cleared',
+                    'Offer Released', 'Joining Confirmed', 'Joined'
+                ];
+
+                if (!allowedStatuses.includes(candidateInfo.currentStatus)) {
+                    return res.status(403).json({
+                        error: `Your application is currently '${candidateInfo.currentStatus}'. You will be granted login access once you are Shortlisted.`
+                    });
+                }
+            }
+        }
+        // -----------------------------------------------------
+
         // Check if assigned client is active (for CLIENT_SUPPORT users)
         if (user.role === 'CLIENT_SUPPORT' && user.clientId && !user.clientId.isActive) {
             return res.status(403).json({

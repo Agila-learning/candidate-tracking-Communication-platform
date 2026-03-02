@@ -24,7 +24,7 @@ const candidateSchema = new mongoose.Schema({
     currentStatus: {
         type: String,
         enum: [
-            'Registered', 'Documents Collected', 'Training In Progress',
+            'Registered', 'Documents Collected', 'Shortlisted', 'Training In Progress',
             'Training Completed', 'Interview Scheduled', 'Interview Attended',
             'Interview Cleared', 'Offer Released', 'Joining Confirmed',
             'Joined', 'Rejected / Dropped'

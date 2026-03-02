@@ -13,6 +13,7 @@ import Chat from '../components/Chat';
 const STATUS_COLORS = {
     'Registered': { bg: '#e0f2fe', color: '#0369a1' },
     'Documents Collected': { bg: '#ede9fe', color: '#5b21b6' },
+    'Shortlisted': { bg: '#fce7f3', color: '#be185d' },
     'Training In Progress': { bg: '#fef3c7', color: '#92400e' },
     'Training Completed': { bg: '#d1fae5', color: '#065f46' },
     'Interview Scheduled': { bg: '#fef9c3', color: '#713f12' },
@@ -29,7 +30,7 @@ const getStatusStyle = (status) =>
     STATUS_COLORS[status] || STATUS_COLORS['default'];
 
 const ALL_STATUSES = [
-    'Registered', 'Documents Collected', 'Training In Progress', 'Training Completed',
+    'Registered', 'Documents Collected', 'Shortlisted', 'Training In Progress', 'Training Completed',
     'Interview Scheduled', 'Interview Attended', 'Interview Cleared',
     'Offer Released', 'Joining Confirmed', 'Joined', 'Rejected / Dropped'
 ];
@@ -46,6 +47,13 @@ const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, 
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // If it's a new referral (has no initialData ID), require resume
+        if (!initialData?._id && !form.resume) {
+            alert('Please upload a resume for the candidate.');
+            return;
+        }
+
         onSubmit(form);
     };
 
@@ -78,9 +86,9 @@ const CandidateForm = ({ initialData, onSubmit, onCancel, submitLabel, clients, 
                 style={{ height: '70px', fontSize: '0.85rem' }} />
             <div style={{ padding: '0.5rem', border: '1px dashed var(--border)', borderRadius: '6px' }}>
                 <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Resume (Optional)
+                    Resume {initialData?._id ? '(Optional for updates)' : '*'}
                 </label>
-                <input type="file" accept=".pdf,.doc,.docx"
+                <input type="file" accept=".pdf,.doc,.docx" required={!initialData?._id}
                     onChange={e => setForm(f => ({ ...f, resume: e.target.files[0] }))} />
             </div>
 

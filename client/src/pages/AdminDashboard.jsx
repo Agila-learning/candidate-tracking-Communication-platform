@@ -82,6 +82,12 @@ const AdminDashboard = () => {
 
     const handleCreateCandidate = async (e) => {
         e.preventDefault();
+
+        if (!newCandidate.resume) {
+            showToast('Please upload a resume for the candidate.', 'error');
+            return;
+        }
+
         try {
             const formData = new FormData();
             Object.keys(newCandidate).forEach(key => {
@@ -288,8 +294,8 @@ const AdminDashboard = () => {
                                     <input placeholder="Program Name" value={newCandidate.programName} onChange={e => setNewCandidate({ ...newCandidate, programName: e.target.value })} />
                                     <input placeholder="Location" value={newCandidate.location} onChange={e => setNewCandidate({ ...newCandidate, location: e.target.value })} />
                                     <div style={{ gridColumn: '1 / -1' }}>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Upload Resume (Optional)</label>
-                                        <input type="file" onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
+                                        <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Upload Resume *</label>
+                                        <input type="file" required onChange={e => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })} />
                                     </div>
                                     <select value={newCandidate.qualification} onChange={e => setNewCandidate({ ...newCandidate, qualification: e.target.value })}>
                                         <option value="Graduate">Graduate</option>
