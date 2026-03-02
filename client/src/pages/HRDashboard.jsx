@@ -184,6 +184,7 @@ const HRDashboard = () => {
                                         <th style={{ padding: '1rem' }}>Source</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
                                         <th style={{ padding: '1rem' }}>Program</th>
+                                        <th style={{ padding: '1rem' }}>Resume</th>
                                         <th style={{ padding: '1rem' }}>Action</th>
                                     </tr>
                                 </thead>
@@ -221,6 +222,13 @@ const HRDashboard = () => {
                                                 </td>
                                                 <td style={{ padding: '1rem', fontSize: '0.9rem' }}>{c.programName || 'N/A'}</td>
                                                 <td style={{ padding: '1rem' }}>
+                                                    {c.resumeUrl ? (
+                                                        <a href={c.resumeUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'underline' }}>
+                                                            View Resume
+                                                        </a>
+                                                    ) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>—</span>}
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>
                                                     <button
                                                         onClick={() => setSelectedCandidateId(c._id)}
                                                         className="primary"
@@ -233,7 +241,7 @@ const HRDashboard = () => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                            <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                                                 No candidates found matching your criteria.
                                             </td>
                                         </tr>
